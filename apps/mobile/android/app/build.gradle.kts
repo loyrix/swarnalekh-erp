@@ -1,8 +1,32 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val mobileEnvFile = rootProject.projectDir.parentFile.resolve(".env")
+if (!project.hasProperty("dart-defines") && mobileEnvFile.isFile) {
+    val allowedKeys = setOf("SUPABASE_URL", "SUPABASE_ANON_KEY", "API_BASE_URL")
+    val envDefines =
+        mobileEnvFile
+            .readLines()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() && !it.startsWith("#") && it.contains("=") }
+            .mapNotNull { line ->
+                val key = line.substringBefore("=").trim()
+                val value = line.substringAfter("=").trim().trim('"', '\'')
+                if (key in allowedKeys) "$key=$value" else null
+            }
+
+    if (envDefines.isNotEmpty()) {
+        extensions.extraProperties["dart-defines"] =
+            envDefines.joinToString(",") {
+                Base64.getEncoder().encodeToString(it.toByteArray(Charsets.UTF_8))
+            }
+    }
 }
 
 android {

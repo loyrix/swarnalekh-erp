@@ -14,7 +14,7 @@ void main() async {
 
   if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
     throw StateError(
-      'Missing Supabase config. Run Flutter with --dart-define=SUPABASE_URL=... and --dart-define=SUPABASE_ANON_KEY=...',
+      'Missing Supabase config. Create apps/mobile/.env and build with --dart-define-from-file=.env.',
     );
   }
 

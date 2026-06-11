@@ -102,28 +102,32 @@ Add screens for:
 flutter pub get
 flutter analyze
 flutter test
-flutter build web \
-  --dart-define=SUPABASE_URL=<supabase-url> \
-  --dart-define=SUPABASE_ANON_KEY=<supabase-anon-key> \
-  --dart-define=API_BASE_URL=<api-base-url>
-flutter build apk --release \
-  --dart-define=SUPABASE_URL=<supabase-url> \
-  --dart-define=SUPABASE_ANON_KEY=<supabase-anon-key> \
-  --dart-define=API_BASE_URL=<api-base-url>
+flutter build web --dart-define-from-file=.env
+flutter build apk --release --dart-define-from-file=.env
 ```
 
-## GitHub Actions Build Config
+Create `apps/mobile/.env` from `apps/mobile/.env.example` before running builds:
 
-The build workflow only creates artifacts. It does not deploy.
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+API_BASE_URL=https://swarnalekh-erp-api.vercel.app/api/v1
+```
 
-Set these repository variables or secrets before running the workflow:
+From the repository root, these commands read `apps/mobile/.env` automatically:
 
-- `API_BASE_URL`: Vercel API URL ending in `/api/v1`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
+```bash
+pnpm mobile:web
+pnpm mobile:apk
+pnpm mobile:aab
+```
 
-Artifacts produced:
+Android Studio Gradle builds also read `apps/mobile/.env`. For Android Studio Flutter run configurations, add this once under Additional run args if the IDE does not pick up Gradle settings:
 
-- `swarnalekh-web`
-- `swarnalekh-android-apk`
-- `swarnalekh-android-aab`
+```bash
+--dart-define-from-file=.env
+```
+
+## Build And Test Approach
+
+GitHub Actions are not configured. Build and test locally through Flutter, Android Studio, Xcode, and the tracked pre-commit hook.

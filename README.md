@@ -200,16 +200,15 @@ cd apps/mobile && flutter analyze
 cd apps/mobile && flutter test
 ```
 
-## Build-Only GitHub Actions
+## Local Mobile Builds
 
-The GitHub Actions workflow creates Flutter web and Android artifacts only. It does not deploy.
+GitHub Actions are not configured. API deployment is handled by Vercel on commit/push.
 
-Configure these repository variables or secrets:
+Local mobile builds read `apps/mobile/.env` through `--dart-define-from-file`.
 
-- `API_BASE_URL`: Vercel API URL ending in `/api/v1`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-
-The Android APK artifact is named `swarnalekh-android-apk`.
+```bash
+pnpm mobile:env:sync
+pnpm mobile:apk
+```
 
 Before commits, the tracked hook in `.githooks/pre-commit` runs formatting, tests, builds, Flutter analyzer, Flutter tests, and Flutter web build.
