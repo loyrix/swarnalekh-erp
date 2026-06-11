@@ -1,5 +1,0 @@
-# API Documentation
-
-This directory contains API documentation and Swagger/OpenAPI specs.
-
-Documentation will be auto-generated from NestJS decorators.
