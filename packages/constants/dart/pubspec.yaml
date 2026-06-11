@@ -1,0 +1,7 @@
+name: swarnbook_constants
+description: SwarnaLekh shared constants, enums, HSN codes, karat values (Dart)
+version: 0.1.0
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.11.0 <4.0.0'

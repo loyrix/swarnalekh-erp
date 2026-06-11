@@ -1,0 +1,7 @@
+name: shared_types
+description: SwarnaLekh shared type definitions (Dart)
+version: 0.1.0
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.11.0 <4.0.0'

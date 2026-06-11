@@ -1,0 +1,671 @@
+// ============================================
+// SwarnaLekh — Complete Prisma Schema
+// Multi-tenant PostgreSQL via Supabase
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================
+// TENANT & AUTH
+// ==================
+
+model Tenant {
+  id                    String    @id @default(uuid()) @db.Uuid
+  shopName              String    @map("shop_name") @db.VarChar(200)
+  ownerName             String    @map("owner_name") @db.VarChar(150)
+  phone                 String?   @unique @db.VarChar(15)
+  email                 String?   @db.VarChar(200)
+  address               String?
+  city                  String?   @db.VarChar(100)
+  state                 String?   @db.VarChar(100)
+  pincode               String?   @db.VarChar(10)
+  gstin                 String?   @db.VarChar(20)
+  pan                   String?   @db.VarChar(15)
+  logoUrl               String?   @map("logo_url")
+  subscriptionPlan      String    @default("free") @map("subscription_plan") @db.VarChar(20)
+  subscriptionExpiresAt DateTime? @map("subscription_expires_at") @db.Timestamptz()
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  users                 User[]
+  customers             Customer[]
+  categories            Category[]
+  inventoryItems        InventoryItem[]
+  dailyRates            DailyRate[]
+  karigars              Karigar[]
+  invoices              Invoice[]
+  payments              Payment[]
+  mortgageLoans         MortgageLoan[]
+  mortgagePayments      MortgagePayment[]
+  schemes               Scheme[]
+  schemeEnrollments     SchemeEnrollment[]
+  ledgerParties         LedgerParty[]
+  ledgerEntries         LedgerEntry[]
+  notificationTemplates NotificationTemplate[]
+  notificationLogs      NotificationLog[]
+  auditLogs             AuditLog[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  name         String    @db.VarChar(150)
+  authUserId   String?   @unique @map("auth_user_id") @db.Uuid
+  phone        String?   @db.VarChar(15)
+  email        String?   @db.VarChar(200)
+  passwordHash String?   @map("password_hash")
+  role         String    @default("staff") @db.VarChar(20)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz()
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant               Tenant            @relation(fields: [tenantId], references: [id])
+  dailyRates           DailyRate[]       @relation("RateSetBy")
+  invoices             Invoice[]         @relation("InvoiceCreatedBy")
+  createdMortgageLoans MortgageLoan[]    @relation("MortgageLoanCreatedBy")
+  closedMortgageLoans  MortgageLoan[]    @relation("MortgageLoanClosedBy")
+  mortgagePayments     MortgagePayment[] @relation("MortgagePaymentCollectedBy")
+  schemePayments       SchemePayment[]   @relation("PaymentCollectedBy")
+  ledgerEntries        LedgerEntry[]     @relation("EntryCreatedBy")
+  auditLogs            AuditLog[]
+
+  @@unique([email])
+  @@index([tenantId])
+  @@index([phone])
+  @@map("users")
+}
+
+// ==================
+// CUSTOMERS
+// ==================
+
+model Customer {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  name               String    @db.VarChar(200)
+  phone              String?   @db.VarChar(15)
+  altPhone           String?   @map("alt_phone") @db.VarChar(15)
+  email              String?   @db.VarChar(200)
+  address            String?
+  city               String?   @db.VarChar(100)
+  pincode            String?   @db.VarChar(10)
+  // Customer Verification
+  aadharNumber       String?   @map("aadhar_number") @db.VarChar(20)
+  panNumber          String?   @map("pan_number") @db.VarChar(15)
+  verificationDocUrl String?   @map("verification_doc_url")
+  // Preferences
+  preferredKarat     String?   @map("preferred_karat") @db.VarChar(10)
+  familyDetails      Json?     @map("family_details")
+  notes              String?
+  // Stats (denormalized)
+  totalPurchases     Decimal   @default(0) @map("total_purchases") @db.Decimal(14, 2)
+  totalVisits        Int       @default(0) @map("total_visits")
+  lastVisitAt        DateTime? @map("last_visit_at") @db.Timestamptz()
+  // Soft delete
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz()
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  invoices          Invoice[]
+  payments          Payment[]
+  mortgageLoans     MortgageLoan[]
+  schemeEnrollments SchemeEnrollment[]
+  notificationLogs  NotificationLog[]
+
+  @@index([tenantId])
+  @@index([tenantId, phone])
+  @@index([tenantId, name])
+  @@map("customers")
+}
+
+// ==================
+// INVENTORY
+// ==================
+
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  name      String   @db.VarChar(100)
+  parentId  String?  @map("parent_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant   Tenant          @relation(fields: [tenantId], references: [id])
+  parent   Category?       @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[]      @relation("CategoryHierarchy")
+  items    InventoryItem[]
+
+  @@index([tenantId])
+  @@map("categories")
+}
+
+model InventoryItem {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  // Identification
+  tagNumber            String?   @map("tag_number") @db.VarChar(50)
+  barcode              String?   @db.VarChar(100)
+  categoryId           String?   @map("category_id") @db.Uuid
+  itemName             String?   @map("item_name") @db.VarChar(200)
+  description          String?
+  // Metal details
+  metalType            String    @map("metal_type") @db.VarChar(20)
+  karat                String?   @db.VarChar(10)
+  stockType            String    @default("unique") @map("stock_type") @db.VarChar(20)
+  quantity             Int       @default(1)
+  purity               Decimal?  @db.Decimal(6, 3)
+  grossWeight          Decimal   @map("gross_weight") @db.Decimal(10, 3)
+  netWeight            Decimal   @map("net_weight") @db.Decimal(10, 3)
+  // Stone details
+  hasStones            Boolean   @default(false) @map("has_stones")
+  stoneDetails         Json?     @map("stone_details")
+  stoneValue           Decimal   @default(0) @map("stone_value") @db.Decimal(12, 2)
+  // Pricing
+  makingChargesPerGram Decimal?  @map("making_charges_per_gram") @db.Decimal(10, 2)
+  makingChargesFixed   Decimal?  @map("making_charges_fixed") @db.Decimal(10, 2)
+  makingChargesPercent Decimal?  @map("making_charges_percent") @db.Decimal(5, 2)
+  wastagePercent       Decimal   @default(0) @map("wastage_percent") @db.Decimal(5, 2)
+  // Source
+  source               String?   @db.VarChar(20)
+  karigarId            String?   @map("karigar_id") @db.Uuid
+  purchaseRate         Decimal?  @map("purchase_rate") @db.Decimal(10, 2)
+  sellingPrice         Decimal?  @map("selling_price") @db.Decimal(14, 2)
+  purchaseDate         DateTime? @map("purchase_date") @db.Date
+  // Photos
+  photos               Json?
+  // Hallmark
+  hallmarkNumber       String?   @map("hallmark_number") @db.VarChar(50)
+  huid                 String?   @db.VarChar(20)
+  // Status
+  status               String    @default("in_stock") @db.VarChar(20)
+  location             String?   @db.VarChar(100)
+  // Soft delete
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz()
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  karigar      Karigar?      @relation(fields: [karigarId], references: [id])
+  invoiceItems InvoiceItem[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, metalType, karat])
+  @@index([tenantId, tagNumber])
+  @@index([tenantId, barcode])
+  @@map("inventory_items")
+}
+
+model DailyRate {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  rateDate    DateTime @map("rate_date") @db.Date
+  metalType   String   @map("metal_type") @db.VarChar(20)
+  karat       String?  @db.VarChar(10)
+  ratePerGram Decimal  @map("rate_per_gram") @db.Decimal(10, 2)
+  source      String   @default("manual") @db.VarChar(50)
+  setBy       String?  @map("set_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User?  @relation("RateSetBy", fields: [setBy], references: [id])
+
+  @@unique([tenantId, rateDate, metalType, karat])
+  @@map("daily_rates")
+}
+
+model Karigar {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  name           String   @db.VarChar(200)
+  phone          String?  @db.VarChar(15)
+  specialization String?  @db.VarChar(100)
+  address        String?
+  balance        Decimal  @default(0) @db.Decimal(12, 2)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  items  InventoryItem[]
+
+  @@index([tenantId])
+  @@map("karigars")
+}
+
+// ==================
+// BILLING & INVOICES
+// ==================
+
+model Invoice {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  invoiceNumber      String    @map("invoice_number") @db.VarChar(50)
+  invoiceDate        DateTime  @default(now()) @map("invoice_date") @db.Date
+  customerId         String?   @map("customer_id") @db.Uuid
+  // Customer snapshot
+  customerName       String?   @map("customer_name") @db.VarChar(200)
+  customerPhone      String?   @map("customer_phone") @db.VarChar(15)
+  customerGstin      String?   @map("customer_gstin") @db.VarChar(20)
+  // Type
+  invoiceType        String    @default("sale") @map("invoice_type") @db.VarChar(20)
+  // Totals
+  subtotal           Decimal   @db.Decimal(14, 2)
+  totalMakingCharges Decimal   @default(0) @map("total_making_charges") @db.Decimal(12, 2)
+  totalStoneValue    Decimal   @default(0) @map("total_stone_value") @db.Decimal(12, 2)
+  discountAmount     Decimal   @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  discountPercent    Decimal?  @map("discount_percent") @db.Decimal(5, 2)
+  // Old gold exchange
+  oldGoldWeight      Decimal   @default(0) @map("old_gold_weight") @db.Decimal(10, 3)
+  oldGoldKarat       String?   @map("old_gold_karat") @db.VarChar(10)
+  oldGoldRate        Decimal?  @map("old_gold_rate") @db.Decimal(10, 2)
+  oldGoldValue       Decimal   @default(0) @map("old_gold_value") @db.Decimal(12, 2)
+  // Tax
+  taxableAmount      Decimal   @map("taxable_amount") @db.Decimal(14, 2)
+  cgstPercent        Decimal   @default(1.5) @map("cgst_percent") @db.Decimal(5, 2)
+  cgstAmount         Decimal   @default(0) @map("cgst_amount") @db.Decimal(12, 2)
+  sgstPercent        Decimal   @default(1.5) @map("sgst_percent") @db.Decimal(5, 2)
+  sgstAmount         Decimal   @default(0) @map("sgst_amount") @db.Decimal(12, 2)
+  igstPercent        Decimal   @default(0) @map("igst_percent") @db.Decimal(5, 2)
+  igstAmount         Decimal   @default(0) @map("igst_amount") @db.Decimal(12, 2)
+  totalTax           Decimal   @default(0) @map("total_tax") @db.Decimal(12, 2)
+  // Grand total
+  grandTotal         Decimal   @map("grand_total") @db.Decimal(14, 2)
+  roundOff           Decimal   @default(0) @map("round_off") @db.Decimal(5, 2)
+  // Payment
+  paymentMode        String?   @map("payment_mode") @db.VarChar(30)
+  amountPaid         Decimal   @default(0) @map("amount_paid") @db.Decimal(14, 2)
+  balanceDue         Decimal   @default(0) @map("balance_due") @db.Decimal(14, 2)
+  // Metadata
+  notes              String?
+  createdBy          String?   @map("created_by") @db.Uuid
+  // Soft delete
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz()
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant   Tenant        @relation(fields: [tenantId], references: [id])
+  customer Customer?     @relation(fields: [customerId], references: [id])
+  creator  User?         @relation("InvoiceCreatedBy", fields: [createdBy], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@index([tenantId])
+  @@index([tenantId, customerId])
+  @@index([tenantId, invoiceDate])
+  @@index([tenantId, invoiceNumber])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id              String   @id @default(uuid()) @db.Uuid
+  invoiceId       String   @map("invoice_id") @db.Uuid
+  inventoryItemId String?  @map("inventory_item_id") @db.Uuid
+  // Item snapshot
+  itemName        String?  @map("item_name") @db.VarChar(200)
+  quantity        Int      @default(1)
+  metalType       String?  @map("metal_type") @db.VarChar(20)
+  karat           String?  @db.VarChar(10)
+  grossWeight     Decimal? @map("gross_weight") @db.Decimal(10, 3)
+  netWeight       Decimal? @map("net_weight") @db.Decimal(10, 3)
+  ratePerGram     Decimal? @map("rate_per_gram") @db.Decimal(10, 2)
+  metalValue      Decimal? @map("metal_value") @db.Decimal(12, 2)
+  makingCharges   Decimal? @map("making_charges") @db.Decimal(10, 2)
+  stoneValue      Decimal  @default(0) @map("stone_value") @db.Decimal(12, 2)
+  wastageValue    Decimal  @default(0) @map("wastage_value") @db.Decimal(10, 2)
+  hallmarkNumber  String?  @map("hallmark_number") @db.VarChar(50)
+  huid            String?  @db.VarChar(20)
+  itemTotal       Decimal  @map("item_total") @db.Decimal(12, 2)
+
+  // Relations
+  invoice       Invoice        @relation(fields: [invoiceId], references: [id])
+  inventoryItem InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+model Payment {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  invoiceId       String?  @map("invoice_id") @db.Uuid
+  customerId      String?  @map("customer_id") @db.Uuid
+  amount          Decimal  @db.Decimal(14, 2)
+  paymentMode     String   @map("payment_mode") @db.VarChar(30)
+  paymentDate     DateTime @default(now()) @map("payment_date") @db.Date
+  referenceNumber String?  @map("reference_number") @db.VarChar(100)
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  invoice  Invoice?  @relation(fields: [invoiceId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([tenantId])
+  @@map("payments")
+}
+
+// ==================
+// MORTGAGE / GOLD LOANS
+// ==================
+
+model MortgageLoan {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @map("tenant_id") @db.Uuid
+  loanNumber            String    @map("loan_number") @db.VarChar(50)
+  customerId            String?   @map("customer_id") @db.Uuid
+  // Customer snapshot
+  customerName          String    @map("customer_name") @db.VarChar(200)
+  customerPhone         String?   @map("customer_phone") @db.VarChar(15)
+  customerAddress       String?   @map("customer_address")
+  aadhaarNumber         String?   @map("aadhaar_number") @db.VarChar(20)
+  panNumber             String?   @map("pan_number") @db.VarChar(15)
+  photoIdUrl            String?   @map("photo_id_url")
+  customerPhotoUrl      String?   @map("customer_photo_url")
+  // Loan terms
+  principalAmount       Decimal   @map("principal_amount") @db.Decimal(14, 2)
+  interestRateMonthly   Decimal   @map("interest_rate_monthly") @db.Decimal(5, 2)
+  monthlyInterestAmount Decimal   @default(0) @map("monthly_interest_amount") @db.Decimal(12, 2)
+  loanDate              DateTime  @default(now()) @map("loan_date") @db.Date
+  dueDate               DateTime? @map("due_date") @db.Date
+  // Running totals
+  totalInterestPaid     Decimal   @default(0) @map("total_interest_paid") @db.Decimal(12, 2)
+  totalPrincipalPaid    Decimal   @default(0) @map("total_principal_paid") @db.Decimal(14, 2)
+  pendingInterestAmount Decimal   @default(0) @map("pending_interest_amount") @db.Decimal(12, 2)
+  outstandingPrincipal  Decimal   @map("outstanding_principal") @db.Decimal(14, 2)
+  totalPayableAmount    Decimal   @default(0) @map("total_payable_amount") @db.Decimal(14, 2)
+  // Status
+  status                String    @default("active") @db.VarChar(20)
+  notes                 String?
+  closedAt              DateTime? @map("closed_at") @db.Timestamptz()
+  closedBy              String?   @map("closed_by") @db.Uuid
+  createdBy             String?   @map("created_by") @db.Uuid
+  // Soft delete
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz()
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  tenant    Tenant             @relation(fields: [tenantId], references: [id])
+  customer  Customer?          @relation(fields: [customerId], references: [id])
+  creator   User?              @relation("MortgageLoanCreatedBy", fields: [createdBy], references: [id])
+  closer    User?              @relation("MortgageLoanClosedBy", fields: [closedBy], references: [id])
+  ornaments MortgageOrnament[]
+  payments  MortgagePayment[]
+
+  @@unique([tenantId, loanNumber])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@index([tenantId, loanDate])
+  @@map("mortgage_loans")
+}
+
+model MortgageOrnament {
+  id             String   @id @default(uuid()) @db.Uuid
+  loanId         String   @map("loan_id") @db.Uuid
+  ornamentType   String   @map("ornament_type") @db.VarChar(100)
+  purity         String?  @db.VarChar(20)
+  grossWeight    Decimal  @map("gross_weight") @db.Decimal(10, 3)
+  netWeight      Decimal  @map("net_weight") @db.Decimal(10, 3)
+  estimatedValue Decimal? @map("estimated_value") @db.Decimal(14, 2)
+  description    String?
+  photos         Json?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  loan MortgageLoan @relation(fields: [loanId], references: [id])
+
+  @@index([loanId])
+  @@map("mortgage_ornaments")
+}
+
+model MortgagePayment {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  loanId          String   @map("loan_id") @db.Uuid
+  paymentDate     DateTime @default(now()) @map("payment_date") @db.Date
+  amount          Decimal  @db.Decimal(14, 2)
+  paymentType     String   @default("interest") @map("payment_type") @db.VarChar(20)
+  paymentMode     String?  @map("payment_mode") @db.VarChar(30)
+  receiptNumber   String?  @map("receipt_number") @db.VarChar(50)
+  referenceNumber String?  @map("reference_number") @db.VarChar(100)
+  notes           String?
+  collectedBy     String?  @map("collected_by") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  loan      MortgageLoan @relation(fields: [loanId], references: [id])
+  collector User?        @relation("MortgagePaymentCollectedBy", fields: [collectedBy], references: [id])
+
+  @@unique([tenantId, receiptNumber])
+  @@index([tenantId])
+  @@index([loanId])
+  @@index([tenantId, paymentDate])
+  @@map("mortgage_payments")
+}
+
+// ==================
+// SCHEMES
+// ==================
+
+model Scheme {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  schemeName       String    @map("scheme_name") @db.VarChar(200)
+  durationMonths   Int       @map("duration_months")
+  monthlyAmount    Decimal?  @map("monthly_amount") @db.Decimal(10, 2)
+  bonusDescription String?   @map("bonus_description")
+  bonusType        String?   @map("bonus_type") @db.VarChar(20)
+  bonusValue       Decimal?  @map("bonus_value") @db.Decimal(10, 2)
+  isActive         Boolean   @default(true) @map("is_active")
+  startDate        DateTime? @map("start_date") @db.Date
+  endDate          DateTime? @map("end_date") @db.Date
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant      Tenant             @relation(fields: [tenantId], references: [id])
+  enrollments SchemeEnrollment[]
+
+  @@index([tenantId])
+  @@map("schemes")
+}
+
+model SchemeEnrollment {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  schemeId         String    @map("scheme_id") @db.Uuid
+  customerId       String    @map("customer_id") @db.Uuid
+  enrollmentNumber String?   @map("enrollment_number") @db.VarChar(50)
+  enrollmentDate   DateTime  @default(now()) @map("enrollment_date") @db.Date
+  monthlyAmount    Decimal   @map("monthly_amount") @db.Decimal(10, 2)
+  totalMonths      Int       @map("total_months")
+  monthsPaid       Int       @default(0) @map("months_paid")
+  totalPaid        Decimal   @default(0) @map("total_paid") @db.Decimal(12, 2)
+  maturityDate     DateTime? @map("maturity_date") @db.Date
+  maturityValue    Decimal?  @map("maturity_value") @db.Decimal(12, 2)
+  status           String    @default("active") @db.VarChar(20)
+  notes            String?
+  // Soft delete
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz()
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant   Tenant          @relation(fields: [tenantId], references: [id])
+  scheme   Scheme          @relation(fields: [schemeId], references: [id])
+  customer Customer        @relation(fields: [customerId], references: [id])
+  payments SchemePayment[]
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([tenantId, status])
+  @@map("scheme_enrollments")
+}
+
+model SchemePayment {
+  id            String   @id @default(uuid()) @db.Uuid
+  enrollmentId  String   @map("enrollment_id") @db.Uuid
+  paymentDate   DateTime @default(now()) @map("payment_date") @db.Date
+  amount        Decimal  @db.Decimal(10, 2)
+  monthNumber   Int      @map("month_number")
+  paymentMode   String?  @map("payment_mode") @db.VarChar(30)
+  receiptNumber String?  @map("receipt_number") @db.VarChar(50)
+  collectedBy   String?  @map("collected_by") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  enrollment SchemeEnrollment @relation(fields: [enrollmentId], references: [id])
+  collector  User?            @relation("PaymentCollectedBy", fields: [collectedBy], references: [id])
+
+  @@index([enrollmentId])
+  @@map("scheme_payments")
+}
+
+// ==================
+// PERSONAL LEDGER
+// ==================
+
+model LedgerParty {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  name           String    @db.VarChar(200)
+  phone          String?   @db.VarChar(15)
+  address        String?
+  partyType      String    @default("general") @map("party_type") @db.VarChar(30)
+  notes          String?
+  currentBalance Decimal   @default(0) @map("current_balance") @db.Decimal(14, 2)
+  // Soft delete
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  tenant  Tenant        @relation(fields: [tenantId], references: [id])
+  entries LedgerEntry[]
+
+  @@index([tenantId])
+  @@map("ledger_parties")
+}
+
+model LedgerEntry {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @map("tenant_id") @db.Uuid
+  partyId               String    @map("party_id") @db.Uuid
+  entryDate             DateTime  @default(now()) @map("entry_date") @db.Date
+  entryType             String    @map("entry_type") @db.VarChar(20)
+  amount                Decimal   @db.Decimal(14, 2)
+  // Interest
+  principalAmount       Decimal?  @map("principal_amount") @db.Decimal(14, 2)
+  interestRateMonthly   Decimal?  @map("interest_rate_monthly") @db.Decimal(5, 2)
+  interestAmount        Decimal?  @map("interest_amount") @db.Decimal(12, 2)
+  // Collateral
+  collateralDescription String?   @map("collateral_description")
+  collateralWeight      Decimal?  @map("collateral_weight") @db.Decimal(10, 3)
+  collateralPhotos      Json?     @map("collateral_photos")
+  // Dates
+  dueDate               DateTime? @map("due_date") @db.Date
+  settledAt             DateTime? @map("settled_at") @db.Timestamptz()
+  // Status
+  status                String    @default("open") @db.VarChar(20)
+  notes                 String?
+  createdBy             String?   @map("created_by") @db.Uuid
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant  Tenant      @relation(fields: [tenantId], references: [id])
+  party   LedgerParty @relation(fields: [partyId], references: [id])
+  creator User?       @relation("EntryCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([partyId])
+  @@index([tenantId, status])
+  @@index([tenantId, entryDate])
+  @@map("ledger_entries")
+}
+
+// ==================
+// NOTIFICATIONS
+// ==================
+
+model NotificationTemplate {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  templateName    String?  @map("template_name") @db.VarChar(100)
+  channel         String   @default("whatsapp") @db.VarChar(20)
+  messageTemplate String   @map("message_template")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant Tenant            @relation(fields: [tenantId], references: [id])
+  logs   NotificationLog[]
+
+  @@index([tenantId])
+  @@map("notification_templates")
+}
+
+model NotificationLog {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  customerId     String?   @map("customer_id") @db.Uuid
+  channel        String?   @db.VarChar(20)
+  templateId     String?   @map("template_id") @db.Uuid
+  messageContent String?   @map("message_content")
+  phone          String?   @db.VarChar(15)
+  status         String    @default("queued") @db.VarChar(20)
+  sentAt         DateTime? @map("sent_at") @db.Timestamptz()
+  errorMessage   String?   @map("error_message")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant   Tenant                @relation(fields: [tenantId], references: [id])
+  customer Customer?             @relation(fields: [customerId], references: [id])
+  template NotificationTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("notification_log")
+}
+
+// ==================
+// AUDIT LOG
+// ==================
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String   @db.VarChar(50)
+  entityType String?  @map("entity_type") @db.VarChar(50)
+  entityId   String?  @map("entity_id") @db.Uuid
+  oldValues  Json?    @map("old_values")
+  newValues  Json?    @map("new_values")
+  ipAddress  String?  @map("ip_address") @db.VarChar(50)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("audit_log")
+}

@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+echo "Running SwarnaLekh pre-commit checks..."
+pnpm verify:precommit

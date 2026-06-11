@@ -1,0 +1,3 @@
+ALTER TABLE "inventory_items"
+ADD COLUMN "stock_type" VARCHAR(20) NOT NULL DEFAULT 'unique',
+ADD COLUMN "quantity" INTEGER NOT NULL DEFAULT 1;

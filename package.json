@@ -1,0 +1,41 @@
+{
+  "name": "swarnalekh",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SwarnaLekh — Multi-tenant jewellery shop management SaaS",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:api": "pnpm --dir apps/api start:dev",
+    "dev:web": "cd apps/mobile && flutter run -d chrome",
+    "dev:web:local": "dotenv -e apps/api/.env -- bash -lc 'cd apps/mobile && flutter run -d chrome --dart-define=SUPABASE_URL=\"$SUPABASE_URL\" --dart-define=SUPABASE_ANON_KEY=\"$SUPABASE_ANON_KEY\" --dart-define=API_BASE_URL=\"${API_BASE_URL:-http://localhost:3000/api/v1}\"'",
+    "dev:full": "concurrently -k -n api,web -c blue,yellow \"pnpm dev:api\" \"pnpm dev:web\"",
+    "dev:full:local": "concurrently -k -n api,web -c blue,yellow \"pnpm dev:api\" \"pnpm dev:web:local\"",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "format:check": "bash -lc 'set -euo pipefail; files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E \"\\.(ts|tsx|js|json|md)$\" || true); if [ -n \"$files\" ]; then printf \"%s\\n\" \"$files\" | xargs ./node_modules/.bin/prettier --check --ignore-unknown; else echo \"No staged Prettier files to check.\"; fi; dart format --set-exit-if-changed apps/mobile/lib apps/mobile/test'",
+    "mobile:analyze": "cd apps/mobile && flutter analyze",
+    "mobile:test": "cd apps/mobile && flutter test",
+    "mobile:build": "cd apps/mobile && flutter build web --dart-define=SUPABASE_URL=https://example.supabase.co --dart-define=SUPABASE_ANON_KEY=precommit-placeholder --dart-define=API_BASE_URL=http://localhost:3000/api/v1",
+    "verify:precommit": "pnpm format:check && pnpm test && pnpm build && pnpm mobile:analyze && pnpm mobile:test && pnpm mobile:build",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "vercel:build:api": "pnpm --filter api prisma:generate && pnpm --filter api build",
+    "vercel:dev:api": "pnpm --filter api start:dev",
+    "railway:build:api": "pnpm --filter api prisma:generate && pnpm --filter api build",
+    "railway:start:api": "pnpm --filter api start:prod",
+    "railway:migrate:api": "pnpm --dir apps/api prisma migrate deploy"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^8.0.0",
+    "turbo": "^2.4.0",
+    "prettier": "^3.4.0"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  }
+}
