@@ -6,6 +6,7 @@ import 'package:swarnbook/features/auth/data/auth_provider.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 
 class RegistrationScreen extends ConsumerStatefulWidget {
   const RegistrationScreen({super.key});
@@ -24,6 +25,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    FocusManager.instance.primaryFocus?.unfocus();
 
     setState(() => _isLoading = true);
     try {
@@ -50,81 +52,108 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   }
 
   @override
+  void dispose() {
+    _shopNameController.dispose();
+    _ownerNameController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(l10n.registrationSetupShop),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+      body: KeyboardAwareScrollView(
+        centerContent: true,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xl,
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
           child: Container(
-            width: 500,
+            width: double.infinity,
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
               color: AppColors.elev(context),
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: AppColors.brd(context)),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.registrationAlmostThere,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    l10n.registrationSubtitle,
-                    style: TextStyle(color: AppColors.text3(context)),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  TextFormField(
-                    controller: _shopNameController,
-                    decoration: InputDecoration(
-                      labelText: l10n.registrationShopName,
-                      border: const OutlineInputBorder(),
+            child: AutofillGroup(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      l10n.registrationAlmostThere,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                      textAlign: TextAlign.center,
                     ),
-                    validator: (v) => v!.isEmpty
-                        ? '${l10n.registrationShopName} is required'
-                        : null,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _ownerNameController,
-                    decoration: InputDecoration(
-                      labelText: l10n.registrationOwnerName,
-                      border: const OutlineInputBorder(),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      l10n.registrationSubtitle,
+                      style: TextStyle(color: AppColors.text3(context)),
+                      textAlign: TextAlign.center,
                     ),
-                    validator: (v) => v!.isEmpty
-                        ? '${l10n.registrationOwnerName} is required'
-                        : null,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _cityController,
-                    decoration: InputDecoration(
-                      labelText: l10n.registrationCityOptional,
-                      border: const OutlineInputBorder(),
+                    const SizedBox(height: AppSpacing.xl),
+                    TextFormField(
+                      controller: _shopNameController,
+                      decoration: InputDecoration(
+                        labelText: l10n.registrationShopName,
+                        border: const OutlineInputBorder(),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.organizationName],
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).nextFocus(),
+                      validator: (v) => v!.isEmpty
+                          ? '${l10n.registrationShopName} is required'
+                          : null,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  GoldButton(
-                    label: l10n.registrationCompleteSetup,
-                    icon: Icons.check_circle_outline_rounded,
-                    isLoading: _isLoading,
-                    onPressed: _submit,
-                  ),
-                ],
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _ownerNameController,
+                      decoration: InputDecoration(
+                        labelText: l10n.registrationOwnerName,
+                        border: const OutlineInputBorder(),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.name],
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).nextFocus(),
+                      validator: (v) => v!.isEmpty
+                          ? '${l10n.registrationOwnerName} is required'
+                          : null,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _cityController,
+                      decoration: InputDecoration(
+                        labelText: l10n.registrationCityOptional,
+                        border: const OutlineInputBorder(),
+                      ),
+                      textInputAction: TextInputAction.done,
+                      autofillHints: const [AutofillHints.addressCity],
+                      onFieldSubmitted: (_) => _submit(),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    GoldButton(
+                      label: l10n.registrationCompleteSetup,
+                      icon: Icons.check_circle_outline_rounded,
+                      isLoading: _isLoading,
+                      onPressed: _submit,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

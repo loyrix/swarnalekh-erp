@@ -5,6 +5,7 @@ import 'package:swarnbook/core/localization/locale_notifier.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/core/router/app_router.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,9 +48,17 @@ class SwarnaLekhApp extends ConsumerWidget {
               supportedLocales: AppLocalizations.supportedLocales,
               routerConfig: router,
               builder: (context, child) {
-                return ColoredBox(
-                  color: AppColors.bg(context),
-                  child: child ?? const SizedBox.shrink(),
+                return ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context).copyWith(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                  ),
+                  child: KeyboardDismissRegion(
+                    child: ColoredBox(
+                      color: AppColors.bg(context),
+                      child: child ?? const SizedBox.shrink(),
+                    ),
+                  ),
                 );
               },
             );

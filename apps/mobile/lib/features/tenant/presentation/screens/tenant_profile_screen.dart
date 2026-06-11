@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/auth/application/app_permissions.dart';
+import 'package:swarnbook/features/tenant/application/tenant_profile_payload.dart';
 import 'package:swarnbook/features/tenant/data/models/tenant_profile.dart';
 import 'package:swarnbook/features/tenant/data/repositories/tenant_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
@@ -105,34 +106,20 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
 
     setState(() => _isSaving = true);
     try {
-      final profile = await _repository.updateProfile({
-        'shopName': _shopNameController.text.trim(),
-        'ownerName': _ownerNameController.text.trim(),
-        'email': _emailController.text.trim().isEmpty
-            ? null
-            : _emailController.text.trim(),
-        'phone': _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
-        'address': _addressController.text.trim().isEmpty
-            ? null
-            : _addressController.text.trim(),
-        'city': _cityController.text.trim().isEmpty
-            ? null
-            : _cityController.text.trim(),
-        'state': _stateController.text.trim().isEmpty
-            ? null
-            : _stateController.text.trim(),
-        'pincode': _pincodeController.text.trim().isEmpty
-            ? null
-            : _pincodeController.text.trim(),
-        'gstin': _gstinController.text.trim().isEmpty
-            ? null
-            : _gstinController.text.trim(),
-        'pan': _panController.text.trim().isEmpty
-            ? null
-            : _panController.text.trim(),
-      });
+      final profile = await _repository.updateProfile(
+        TenantProfileUpdateInput(
+          shopName: _shopNameController.text,
+          ownerName: _ownerNameController.text,
+          email: _emailController.text,
+          phone: _phoneController.text,
+          address: _addressController.text,
+          city: _cityController.text,
+          state: _stateController.text,
+          pincode: _pincodeController.text,
+          gstin: _gstinController.text,
+          pan: _panController.text,
+        ),
+      );
 
       _applyProfile(profile);
       if (mounted) {
@@ -215,6 +202,8 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                                 l10n.shopProfileFieldShopName,
                                 requiredMessage:
                                     l10n.validationShopNameRequired,
+                                textInputAction: TextInputAction.next,
+                                textCapitalization: TextCapitalization.words,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
@@ -222,47 +211,69 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                                 l10n.shopProfileFieldOwnerName,
                                 requiredMessage:
                                     l10n.validationOwnerNameRequired,
+                                textInputAction: TextInputAction.next,
+                                textCapitalization: TextCapitalization.words,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _emailController,
                                 l10n.shopProfileFieldEmail,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _phoneController,
                                 l10n.shopProfileFieldPhone,
+                                keyboardType: TextInputType.phone,
+                                textInputAction: TextInputAction.next,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _addressController,
                                 l10n.shopProfileFieldAddress,
                                 maxLines: 3,
+                                keyboardType: TextInputType.streetAddress,
+                                textInputAction: TextInputAction.newline,
+                                textCapitalization:
+                                    TextCapitalization.sentences,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _cityController,
                                 l10n.shopProfileFieldCity,
+                                textInputAction: TextInputAction.next,
+                                textCapitalization: TextCapitalization.words,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _stateController,
                                 l10n.shopProfileFieldState,
+                                textInputAction: TextInputAction.next,
+                                textCapitalization: TextCapitalization.words,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _pincodeController,
                                 l10n.shopProfileFieldPincode,
+                                keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.next,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _gstinController,
                                 l10n.shopProfileFieldGstin,
+                                textInputAction: TextInputAction.next,
+                                textCapitalization:
+                                    TextCapitalization.characters,
                               ),
                               const SizedBox(height: AppSpacing.md),
                               _buildField(
                                 _panController,
                                 l10n.shopProfileFieldPan,
+                                textInputAction: TextInputAction.done,
+                                textCapitalization:
+                                    TextCapitalization.characters,
                               ),
                             ],
                           ),
@@ -359,11 +370,17 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
     String label, {
     int maxLines = 1,
     String? requiredMessage,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
       enabled: _canManageProfile,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      textCapitalization: textCapitalization,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),

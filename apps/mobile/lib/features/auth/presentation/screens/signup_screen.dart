@@ -7,6 +7,7 @@ import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/brand_mark.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -58,6 +59,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
 
   void _signup() async {
     if (!_formKey.currentState!.validate()) return;
+    FocusManager.instance.primaryFocus?.unfocus();
 
     setState(() => _isLoading = true);
     try {
@@ -102,9 +104,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // Background
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -124,16 +126,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
               ),
             ),
           ),
-          // Content
-          Center(
+          KeyboardAwareScrollView(
+            centerContent: true,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.xl,
+            ),
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: SlideTransition(
                 position: _slideAnimation,
-                child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
                   child: Container(
-                    width: 420,
-                    margin: const EdgeInsets.all(AppSpacing.lg),
+                    width: double.infinity,
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     decoration: BoxDecoration(
                       color: AppColors.surf(context),
@@ -145,169 +151,177 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                       ),
                       boxShadow: AppShadows.forElevated(context),
                     ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Center(child: BrandMark(size: 68, padding: 6)),
-                          const SizedBox(height: AppSpacing.lg),
-
-                          Text(
-                            l10n.signupTitle,
-                            style: Theme.of(context).textTheme.displaySmall,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Text(
-                            l10n.signupSubtitle,
-                            style: TextStyle(
-                              color: AppColors.text3(context),
-                              fontSize: 14,
+                    child: AutofillGroup(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Center(
+                              child: BrandMark(size: 68, padding: 6),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-
-                          // Email
-                          _buildLabel(l10n.authEmailAddress),
-                          const SizedBox(height: AppSpacing.sm),
-                          TextFormField(
-                            controller: _emailController,
-                            decoration: InputDecoration(
-                              hintText: 'you@example.com',
-                              prefixIcon: Icon(
-                                Icons.email_outlined,
-                                color: AppColors.text3(context),
-                                size: 20,
-                              ),
-                            ),
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (v) => v!.isEmpty || !v.contains('@')
-                                ? l10n.validationValidEmail
-                                : null,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-
-                          // Password
-                          _buildLabel(l10n.authPassword),
-                          const SizedBox(height: AppSpacing.sm),
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: InputDecoration(
-                              hintText: '••••••••',
-                              prefixIcon: Icon(
-                                Icons.lock_outline_rounded,
-                                color: AppColors.text3(context),
-                                size: 20,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                  color: AppColors.text3(context),
-                                  size: 20,
-                                ),
-                                onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword,
-                                ),
-                              ),
-                            ),
-                            obscureText: _obscurePassword,
-                            validator: (v) => v!.length < 6
-                                ? l10n.validationPasswordMin
-                                : null,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-
-                          // Confirm password
-                          _buildLabel(l10n.authConfirmPassword),
-                          const SizedBox(height: AppSpacing.sm),
-                          TextFormField(
-                            controller: _confirmPasswordController,
-                            decoration: InputDecoration(
-                              hintText: '••••••••',
-                              prefixIcon: Icon(
-                                Icons.lock_outline_rounded,
-                                color: AppColors.text3(context),
-                                size: 20,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscureConfirm
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                  color: AppColors.text3(context),
-                                  size: 20,
-                                ),
-                                onPressed: () => setState(
-                                  () => _obscureConfirm = !_obscureConfirm,
-                                ),
-                              ),
-                            ),
-                            obscureText: _obscureConfirm,
-                            validator: (v) => v != _passwordController.text
-                                ? l10n.validationPasswordsNoMatch
-                                : null,
-                          ),
-                          const SizedBox(height: AppSpacing.lg + AppSpacing.sm),
-
-                          // Sign up button
-                          GoldButton(
-                            label: l10n.authCreateAccount,
-                            icon: Icons.person_add_rounded,
-                            isLoading: _isLoading,
-                            onPressed: _signup,
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-
-                          // Login link
-                          TextButton(
-                            onPressed: () => context.go('/login'),
-                            child: RichText(
+                            const SizedBox(height: AppSpacing.lg),
+                            Text(
+                              l10n.signupTitle,
+                              style: Theme.of(context).textTheme.displaySmall,
                               textAlign: TextAlign.center,
-                              text: TextSpan(
-                                text: '${l10n.authAlreadyHaveAccount} ',
-                                style: TextStyle(
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              l10n.signupSubtitle,
+                              style: TextStyle(
+                                color: AppColors.text3(context),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            _buildLabel(l10n.authEmailAddress),
+                            const SizedBox(height: AppSpacing.sm),
+                            TextFormField(
+                              controller: _emailController,
+                              decoration: InputDecoration(
+                                hintText: 'you@example.com',
+                                prefixIcon: Icon(
+                                  Icons.email_outlined,
                                   color: AppColors.text3(context),
-                                  fontSize: 13,
+                                  size: 20,
                                 ),
-                                children: [
-                                  TextSpan(
-                                    text: l10n.authSignIn,
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                              ),
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.email],
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              validator: (v) => v!.isEmpty || !v.contains('@')
+                                  ? l10n.validationValidEmail
+                                  : null,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            _buildLabel(l10n.authPassword),
+                            const SizedBox(height: AppSpacing.sm),
+                            TextFormField(
+                              controller: _passwordController,
+                              decoration: InputDecoration(
+                                hintText: '••••••••',
+                                prefixIcon: Icon(
+                                  Icons.lock_outline_rounded,
+                                  color: AppColors.text3(context),
+                                  size: 20,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    color: AppColors.text3(context),
+                                    size: 20,
                                   ),
-                                ],
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
+                                ),
+                              ),
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.newPassword],
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              validator: (v) => v!.length < 6
+                                  ? l10n.validationPasswordMin
+                                  : null,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            _buildLabel(l10n.authConfirmPassword),
+                            const SizedBox(height: AppSpacing.sm),
+                            TextFormField(
+                              controller: _confirmPasswordController,
+                              decoration: InputDecoration(
+                                hintText: '••••••••',
+                                prefixIcon: Icon(
+                                  Icons.lock_outline_rounded,
+                                  color: AppColors.text3(context),
+                                  size: 20,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscureConfirm
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    color: AppColors.text3(context),
+                                    size: 20,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _obscureConfirm = !_obscureConfirm,
+                                  ),
+                                ),
+                              ),
+                              obscureText: _obscureConfirm,
+                              textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.newPassword],
+                              onFieldSubmitted: (_) => _signup(),
+                              validator: (v) => v != _passwordController.text
+                                  ? l10n.validationPasswordsNoMatch
+                                  : null,
+                            ),
+                            const SizedBox(
+                              height: AppSpacing.lg + AppSpacing.sm,
+                            ),
+                            GoldButton(
+                              label: l10n.authCreateAccount,
+                              icon: Icons.person_add_rounded,
+                              isLoading: _isLoading,
+                              onPressed: _signup,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            TextButton(
+                              onPressed: () => context.go('/login'),
+                              child: RichText(
+                                textAlign: TextAlign.center,
+                                text: TextSpan(
+                                  text: '${l10n.authAlreadyHaveAccount} ',
+                                  style: TextStyle(
+                                    color: AppColors.text3(context),
+                                    fontSize: 13,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: l10n.authSignIn,
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-
-                          const SizedBox(height: AppSpacing.md),
-                          // Trust badge
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.shield_outlined,
-                                size: 14,
-                                color: AppColors.success.withValues(alpha: 0.7),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                l10n.authSecureConnection,
-                                style: TextStyle(
-                                  color: AppColors.text3(context),
-                                  fontSize: 11,
+                            const SizedBox(height: AppSpacing.md),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.shield_outlined,
+                                  size: 14,
+                                  color: AppColors.success.withValues(
+                                    alpha: 0.7,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                const SizedBox(width: 6),
+                                Text(
+                                  l10n.authSecureConnection,
+                                  style: TextStyle(
+                                    color: AppColors.text3(context),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

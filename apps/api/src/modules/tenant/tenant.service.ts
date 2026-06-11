@@ -92,9 +92,11 @@ export class TenantService {
   }
 
   async updateProfile(tenantId: string, dto: UpdateTenantDto) {
-    return this.prisma.tenant.update({
+    await this.prisma.tenant.update({
       where: { id: tenantId },
       data: dto,
     });
+
+    return this.getProfile(tenantId);
   }
 }

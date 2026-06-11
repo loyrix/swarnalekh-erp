@@ -15,6 +15,7 @@ class AppShell extends ConsumerStatefulWidget {
   final String currentTitle;
   final Function(int) onNavigate;
   final Future<String?> Function()? loadRole;
+  final Future<CurrentUserContext> Function()? loadUserContext;
   final Future<void> Function()? signOut;
 
   const AppShell({
@@ -24,6 +25,7 @@ class AppShell extends ConsumerStatefulWidget {
     required this.currentTitle,
     required this.onNavigate,
     this.loadRole,
+    this.loadUserContext,
     this.signOut,
   });
 
@@ -34,18 +36,44 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   bool _isExpanded = true;
   String? _role;
+  String _profileInitials = 'SL';
 
   @override
   void initState() {
     super.initState();
-    _loadRole();
+    _loadUserContext();
   }
 
-  Future<void> _loadRole() async {
+  Future<void> _loadUserContext() async {
     try {
-      final role =
-          await (widget.loadRole ?? () => fetchCurrentUserRole(ApiClient()))();
-      if (mounted) setState(() => _role = role);
+      if (widget.loadUserContext != null) {
+        final userContext = await widget.loadUserContext!();
+        if (mounted) {
+          setState(() {
+            _role = userContext.role;
+            _profileInitials = profileInitialsFromName(
+              userContext.shopName ?? userContext.userName,
+            );
+          });
+        }
+        return;
+      }
+
+      if (widget.loadRole != null) {
+        final role = await widget.loadRole!();
+        if (mounted) setState(() => _role = role);
+        return;
+      }
+
+      final userContext = await fetchCurrentUserContext(ApiClient());
+      if (mounted) {
+        setState(() {
+          _role = userContext.role;
+          _profileInitials = profileInitialsFromName(
+            userContext.shopName ?? userContext.userName,
+          );
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _role = null);
     }
@@ -255,6 +283,9 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Widget _buildTopBar(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showSearch = screenWidth >= 1120;
+    final showSecondaryActions = screenWidth >= 980;
     return Container(
       height: isWide ? 64 : 56,
       padding: EdgeInsets.symmetric(
@@ -288,7 +319,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             ),
           ),
           // Search
-          if (isWide) ...[
+          if (showSearch) ...[
             Container(
               width: 280,
               height: 38,
@@ -332,9 +363,9 @@ class _AppShellState extends ConsumerState<AppShell> {
             onPressed: () => themeNotifier.toggle(),
             tooltip: 'Toggle theme',
           ),
-          if (isWide) const SizedBox(width: AppSpacing.xs),
+          if (showSecondaryActions) const SizedBox(width: AppSpacing.xs),
           // Notifications
-          if (isWide)
+          if (showSecondaryActions)
             IconButton(
               icon: Icon(
                 Icons.notifications_outlined,
@@ -343,7 +374,7 @@ class _AppShellState extends ConsumerState<AppShell> {
               onPressed: () {},
             ),
           SizedBox(width: isWide ? AppSpacing.sm : AppSpacing.xs),
-          _buildLanguageMenu(isWide),
+          _buildLanguageMenu(showSecondaryActions),
           SizedBox(width: isWide ? AppSpacing.sm : AppSpacing.xs),
           PopupMenuButton<_ProfileAction>(
             tooltip: l10n.pageShopProfile,
@@ -420,10 +451,10 @@ class _AppShellState extends ConsumerState<AppShell> {
                 gradient: AppColors.goldGradient,
                 borderRadius: BorderRadius.circular(AppRadius.full),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'RK',
-                  style: TextStyle(
+                  _profileInitials,
+                  style: const TextStyle(
                     color: AppColors.textOnPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 12,

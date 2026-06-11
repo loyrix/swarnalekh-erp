@@ -12,4 +12,10 @@ void main() {
     expect(isAdminRole('staff'), isFalse);
     expect(isStaffRole('staff'), isTrue);
   });
+
+  test('builds profile initials from shop names', () {
+    expect(profileInitialsFromName('Kundan Jewellers'), 'KJ');
+    expect(profileInitialsFromName('SwarnaLekh'), 'SW');
+    expect(profileInitialsFromName(''), 'SL');
+  });
 }

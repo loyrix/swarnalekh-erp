@@ -1,4 +1,5 @@
 import 'package:swarnbook/core/network/api_client.dart';
+import 'package:swarnbook/features/tenant/application/tenant_profile_payload.dart';
 import '../models/tenant_profile.dart';
 
 class TenantRepository {
@@ -9,8 +10,11 @@ class TenantRepository {
     return TenantProfile.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<TenantProfile> updateProfile(Map<String, dynamic> data) async {
-    final response = await _api.dio.put('/tenant/profile', data: data);
+  Future<TenantProfile> updateProfile(TenantProfileUpdateInput input) async {
+    final response = await _api.dio.put(
+      '/tenant/profile',
+      data: input.toJson(),
+    );
     return TenantProfile.fromJson(response.data as Map<String, dynamic>);
   }
 }

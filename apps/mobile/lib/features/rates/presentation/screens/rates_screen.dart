@@ -145,7 +145,8 @@ class _RatesScreenState extends State<RatesScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Padding(
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +180,10 @@ class _RatesScreenState extends State<RatesScreen> {
           const SizedBox(height: AppSpacing.xxl),
 
           if (_isLoading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
+            const SizedBox(
+              height: 320,
+              child: Center(child: CircularProgressIndicator()),
+            )
           else ...[
             Center(
               child: Container(

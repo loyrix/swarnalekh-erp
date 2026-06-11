@@ -91,4 +91,10 @@ export class UpdateTenantDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @ApiPropertyOptional({ example: '+919876543210' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(15)
+  phone?: string;
 }
