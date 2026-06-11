@@ -11,7 +11,7 @@ Deployment exists to serve the PDF-defined Jewellery ERP:
 - Flutter web/mobile app
 - NestJS API
 - PostgreSQL database through Prisma
-- Supabase Auth
+- Provider-neutral bearer JWT auth
 
 ## Backend Decision
 
@@ -45,12 +45,9 @@ Flutter should receive this through:
 API:
 
 - `DATABASE_URL`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `JWT_SECRET`
+- `DIRECT_URL`
+- `AUTH_JWT_SECRET`
 - `NODE_ENV`
-- `PORT`
 
 Flutter build:
 

@@ -1,10 +1,10 @@
 name: swarnbook
 description: SwarnaLekh — Multi-tenant jewellery shop management SaaS
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0+1
 
 environment:
-  sdk: '>=3.11.0 <4.0.0'
+  sdk: ">=3.11.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -57,3 +57,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/brand/swarnalekh-logo.png
+    - assets/brand/swarnalekh-mark.png
+    - assets/brand/swarnalekh-mark-transparent.png

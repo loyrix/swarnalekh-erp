@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/auth/data/auth_provider.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/widgets/brand_mark.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 
@@ -71,7 +72,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
         if (mounted) {
           AppToast.error(
             context,
-            'Supabase email confirmation is enabled. Disable it for MVP or verify the email before continuing.',
+            'Email confirmation is enabled in the current auth provider. Verify the email before continuing.',
           );
         }
         return;
@@ -150,30 +151,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Logo
-                          Center(
-                            child: Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                gradient: AppColors.goldShimmer,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.lg,
-                                ),
-                                boxShadow: AppShadows.goldGlow,
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'S',
-                                  style: TextStyle(
-                                    color: AppColors.textOnPrimary,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 28,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          const Center(child: BrandMark(size: 68, padding: 6)),
                           const SizedBox(height: AppSpacing.lg),
 
                           Text(

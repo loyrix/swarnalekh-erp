@@ -8,17 +8,12 @@ import { Public } from '../../common/decorators/public.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  /**
-   * After Supabase login/signup on Flutter side, call this endpoint
-   * with the authenticated JWT to get the app-level user profile
-   * and tenant context.
-   */
   @Get('me')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Resolve authenticated user',
     description:
-      'Get the authenticated app user profile and tenant context from a Supabase JWT',
+      'Get the authenticated app user profile and tenant context from a bearer JWT',
   })
   async getMe(@Req() req: any) {
     return req.appUser ?? this.authService.resolveUser(req.user);

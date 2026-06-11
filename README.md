@@ -187,7 +187,7 @@ Reports are part of the PDF scope only for:
 - Flutter for mobile and web
 - NestJS API
 - Prisma with PostgreSQL
-- Supabase Auth
+- Provider-neutral bearer JWT auth
 - pnpm monorepo
 
 ## Common Commands

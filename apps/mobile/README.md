@@ -114,6 +114,10 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
 API_BASE_URL=https://swarnalekh-erp-api.vercel.app/api/v1
 ```
 
+Supabase is currently only the mobile login provider. API authorization uses a
+provider-neutral bearer JWT, so the backend can move to another auth provider
+or AWS-hosted Postgres without changing the ERP module code.
+
 From the repository root, these commands read `apps/mobile/.env` automatically:
 
 ```bash

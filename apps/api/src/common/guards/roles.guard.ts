@@ -11,7 +11,7 @@ import { AuthService } from '../../modules/auth/auth.service.js';
 
 /**
  * Guard that:
- * 1. Resolves the full app user from Supabase JWT
+ * 1. Resolves the full app user from a verified bearer identity
  * 2. Attaches user + tenantId to request
  * 3. Checks role-based access if @Roles() is set
  */
@@ -38,14 +38,13 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    // If no user from Passport, and no roles required, just let it through
-    // (Actual Passport authentication is handled by the global SupabaseAuthGuard)
+    // If no bearer identity exists and no roles are required, just let it through.
     if (!request.user) {
       if (!requiredRoles || requiredRoles.length === 0) return true;
       throw new ForbiddenException('Authentication required');
     }
 
-    // 3. Resolve app user from Supabase JWT and cache it on the request.
+    // 3. Resolve app user from the verified bearer identity and cache it.
     if (!request.appUser && request.user) {
       try {
         const appUser = await this.authService.resolveUser(request.user);

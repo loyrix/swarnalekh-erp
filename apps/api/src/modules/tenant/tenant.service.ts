@@ -13,7 +13,7 @@ export class TenantService {
 
   async registerTenant(
     dto: RegisterTenantDto,
-    authUserId: string,
+    providerUserId: string,
     reqEmail?: string,
   ) {
     const email = reqEmail?.trim().toLowerCase();
@@ -27,7 +27,7 @@ export class TenantService {
     // Check if user already exists
     const existingUser = await this.prisma.user.findFirst({
       where: {
-        OR: [{ authUserId }, { email }],
+        OR: [{ authUserId: providerUserId }, { email }],
       },
     });
 
@@ -56,7 +56,7 @@ export class TenantService {
       const user = await tx.user.create({
         data: {
           tenantId: tenant.id,
-          authUserId,
+          authUserId: providerUserId,
           name: dto.ownerName,
           email,
           role: 'owner',
@@ -73,7 +73,13 @@ export class TenantService {
       where: { id: tenantId },
       include: {
         users: {
-          select: { id: true, name: true, role: true, phone: true, email: true },
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            phone: true,
+            email: true,
+          },
         },
       },
     });

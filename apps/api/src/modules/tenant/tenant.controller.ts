@@ -28,10 +28,9 @@ export class TenantController {
     description: 'Tenant and Owner user created successfully.',
   })
   async register(@Request() req: any, @Body() dto: RegisterTenantDto) {
-    // req.user comes from SupabaseAuthGuard containing auth provider identity
     return this.tenantService.registerTenant(
       dto,
-      req.user.supabaseUserId,
+      req.user.providerUserId,
       req.user.email,
     );
   }

@@ -33,10 +33,12 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/dashboard',
     redirect: (context, state) async {
+      final matchedLocation = state.matchedLocation;
       final isAuthRoute =
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/signup' ||
-          state.matchedLocation == '/register';
+          matchedLocation == '/login' ||
+          matchedLocation == '/signup' ||
+          matchedLocation == '/register';
+      final isRegistrationRoute = matchedLocation == '/register';
 
       final isAuth = session != null;
 
@@ -46,6 +48,18 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (!isAuth) {
         return null;
+      }
+
+      final isRegistered = await ref
+          .read(authServiceProvider)
+          .checkRegistration();
+
+      if (!isRegistered && !isRegistrationRoute) {
+        return '/register';
+      }
+
+      if (isRegistered && isAuthRoute) {
+        return '/dashboard';
       }
 
       return null;

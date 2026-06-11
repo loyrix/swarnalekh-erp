@@ -31,7 +31,7 @@ describe('RolesGuard', () => {
   it('allows Admin-equivalent owner role for Admin routes', async () => {
     const guard = createGuard(['owner', 'admin']);
     const request = {
-      user: { supabaseUserId: 'auth-1' },
+      user: { providerUserId: 'auth-1' },
       appUser: { role: 'owner' },
     };
 
@@ -41,7 +41,7 @@ describe('RolesGuard', () => {
   it('rejects Staff role for Admin-only routes', async () => {
     const guard = createGuard(['owner', 'admin']);
     const request = {
-      user: { supabaseUserId: 'auth-1' },
+      user: { providerUserId: 'auth-1' },
       appUser: { role: 'staff' },
     };
 
@@ -53,7 +53,7 @@ describe('RolesGuard', () => {
   it('allows Staff role for Staff-enabled routes', async () => {
     const guard = createGuard(['owner', 'admin', 'staff']);
     const request = {
-      user: { supabaseUserId: 'auth-1' },
+      user: { providerUserId: 'auth-1' },
       appUser: { role: 'staff' },
     };
 

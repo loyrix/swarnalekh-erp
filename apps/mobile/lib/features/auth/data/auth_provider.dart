@@ -95,7 +95,7 @@ class AuthService {
     final session = _supabase.auth.currentSession;
     if (session == null) {
       throw Exception(
-        'You are not signed in. In Supabase, disable email confirmation for MVP or verify the email first, then sign in again.',
+        'You are not signed in. Verify the email in the current auth provider, then sign in again.',
       );
     }
     _apiClient.setAuthToken(session.accessToken);

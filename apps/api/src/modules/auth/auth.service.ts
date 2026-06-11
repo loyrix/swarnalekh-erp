@@ -2,10 +2,11 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface RequestUser {
-  supabaseUserId: string;
+  providerUserId: string;
   phone?: string;
   email?: string;
   role: string;
+  issuer?: string;
 }
 
 export interface AuthenticatedUser {
@@ -28,27 +29,23 @@ export class AuthService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * After Supabase JWT is verified, resolve the app-level user
-   * by matching the auth provider user ID first, then email/phone.
-   */
-  async resolveUser(supabaseUser: RequestUser): Promise<AuthenticatedUser> {
-    const { supabaseUserId, phone, email } = supabaseUser;
+  async resolveUser(authUser: RequestUser): Promise<AuthenticatedUser> {
+    const { providerUserId, phone, email } = authUser;
     const normalizedEmail = email?.trim().toLowerCase();
 
     const user = await this.prisma.user.findFirst({
       where: {
         isActive: true,
         OR: [
-          { authUserId: supabaseUserId },
+          { authUserId: providerUserId },
           normalizedEmail
-              ? {
-                  email: {
-                    equals: normalizedEmail,
-                    mode: 'insensitive',
-                  },
-                }
-              : null,
+            ? {
+                email: {
+                  equals: normalizedEmail,
+                  mode: 'insensitive',
+                },
+              }
+            : null,
           phone ? { phone } : null,
         ].filter(Boolean) as any,
       },
@@ -66,7 +63,7 @@ export class AuthService {
 
     if (!user) {
       this.logger.warn(
-        `Active app user not found for Supabase identity ${supabaseUserId} (${normalizedEmail ?? 'no-email'})`,
+        `Active app user not found for auth subject ${providerUserId} (${normalizedEmail ?? 'no-email'})`,
       );
       throw new UnauthorizedException('User not found or inactive');
     }

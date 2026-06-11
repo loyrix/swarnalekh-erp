@@ -15,7 +15,7 @@ export const TenantId = createParamDecorator(
 
 /**
  * Extract the current user from the request.
- * Populated by SupabaseAuthGuard via Passport.
+ * Populated by the bearer JWT guard.
  *
  * Usage: @CurrentUser() user: RequestUser
  */
