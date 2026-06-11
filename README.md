@@ -125,16 +125,16 @@ Login -> Role-Based Access -> Mutating Action -> Activity Log -> Backup Export -
 | I1  | Inventory | Add stock form fields from PDF               | Partial     | Cleanup field alignment                                    |
 | I2  | Inventory | Net weight auto-calculation                  | Built       | Verify with tests                                          |
 | I3  | Inventory | Making/final selling price auto-calculation  | Built       | Verify consistency                                         |
-| I4  | Inventory | Explicit selling price stored                | Built       | Not yet used correctly by billing                          |
+| I4  | Inventory | Explicit selling price stored                | Built       | Used as the primary billing line price                     |
 | I5  | Inventory | Inventory table columns                      | Built       | Verify exact PDF columns                                   |
 | I6  | Inventory | Product details                              | Built       | Dialog-based                                               |
 | I7  | Inventory | Sold products list                           | Built       | Data comes from invoices                                   |
 | I8  | Inventory | Alerts: low/out/high value/unsold            | Built       | Verify data correctness                                    |
 | B1  | Billing   | New bill customer + inventory selection      | Built       | Verify full mobile UX                                      |
-| B2  | Billing   | Use inventory selling price in bill          | Pending     | Biggest business logic gap                                 |
-| B3  | Billing   | Frontend/backend totals match                | Partial     | Needs pricing source fix                                   |
+| B2  | Billing   | Use inventory selling price in bill          | Built       | Backend and Flutter preview use saved selling price first  |
+| B3  | Billing   | Frontend/backend totals match                | Built       | Explicit price flow covered, rate fallback preserved       |
 | B4  | Billing   | Payment methods from PDF                     | Built       | Cash, UPI, cards, bank transfer                            |
-| B5  | Billing   | Generate invoice and reduce stock            | Built       | Needs regression tests                                     |
+| B5  | Billing   | Generate invoice and reduce stock            | Built       | Covered by invoice service regression tests                |
 | B6  | Billing   | Invoice history search/filter                | Partial     | Verify customer/date/invoice search                        |
 | B7  | Billing   | Reprint/download/share invoice               | Partial     | Needs production-grade verification                        |
 | B8  | Billing   | Branded invoice PDF with shop logo           | Pending     | Current PDF is too basic                                   |

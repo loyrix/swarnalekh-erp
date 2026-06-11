@@ -361,6 +361,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingQty => 'Qty';
 
   @override
+  String get billingBillTable => 'Bill Table';
+
+  @override
+  String get billingProduct => 'Product';
+
+  @override
+  String get billingWeight => 'Weight';
+
+  @override
+  String get billingPrice => 'Price';
+
+  @override
+  String get billingCustomerDetails => 'Customer Details';
+
+  @override
+  String get billingSavedCustomer => 'Saved Customer';
+
+  @override
+  String get billingCustomerName => 'Customer Name';
+
+  @override
+  String get billingMobileNumber => 'Mobile Number';
+
+  @override
+  String get billingSearchInventory => 'Search Inventory';
+
+  @override
   String get billingSelectedUnits => 'Selected Units';
 
   @override
@@ -385,8 +412,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingPaymentCard => 'Card';
 
   @override
+  String get billingPaymentDebitCard => 'Debit Card';
+
+  @override
+  String get billingPaymentCreditCard => 'Credit Card';
+
+  @override
+  String get billingPaymentBankTransfer => 'Bank Transfer';
+
+  @override
+  String get billingProductValue => 'Product Value';
+
+  @override
+  String get billingMakingCharges => 'Making Charges';
+
+  @override
+  String get billingGst => 'GST';
+
+  @override
+  String get billingFinalTotal => 'Final Total';
+
+  @override
   String get billingRatesHint =>
-      'Make sure today\'s rates are set for the selected items before creating the invoice.';
+      'Products with a saved selling price use that price. Items without selling price need current rates before billing.';
 
   @override
   String get errorFailedLoadShopProfile => 'Failed to load shop profile';

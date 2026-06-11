@@ -361,6 +361,33 @@ class AppLocalizationsGu extends AppLocalizations {
   String get billingQty => 'જથ્થો';
 
   @override
+  String get billingBillTable => 'બિલ ટેબલ';
+
+  @override
+  String get billingProduct => 'પ્રોડક્ટ';
+
+  @override
+  String get billingWeight => 'વજન';
+
+  @override
+  String get billingPrice => 'કિંમત';
+
+  @override
+  String get billingCustomerDetails => 'ગ્રાહક વિગતો';
+
+  @override
+  String get billingSavedCustomer => 'સેવ કરેલો ગ્રાહક';
+
+  @override
+  String get billingCustomerName => 'ગ્રાહકનું નામ';
+
+  @override
+  String get billingMobileNumber => 'મોબાઇલ નંબર';
+
+  @override
+  String get billingSearchInventory => 'ઇન્વેન્ટરી શોધો';
+
+  @override
   String get billingSelectedUnits => 'પસંદ કરેલ યુનિટ્સ';
 
   @override
@@ -385,8 +412,29 @@ class AppLocalizationsGu extends AppLocalizations {
   String get billingPaymentCard => 'કાર્ડ';
 
   @override
+  String get billingPaymentDebitCard => 'ડેબિટ કાર્ડ';
+
+  @override
+  String get billingPaymentCreditCard => 'ક્રેડિટ કાર્ડ';
+
+  @override
+  String get billingPaymentBankTransfer => 'બેંક ટ્રાન્સફર';
+
+  @override
+  String get billingProductValue => 'પ્રોડક્ટ વેલ્યૂ';
+
+  @override
+  String get billingMakingCharges => 'મેકિંગ ચાર્જિસ';
+
+  @override
+  String get billingGst => 'GST';
+
+  @override
+  String get billingFinalTotal => 'ફાઇનલ ટોટલ';
+
+  @override
   String get billingRatesHint =>
-      'ઇન્વોઇસ બનાવતા પહેલાં પસંદ કરેલી આઇટમ્સ માટે આજના દર સેટ હોવા જોઈએ.';
+      'સેવ કરેલી સેલિંગ પ્રાઇસ ધરાવતા પ્રોડક્ટ એ જ કિંમતે બિલ થશે. સેલિંગ પ્રાઇસ વગરના આઇટમ્સ માટે બિલિંગ પહેલાં હાલના દર જરૂરી છે.';
 
   @override
   String get errorFailedLoadShopProfile => 'દુકાન પ્રોફાઇલ લોડ ન થઈ શકી';

@@ -174,37 +174,44 @@ export class InvoiceService {
           );
         }
 
-        const rateRecord =
-          // 1) Try exact metal + karat using the latest available rate.
-          (await tx.dailyRate.findFirst({
-            where: {
-              tenantId,
-              metalType: { equals: invItem.metalType, mode: 'insensitive' },
-              karat: invItem.karat ?? null,
-            },
-            orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
-          })) ??
-          // 2) Fallback: generic metal rate (karat null), latest available.
-          (await tx.dailyRate.findFirst({
-            where: {
-              tenantId,
-              metalType: { equals: invItem.metalType, mode: 'insensitive' },
-              karat: null,
-            },
-            orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
-          }));
+        const explicitSellingPricePerPiece = this.toNumber(
+          invItem.sellingPrice,
+        );
+        const hasExplicitSellingPrice = explicitSellingPricePerPiece > 0;
+        const rateRecord = hasExplicitSellingPrice
+          ? null
+          : ((await tx.dailyRate.findFirst({
+              where: {
+                tenantId,
+                metalType: { equals: invItem.metalType, mode: 'insensitive' },
+                karat: invItem.karat ?? null,
+              },
+              orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
+            })) ??
+            (await tx.dailyRate.findFirst({
+              where: {
+                tenantId,
+                metalType: { equals: invItem.metalType, mode: 'insensitive' },
+                karat: null,
+              },
+              orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
+            })));
 
-        if (!rateRecord) {
+        if (!hasExplicitSellingPrice && !rateRecord) {
           throw new BadRequestException(
             `No rate set for ${invItem.metalType} ${invItem.karat || ''}. Please set rates first.`,
           );
         }
 
-        const ratePerGram = rateRecord.ratePerGram;
+        const ratePerGram = rateRecord?.ratePerGram ?? null;
+        const componentRatePerGram =
+          ratePerGram?.toNumber() ?? this.toNumber(invItem.purchaseRate);
         const grossWeightPerPiece = invItem.grossWeight.toNumber();
         const netWeightPerPiece = invItem.netWeight.toNumber();
         const grossWeight = grossWeightPerPiece * requestedQuantity;
         const netWeight = netWeightPerPiece * requestedQuantity;
+        const stoneValue =
+          (invItem.stoneValue?.toNumber() ?? 0) * requestedQuantity;
 
         let makingCharges = 0;
         if (itemDto.makingCharges !== undefined) {
@@ -214,21 +221,30 @@ export class InvoiceService {
             invItem.makingChargesFixed.toNumber() * requestedQuantity;
         } else if (invItem.makingChargesPerGram) {
           makingCharges = invItem.makingChargesPerGram.toNumber() * grossWeight;
-        } else if (invItem.makingChargesPercent) {
+        } else if (invItem.makingChargesPercent && componentRatePerGram > 0) {
           makingCharges =
             (netWeight *
-              ratePerGram.toNumber() *
+              componentRatePerGram *
               invItem.makingChargesPercent.toNumber()) /
             100;
         }
 
-        const itemBreakdown = calculateItemPrice({
-          netWeight,
-          ratePerGram: ratePerGram.toNumber(),
-          makingCharges,
-          stoneValue: (invItem.stoneValue?.toNumber() ?? 0) * requestedQuantity,
-          wastagePercent: invItem.wastagePercent.toNumber(),
-        });
+        const itemBreakdown = hasExplicitSellingPrice
+          ? this.explicitSellingPriceBreakdown({
+              lineTotal: explicitSellingPricePerPiece * requestedQuantity,
+              netWeight,
+              componentRatePerGram,
+              makingCharges,
+              stoneValue,
+              wastagePercent: invItem.wastagePercent.toNumber(),
+            })
+          : calculateItemPrice({
+              netWeight,
+              ratePerGram: ratePerGram!.toNumber(),
+              makingCharges,
+              stoneValue,
+              wastagePercent: invItem.wastagePercent.toNumber(),
+            });
 
         subtotal = new Prisma.Decimal(
           subtotal.toNumber() + itemBreakdown.itemTotal,
@@ -251,7 +267,7 @@ export class InvoiceService {
           karat: invItem.karat || undefined,
           grossWeight: new Prisma.Decimal(grossWeight),
           netWeight: new Prisma.Decimal(netWeight),
-          ratePerGram: ratePerGram,
+          ratePerGram,
           metalValue: new Prisma.Decimal(itemBreakdown.metalValue),
           makingCharges: new Prisma.Decimal(itemBreakdown.makingCharges),
           stoneValue: new Prisma.Decimal(itemBreakdown.stoneValue),
@@ -810,6 +826,40 @@ export class InvoiceService {
     if (Number.isNaN(date.getTime())) return null;
     if (endOfDay) date.setHours(23, 59, 59, 999);
     return date;
+  }
+
+  private explicitSellingPriceBreakdown(input: {
+    lineTotal: number;
+    netWeight: number;
+    componentRatePerGram: number;
+    makingCharges: number;
+    stoneValue: number;
+    wastagePercent: number;
+  }) {
+    const itemTotal = this.round(input.lineTotal);
+    const makingCharges = this.round(input.makingCharges);
+    const stoneValue = this.round(input.stoneValue);
+    const metalValueAtRate =
+      input.componentRatePerGram > 0
+        ? this.round(input.netWeight * input.componentRatePerGram)
+        : 0;
+    const wastageValue =
+      metalValueAtRate > 0
+        ? this.round(
+            (metalValueAtRate * Math.max(0, input.wastagePercent)) / 100,
+          )
+        : 0;
+    const metalValue = this.round(
+      Math.max(0, itemTotal - makingCharges - stoneValue - wastageValue),
+    );
+
+    return {
+      metalValue,
+      makingCharges,
+      stoneValue,
+      wastageValue,
+      itemTotal,
+    };
   }
 
   private toNumber(value: unknown): number {

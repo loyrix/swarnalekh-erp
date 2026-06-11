@@ -363,6 +363,33 @@ class AppLocalizationsHi extends AppLocalizations {
   String get billingQty => 'मात्रा';
 
   @override
+  String get billingBillTable => 'बिल टेबल';
+
+  @override
+  String get billingProduct => 'प्रोडक्ट';
+
+  @override
+  String get billingWeight => 'वजन';
+
+  @override
+  String get billingPrice => 'कीमत';
+
+  @override
+  String get billingCustomerDetails => 'ग्राहक विवरण';
+
+  @override
+  String get billingSavedCustomer => 'सेव किया गया ग्राहक';
+
+  @override
+  String get billingCustomerName => 'ग्राहक का नाम';
+
+  @override
+  String get billingMobileNumber => 'मोबाइल नंबर';
+
+  @override
+  String get billingSearchInventory => 'इन्वेंटरी खोजें';
+
+  @override
   String get billingSelectedUnits => 'चयनित यूनिट्स';
 
   @override
@@ -387,8 +414,29 @@ class AppLocalizationsHi extends AppLocalizations {
   String get billingPaymentCard => 'कार्ड';
 
   @override
+  String get billingPaymentDebitCard => 'डेबिट कार्ड';
+
+  @override
+  String get billingPaymentCreditCard => 'क्रेडिट कार्ड';
+
+  @override
+  String get billingPaymentBankTransfer => 'बैंक ट्रांसफर';
+
+  @override
+  String get billingProductValue => 'प्रोडक्ट वैल्यू';
+
+  @override
+  String get billingMakingCharges => 'मेकिंग चार्जेस';
+
+  @override
+  String get billingGst => 'GST';
+
+  @override
+  String get billingFinalTotal => 'फाइनल टोटल';
+
+  @override
   String get billingRatesHint =>
-      'इनवॉइस बनाने से पहले चुने गए आइटम्स के लिए आज के रेट्स सेट होने चाहिए।';
+      'सेव किए गए सेलिंग प्राइस वाले प्रोडक्ट उसी कीमत पर बिल होंगे। बिना सेलिंग प्राइस वाले आइटम्स के लिए बिलिंग से पहले मौजूदा रेट चाहिए।';
 
   @override
   String get errorFailedLoadShopProfile => 'शॉप प्रोफाइल लोड नहीं हो सका';

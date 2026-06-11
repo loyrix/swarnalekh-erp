@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
+import 'package:swarnbook/features/billing/application/billing_pricing_calculations.dart';
 import 'package:swarnbook/features/billing/application/invoice_action_payloads.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
@@ -1045,45 +1046,18 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
     return total;
   }
 
-  ({
-    double metalValue,
-    double makingCharges,
-    double gst,
-    double lineTotal,
-    double finalTotal,
-  })
-  _lineBreakdown(Map<String, dynamic> item, int quantity) {
-    final ratePerGram = _asDouble(item['currentRatePerGram']);
-    final grossWeight = _asDouble(item['grossWeight']) * quantity;
-    final netWeight = _asDouble(item['netWeight']) * quantity;
-    final metalValue = ratePerGram * netWeight;
-
-    final makingFixed = _asDouble(item['makingChargesFixed']) * quantity;
-    final makingPerGram = _asDouble(item['makingChargesPerGram']) * grossWeight;
-    final makingPercent = _asDouble(item['makingChargesPercent']);
-    final makingPercentValue = makingPercent > 0
-        ? (metalValue * makingPercent) / 100
-        : 0;
-    final making =
-        (makingPerGram > 0
-                ? makingPerGram
-                : (makingFixed > 0 ? makingFixed : makingPercentValue))
-            .toDouble();
-
-    final wastagePercent = _asDouble(item['wastagePercent']);
-    final wastageValue = wastagePercent > 0
-        ? (metalValue * wastagePercent) / 100
-        : 0;
-    final stoneValue = _asDouble(item['stoneValue']) * quantity;
-    final lineTotal = metalValue + making + wastageValue + stoneValue;
-    final gst = lineTotal * 0.03;
-
-    return (
-      metalValue: metalValue,
-      makingCharges: making,
-      gst: gst,
-      lineTotal: lineTotal,
-      finalTotal: lineTotal + gst,
+  BillingLineBreakdown _lineBreakdown(Map<String, dynamic> item, int quantity) {
+    return calculateBillingLineBreakdown(
+      quantity: quantity,
+      sellingPrice: _asDouble(item['sellingPrice']),
+      currentRatePerGram: _asDouble(item['currentRatePerGram']),
+      grossWeight: _asDouble(item['grossWeight']),
+      netWeight: _asDouble(item['netWeight']),
+      makingChargesFixed: _asDouble(item['makingChargesFixed']),
+      makingChargesPerGram: _asDouble(item['makingChargesPerGram']),
+      makingChargesPercent: _asDouble(item['makingChargesPercent']),
+      stoneValue: _asDouble(item['stoneValue']),
+      wastagePercent: _asDouble(item['wastagePercent']),
     );
   }
 
@@ -1101,9 +1075,9 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
     return total;
   }
 
-  double _selectedMetalValue() => _selectedItems.fold(
+  double _selectedProductValue() => _selectedItems.fold(
     0.0,
-    (sum, item) => sum + _lineBreakdown(item.item, item.quantity).metalValue,
+    (sum, item) => sum + _lineBreakdown(item.item, item.quantity).productValue,
   );
 
   double _selectedMakingCharges() => _selectedItems.fold(
@@ -1206,7 +1180,7 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
     final l10n = AppLocalizations.of(context)!;
     if (_selectedCustomerId == null &&
         _customerNameController.text.trim().isEmpty) {
-      AppToast.error(context, 'Customer name is required');
+      AppToast.error(context, l10n.validationCustomerNameRequired);
       return;
     }
     if (_selectedItemIds.isEmpty) {
@@ -1265,7 +1239,7 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Bill Table'),
+        SectionHeader(title: l10n.billingBillTable),
         const SizedBox(height: AppSpacing.sm),
         if (rows.isEmpty)
           Text('—', style: TextStyle(color: AppColors.text3(context)))
@@ -1273,12 +1247,12 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Product')),
-                DataColumn(label: Text('Weight')),
-                DataColumn(label: Text('Price')),
-                DataColumn(label: Text('Qty')),
-                DataColumn(label: Text('Total')),
+              columns: [
+                DataColumn(label: Text(l10n.billingProduct)),
+                DataColumn(label: Text(l10n.billingWeight)),
+                DataColumn(label: Text(l10n.billingPrice)),
+                DataColumn(label: Text(l10n.billingQty)),
+                DataColumn(label: Text(l10n.billingTotal)),
               ],
               rows: rows.map((entry) {
                 final item = entry.item;
@@ -1327,12 +1301,12 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SectionHeader(title: 'Customer Details'),
+                      SectionHeader(title: l10n.billingCustomerDetails),
                       const SizedBox(height: AppSpacing.sm),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedCustomerId,
                         decoration: InputDecoration(
-                          labelText: 'Saved Customer',
+                          labelText: l10n.billingSavedCustomer,
                           border: const OutlineInputBorder(),
                         ),
                         items: [
@@ -1369,9 +1343,9 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
                           Expanded(
                             child: TextFormField(
                               controller: _customerNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Customer Name',
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.billingCustomerName,
+                                border: const OutlineInputBorder(),
                               ),
                             ),
                           ),
@@ -1380,9 +1354,9 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
                             child: TextFormField(
                               controller: _customerPhoneController,
                               keyboardType: TextInputType.phone,
-                              decoration: const InputDecoration(
-                                labelText: 'Mobile Number',
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.billingMobileNumber,
+                                border: const OutlineInputBorder(),
                               ),
                             ),
                           ),
@@ -1394,10 +1368,10 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
                       TextField(
                         controller: _inventorySearchController,
                         onChanged: (_) => setState(() {}),
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.search_rounded),
-                          labelText: 'Search Inventory',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          labelText: l10n.billingSearchInventory,
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -1568,28 +1542,28 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
                               ),
                             ),
                             Text(
-                              'Gold Value: ₹${_selectedMetalValue().toStringAsFixed(0)}',
+                              '${l10n.billingProductValue}: ₹${_selectedProductValue().toStringAsFixed(0)}',
                               style: TextStyle(
                                 color: AppColors.text2(context),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             Text(
-                              'Making Charges: ₹${_selectedMakingCharges().toStringAsFixed(0)}',
+                              '${l10n.billingMakingCharges}: ₹${_selectedMakingCharges().toStringAsFixed(0)}',
                               style: TextStyle(
                                 color: AppColors.text2(context),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             Text(
-                              'GST: ₹${_selectedGst().toStringAsFixed(0)}',
+                              '${l10n.billingGst}: ₹${_selectedGst().toStringAsFixed(0)}',
                               style: TextStyle(
                                 color: AppColors.text2(context),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             Text(
-                              'Final Total: ₹${_estimatedFinalTotal().toStringAsFixed(0)}',
+                              '${l10n.billingFinalTotal}: ₹${_estimatedFinalTotal().toStringAsFixed(0)}',
                               style: TextStyle(
                                 color: AppColors.text1(context),
                                 fontWeight: FontWeight.w700,
@@ -1651,17 +1625,17 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
                             value: 'card',
                             child: Text(l10n.billingPaymentCard),
                           ),
-                          const DropdownMenuItem(
+                          DropdownMenuItem(
                             value: 'debit_card',
-                            child: Text('Debit Card'),
+                            child: Text(l10n.billingPaymentDebitCard),
                           ),
-                          const DropdownMenuItem(
+                          DropdownMenuItem(
                             value: 'credit_card',
-                            child: Text('Credit Card'),
+                            child: Text(l10n.billingPaymentCreditCard),
                           ),
-                          const DropdownMenuItem(
+                          DropdownMenuItem(
                             value: 'bank_transfer',
-                            child: Text('Bank Transfer'),
+                            child: Text(l10n.billingPaymentBankTransfer),
                           ),
                         ],
                         onChanged: (value) =>

@@ -790,6 +790,60 @@ abstract class AppLocalizations {
   /// **'Qty'**
   String get billingQty;
 
+  /// No description provided for @billingBillTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Bill Table'**
+  String get billingBillTable;
+
+  /// No description provided for @billingProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get billingProduct;
+
+  /// No description provided for @billingWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get billingWeight;
+
+  /// No description provided for @billingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get billingPrice;
+
+  /// No description provided for @billingCustomerDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Details'**
+  String get billingCustomerDetails;
+
+  /// No description provided for @billingSavedCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Customer'**
+  String get billingSavedCustomer;
+
+  /// No description provided for @billingCustomerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Name'**
+  String get billingCustomerName;
+
+  /// No description provided for @billingMobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Number'**
+  String get billingMobileNumber;
+
+  /// No description provided for @billingSearchInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Inventory'**
+  String get billingSearchInventory;
+
   /// No description provided for @billingSelectedUnits.
   ///
   /// In en, this message translates to:
@@ -838,10 +892,52 @@ abstract class AppLocalizations {
   /// **'Card'**
   String get billingPaymentCard;
 
+  /// No description provided for @billingPaymentDebitCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Debit Card'**
+  String get billingPaymentDebitCard;
+
+  /// No description provided for @billingPaymentCreditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Card'**
+  String get billingPaymentCreditCard;
+
+  /// No description provided for @billingPaymentBankTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Transfer'**
+  String get billingPaymentBankTransfer;
+
+  /// No description provided for @billingProductValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Value'**
+  String get billingProductValue;
+
+  /// No description provided for @billingMakingCharges.
+  ///
+  /// In en, this message translates to:
+  /// **'Making Charges'**
+  String get billingMakingCharges;
+
+  /// No description provided for @billingGst.
+  ///
+  /// In en, this message translates to:
+  /// **'GST'**
+  String get billingGst;
+
+  /// No description provided for @billingFinalTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Total'**
+  String get billingFinalTotal;
+
   /// No description provided for @billingRatesHint.
   ///
   /// In en, this message translates to:
-  /// **'Make sure today\'s rates are set for the selected items before creating the invoice.'**
+  /// **'Products with a saved selling price use that price. Items without selling price need current rates before billing.'**
   String get billingRatesHint;
 
   /// No description provided for @errorFailedLoadShopProfile.

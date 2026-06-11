@@ -124,6 +124,68 @@ describe('InvoiceService', () => {
     );
   });
 
+  it('uses explicit inventory selling price as the billing line price', async () => {
+    const { service, tx } = createService();
+    tx.invoice.count.mockResolvedValue(0);
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'item-1',
+      tagNumber: 'INV-0001',
+      itemName: 'Gold Ring',
+      metalType: 'gold',
+      karat: '22K',
+      stockType: 'unique',
+      quantity: 1,
+      status: 'in_stock',
+      grossWeight: decimal(10),
+      netWeight: decimal(9),
+      purchaseRate: decimal(6000),
+      sellingPrice: decimal(59000),
+      makingChargesFixed: decimal(500),
+      makingChargesPerGram: null,
+      makingChargesPercent: null,
+      stoneValue: decimal(250),
+      wastagePercent: decimal(0),
+      hallmarkNumber: null,
+      huid: null,
+    });
+    tx.invoice.create.mockResolvedValue({
+      id: 'invoice-1',
+      grandTotal: decimal(60770),
+      items: [],
+    });
+
+    await service.createInvoice('tenant-1', 'user-1', {
+      customerName: 'Asha Shah',
+      items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+      paymentMode: 'cash',
+    });
+
+    expect(tx.dailyRate.findFirst).not.toHaveBeenCalled();
+    expect(tx.invoice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          subtotal: decimal(59000),
+          taxableAmount: decimal(59000),
+          totalTax: decimal(1770),
+          grandTotal: decimal(60770),
+          balanceDue: 60770,
+          items: {
+            create: [
+              expect.objectContaining({
+                inventoryItemId: 'item-1',
+                ratePerGram: null,
+                metalValue: decimal(58250),
+                makingCharges: decimal(500),
+                stoneValue: decimal(250),
+                itemTotal: decimal(59000),
+              }),
+            ],
+          },
+        }),
+      }),
+    );
+  });
+
   it('reduces bulk inventory quantity after invoice generation', async () => {
     const { service, tx } = createService();
     tx.invoice.count.mockResolvedValue(4);
