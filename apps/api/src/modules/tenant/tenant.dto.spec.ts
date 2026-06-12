@@ -15,6 +15,7 @@ describe('UpdateTenantDto', () => {
       pincode: '400001',
       gstin: '27AAAAA0000Z1Z5',
       pan: 'AAAAA0000Z',
+      logoUrl: 'data:image/jpeg;base64,AQID',
     });
 
     const errors = await validate(dto, {

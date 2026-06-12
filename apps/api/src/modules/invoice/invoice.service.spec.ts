@@ -344,6 +344,23 @@ describe('InvoiceService', () => {
     expect(text).toContain('GST Breakdown');
   });
 
+  it('embeds a shop logo data image in the invoice PDF', async () => {
+    const { service, prisma } = createService();
+    prisma.invoice.findFirst.mockResolvedValue(invoiceDetailFixture());
+    prisma.tenant.findUnique.mockResolvedValue({
+      ...tenantFixture(),
+      logoUrl: `data:image/jpeg;base64,${jpegLogoBase64()}`,
+    });
+
+    const pdf = await service.getInvoicePdf('tenant-1', 'invoice-1');
+    const text = Buffer.from(pdf.base64, 'base64').toString('utf8');
+
+    expect(text).toContain('/Subtype /Image');
+    expect(text).toContain('/DCTDecode');
+    expect(text).toContain('/Logo Do');
+    expect(text).toContain('Shop Logo: Embedded');
+  });
+
   it('generates a WhatsApp share payload for invoice history', async () => {
     const { service, prisma } = createService();
     prisma.invoice.findFirst.mockResolvedValue(invoiceDetailFixture());
@@ -375,6 +392,13 @@ function tenantFixture() {
     pan: 'ABCDE1234F',
     logoUrl: 'https://example.com/logo.png',
   };
+}
+
+function jpegLogoBase64() {
+  return Buffer.from([
+    0xff, 0xd8, 0xff, 0xc0, 0x00, 0x11, 0x08, 0x00, 0x01, 0x00, 0x01, 0x03,
+    0x01, 0x11, 0x00, 0x02, 0x11, 0x00, 0x03, 0x11, 0x00, 0xff, 0xd9,
+  ]).toString('base64');
 }
 
 function invoiceDetailFixture() {

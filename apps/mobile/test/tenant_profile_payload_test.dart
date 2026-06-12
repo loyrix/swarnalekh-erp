@@ -15,6 +15,7 @@ void main() {
         pincode: '  400001  ',
         gstin: '  27AAAAA0000Z1Z5  ',
         pan: '  AAAAA0000Z  ',
+        logoUrl: '  data:image/jpeg;base64,AQID  ',
       ).toJson();
 
       expect(payload.keys, {
@@ -28,6 +29,7 @@ void main() {
         'pincode',
         'gstin',
         'pan',
+        'logoUrl',
       });
       expect(payload, {
         'shopName': 'Kundan Jewellers',
@@ -40,6 +42,7 @@ void main() {
         'pincode': '400001',
         'gstin': '27AAAAA0000Z1Z5',
         'pan': 'AAAAA0000Z',
+        'logoUrl': 'data:image/jpeg;base64,AQID',
       });
     });
 
@@ -54,6 +57,7 @@ void main() {
       expect(payload['ownerName'], 'Owner');
       expect(payload['phone'], isNull);
       expect(payload['email'], isNull);
+      expect(payload['logoUrl'], isNull);
     });
   });
 }

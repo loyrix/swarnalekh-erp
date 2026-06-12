@@ -9,6 +9,7 @@ class TenantProfileUpdateInput {
   final String? pincode;
   final String? gstin;
   final String? pan;
+  final String? logoUrl;
 
   const TenantProfileUpdateInput({
     required this.shopName,
@@ -21,6 +22,7 @@ class TenantProfileUpdateInput {
     this.pincode,
     this.gstin,
     this.pan,
+    this.logoUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -35,6 +37,7 @@ class TenantProfileUpdateInput {
       'pincode': _nullableTrim(pincode),
       'gstin': _nullableTrim(gstin),
       'pan': _nullableTrim(pan),
+      'logoUrl': _nullableTrim(logoUrl),
     };
   }
 }

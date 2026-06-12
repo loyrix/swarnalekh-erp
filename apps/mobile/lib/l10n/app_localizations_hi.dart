@@ -448,7 +448,23 @@ class AppLocalizationsHi extends AppLocalizations {
   String get errorFailedUpdateShopProfile => 'शॉप प्रोफाइल अपडेट नहीं हो सका';
 
   @override
+  String get errorFailedPickShopLogo => 'शॉप लोगो चुन नहीं सके';
+
+  @override
   String get shopProfileBusinessDetails => 'व्यवसाय विवरण';
+
+  @override
+  String get shopProfileLogoTitle => 'शॉप लोगो';
+
+  @override
+  String get shopProfileLogoSubtitle =>
+      'इनवॉइस प्रीव्यू और PDF में उपयोग होगा।';
+
+  @override
+  String get shopProfileChooseLogo => 'लोगो चुनें';
+
+  @override
+  String get shopProfileRemoveLogo => 'लोगो हटाएं';
 
   @override
   String get shopProfileTeam => 'टीम';

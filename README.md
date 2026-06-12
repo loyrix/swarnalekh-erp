@@ -137,7 +137,7 @@ Login -> Role-Based Access -> Mutating Action -> Activity Log -> Backup Export -
 | B5  | Billing   | Generate invoice and reduce stock            | Built       | Covered by invoice service regression tests                |
 | B6  | Billing   | Invoice history search/filter                | Partial     | Verify customer/date/invoice search                        |
 | B7  | Billing   | Reprint/download/share invoice               | Partial     | Needs production-grade verification                        |
-| B8  | Billing   | Branded invoice PDF with shop logo           | Pending     | Current PDF is too basic                                   |
+| B8  | Billing   | Branded invoice PDF with shop logo           | Built       | Shop profile logo is reused in invoice preview and PDF     |
 | B9  | Billing   | Optional QR code                             | Pending     | Optional per PDF                                           |
 | M1  | Mortgage  | Add mortgage with customer/gold/loan details | Built       | Verify fields and validation                               |
 | M2  | Mortgage  | Aadhaar/PAN/photo/customer photo support     | Built       | Verify frontend/backend sync                               |

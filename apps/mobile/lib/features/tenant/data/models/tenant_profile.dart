@@ -36,6 +36,7 @@ class TenantProfile {
   final String? pincode;
   final String? gstin;
   final String? pan;
+  final String? logoUrl;
   final String subscriptionPlan;
   final List<TenantUserSummary> users;
 
@@ -51,6 +52,7 @@ class TenantProfile {
     this.pincode,
     this.gstin,
     this.pan,
+    this.logoUrl,
     required this.subscriptionPlan,
     required this.users,
   });
@@ -69,6 +71,7 @@ class TenantProfile {
       pincode: json['pincode']?.toString(),
       gstin: json['gstin']?.toString(),
       pan: json['pan']?.toString(),
+      logoUrl: json['logoUrl']?.toString(),
       subscriptionPlan: json['subscriptionPlan']?.toString() ?? 'free',
       users: usersJson
           .whereType<Map<String, dynamic>>()

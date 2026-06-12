@@ -446,7 +446,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorFailedUpdateShopProfile => 'Failed to update shop profile';
 
   @override
+  String get errorFailedPickShopLogo => 'Failed to select shop logo';
+
+  @override
   String get shopProfileBusinessDetails => 'Business Details';
+
+  @override
+  String get shopProfileLogoTitle => 'Shop Logo';
+
+  @override
+  String get shopProfileLogoSubtitle => 'Used on invoice preview and PDF.';
+
+  @override
+  String get shopProfileChooseLogo => 'Choose Logo';
+
+  @override
+  String get shopProfileRemoveLogo => 'Remove Logo';
 
   @override
   String get shopProfileTeam => 'Team';

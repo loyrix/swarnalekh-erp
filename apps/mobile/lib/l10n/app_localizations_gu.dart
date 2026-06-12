@@ -446,7 +446,23 @@ class AppLocalizationsGu extends AppLocalizations {
   String get errorFailedUpdateShopProfile => 'દુકાન પ્રોફાઇલ અપડેટ થઈ શકી નહીં';
 
   @override
+  String get errorFailedPickShopLogo => 'દુકાનનો લોગો પસંદ થઈ શક્યો નહીં';
+
+  @override
   String get shopProfileBusinessDetails => 'વ્યવસાય વિગતો';
+
+  @override
+  String get shopProfileLogoTitle => 'દુકાનનો લોગો';
+
+  @override
+  String get shopProfileLogoSubtitle =>
+      'ઇન્વોઇસ પ્રીવ્યુ અને PDF માં ઉપયોગ થશે.';
+
+  @override
+  String get shopProfileChooseLogo => 'લોગો પસંદ કરો';
+
+  @override
+  String get shopProfileRemoveLogo => 'લોગો દૂર કરો';
 
   @override
   String get shopProfileTeam => 'ટીમ';

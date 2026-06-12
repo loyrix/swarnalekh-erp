@@ -958,11 +958,41 @@ abstract class AppLocalizations {
   /// **'Failed to update shop profile'**
   String get errorFailedUpdateShopProfile;
 
+  /// No description provided for @errorFailedPickShopLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to select shop logo'**
+  String get errorFailedPickShopLogo;
+
   /// No description provided for @shopProfileBusinessDetails.
   ///
   /// In en, this message translates to:
   /// **'Business Details'**
   String get shopProfileBusinessDetails;
+
+  /// No description provided for @shopProfileLogoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop Logo'**
+  String get shopProfileLogoTitle;
+
+  /// No description provided for @shopProfileLogoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Used on invoice preview and PDF.'**
+  String get shopProfileLogoSubtitle;
+
+  /// No description provided for @shopProfileChooseLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Logo'**
+  String get shopProfileChooseLogo;
+
+  /// No description provided for @shopProfileRemoveLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Logo'**
+  String get shopProfileRemoveLogo;
 
   /// No description provided for @shopProfileTeam.
   ///

@@ -97,4 +97,12 @@ export class UpdateTenantDto {
   @IsString()
   @MaxLength(15)
   phone?: string;
+
+  @ApiPropertyOptional({
+    example: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300000)
+  logoUrl?: string;
 }

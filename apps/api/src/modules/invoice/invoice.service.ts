@@ -88,6 +88,12 @@ type PrintableInvoice = {
   generatedAt: string;
 };
 
+type PdfLogoImage = {
+  bytes: Buffer;
+  width: number;
+  height: number;
+};
+
 @Injectable()
 export class InvoiceService {
   constructor(private readonly prisma: PrismaService) {}
@@ -603,6 +609,7 @@ export class InvoiceService {
 
   private buildInvoicePdf(printable: PrintableInvoice) {
     const invoice = printable.invoice;
+    const logo = this.embeddableLogo(printable.shop.logoUrl);
     const shopAddress = [
       printable.shop.address,
       printable.shop.city,
@@ -617,6 +624,7 @@ export class InvoiceService {
       printable.shop.phone ? `Phone: ${printable.shop.phone}` : '',
       printable.shop.email ? `Email: ${printable.shop.email}` : '',
       printable.shop.gstin ? `GSTIN: ${printable.shop.gstin}` : '',
+      logo ? 'Shop Logo: Embedded' : '',
       '',
       'TAX INVOICE',
       `Invoice No: ${invoice.invoiceNumber}`,
@@ -668,33 +676,15 @@ export class InvoiceService {
       'Thank you for shopping with us.',
     ].filter((line) => line.trim().length > 0);
 
-    return this.renderTextPdf(lines);
+    return this.renderTextPdf(lines, logo);
   }
 
-  private renderTextPdf(lines: string[]) {
+  private renderTextPdf(lines: string[], logo?: PdfLogoImage | null) {
     const pageWidth = 595;
     const pageHeight = 842;
     const left = 40;
     const top = 802;
     const lineHeight = 14;
-    const maxLines = Math.floor((top - 40) / lineHeight);
-    const pages: string[] = [];
-
-    for (let index = 0; index < lines.length; index += maxLines) {
-      const pageLines = lines.slice(index, index + maxLines);
-      const stream = [
-        'BT',
-        '/F1 9 Tf',
-        `${left} ${top} Td`,
-        `${lineHeight} TL`,
-        ...pageLines.flatMap((line, lineIndex) => {
-          const text = `(${this.escapePdfText(this.truncatePdfLine(line))}) Tj`;
-          return lineIndex === 0 ? [text] : ['T*', text];
-        }),
-        'ET',
-      ].join('\n');
-      pages.push(stream);
-    }
 
     const objects: string[] = [];
     const addObject = (body: string) => {
@@ -707,9 +697,67 @@ export class InvoiceService {
     const fontId = addObject(
       '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
     );
+    const logoId = logo
+      ? addObject(
+          [
+            '<< /Type /XObject /Subtype /Image',
+            `/Width ${logo.width}`,
+            `/Height ${logo.height}`,
+            '/ColorSpace /DeviceRGB',
+            '/BitsPerComponent 8',
+            '/Filter [/ASCIIHexDecode /DCTDecode]',
+            `/Length ${logo.bytes.toString('hex').length + 1}`,
+            '>>',
+            'stream',
+            `${logo.bytes.toString('hex').toUpperCase()}>`,
+            'endstream',
+          ].join('\n'),
+        )
+      : null;
     const pageIds: number[] = [];
+    let lineIndex = 0;
+    let pageIndex = 0;
 
-    for (const stream of pages) {
+    while (lineIndex < lines.length || pageIndex === 0) {
+      const hasPageLogo = Boolean(pageIndex === 0 && logo && logoId);
+      const logoDrawWidth = hasPageLogo ? 64 : 0;
+      const logoDrawHeight =
+        hasPageLogo && logo!.width > 0
+          ? Math.min(64, (logo!.height / logo!.width) * logoDrawWidth)
+          : 0;
+      const textTop = hasPageLogo ? top - logoDrawHeight - 18 : top;
+      const maxLines = Math.max(1, Math.floor((textTop - 40) / lineHeight));
+      const pageLines = lines.slice(lineIndex, lineIndex + maxLines);
+      lineIndex += pageLines.length;
+
+      const imageOps = hasPageLogo
+        ? [
+            'q',
+            `${logoDrawWidth} 0 0 ${logoDrawHeight.toFixed(2)} ${left} ${(top - logoDrawHeight).toFixed(2)} cm`,
+            '/Logo Do',
+            'Q',
+          ]
+        : [];
+      const textOps = pageLines.length
+        ? [
+            'BT',
+            '/F1 9 Tf',
+            `${left} ${textTop.toFixed(2)} Td`,
+            `${lineHeight} TL`,
+            ...pageLines.flatMap((line, index) => {
+              const text = `(${this.escapePdfText(this.truncatePdfLine(line))}) Tj`;
+              return index === 0 ? [text] : ['T*', text];
+            }),
+            'ET',
+          ]
+        : [];
+      const stream = [...imageOps, ...textOps].join('\n');
+      const resources = [
+        `/Font << /F1 ${fontId} 0 R >>`,
+        logoId ? `/XObject << /Logo ${logoId} 0 R >>` : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
       const contentId = addObject(
         `<< /Length ${Buffer.byteLength(stream, 'utf8')} >>\nstream\n${stream}\nendstream`,
       );
@@ -718,12 +766,13 @@ export class InvoiceService {
           '<< /Type /Page',
           `/Parent ${pagesId} 0 R`,
           `/MediaBox [0 0 ${pageWidth} ${pageHeight}]`,
-          `/Resources << /Font << /F1 ${fontId} 0 R >> >>`,
+          `/Resources << ${resources} >>`,
           `/Contents ${contentId} 0 R`,
           '>>',
         ].join(' '),
       );
       pageIds.push(pageId);
+      pageIndex += 1;
     }
 
     objects[pagesId - 1] =
@@ -752,6 +801,62 @@ export class InvoiceService {
     );
 
     return Buffer.from(parts.join(''), 'utf8');
+  }
+
+  private embeddableLogo(value: string | null) {
+    if (!value) return null;
+
+    const match = /^data:image\/jpe?g;base64,([\s\S]+)$/i.exec(value.trim());
+    if (!match) return null;
+
+    try {
+      const bytes = Buffer.from(match[1], 'base64');
+      const size = this.jpegSize(bytes);
+      return size ? { bytes, ...size } : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private jpegSize(bytes: Buffer) {
+    if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
+      return null;
+    }
+
+    let offset = 2;
+    while (offset + 9 < bytes.length) {
+      if (bytes[offset] !== 0xff) {
+        offset += 1;
+        continue;
+      }
+
+      const marker = bytes[offset + 1];
+      offset += 2;
+
+      if (marker === 0xd8 || marker === 0xd9) continue;
+      if (marker === 0xda) break;
+      if (offset + 2 > bytes.length) break;
+
+      const length = bytes.readUInt16BE(offset);
+      if (length < 2 || offset + length > bytes.length) break;
+
+      const isStartOfFrame =
+        (marker >= 0xc0 && marker <= 0xc3) ||
+        (marker >= 0xc5 && marker <= 0xc7) ||
+        (marker >= 0xc9 && marker <= 0xcb) ||
+        (marker >= 0xcd && marker <= 0xcf);
+
+      if (isStartOfFrame) {
+        return {
+          height: bytes.readUInt16BE(offset + 3),
+          width: bytes.readUInt16BE(offset + 5),
+        };
+      }
+
+      offset += length;
+    }
+
+    return null;
   }
 
   private escapePdfText(value: string) {

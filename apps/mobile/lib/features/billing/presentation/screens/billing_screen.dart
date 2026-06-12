@@ -7,6 +7,7 @@ import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/billing/application/billing_pricing_calculations.dart';
 import 'package:swarnbook/features/billing/application/invoice_action_payloads.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/data_image.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
@@ -670,6 +671,7 @@ class _InvoiceDetailDialog extends StatelessWidget {
 
   Widget _buildShopHeader(BuildContext context) {
     final logoUrl = _shop['logoUrl']?.toString();
+    final hasLogo = logoUrl != null && logoUrl.isNotEmpty;
     final address = [
       _shop['address'],
       _shop['city'],
@@ -691,22 +693,12 @@ class _InvoiceDetailDialog extends StatelessWidget {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              gradient: logoUrl == null ? AppColors.goldGradient : null,
+              gradient: hasLogo ? null : AppColors.goldGradient,
               borderRadius: BorderRadius.circular(AppRadius.md),
-              color: logoUrl == null ? null : AppColors.surf(context),
+              color: hasLogo ? AppColors.surf(context) : null,
             ),
             clipBehavior: Clip.antiAlias,
-            child: logoUrl == null || logoUrl.isEmpty
-                ? const Center(
-                    child: Text(
-                      'SL',
-                      style: TextStyle(
-                        color: AppColors.textOnPrimary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  )
-                : Image.network(logoUrl, fit: BoxFit.cover),
+            child: _buildInvoiceLogo(logoUrl),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -749,6 +741,38 @@ class _InvoiceDetailDialog extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInvoiceLogo(String? logoUrl) {
+    if (logoUrl == null || logoUrl.isEmpty) {
+      return const Center(
+        child: Text(
+          'SL',
+          style: TextStyle(
+            color: AppColors.textOnPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      );
+    }
+
+    if (isDataImage(logoUrl)) {
+      try {
+        return Image.memory(decodeDataImage(logoUrl), fit: BoxFit.cover);
+      } catch (_) {
+        return const Icon(
+          Icons.broken_image_outlined,
+          color: AppColors.primary,
+        );
+      }
+    }
+
+    return Image.network(
+      logoUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) =>
+          const Icon(Icons.broken_image_outlined, color: AppColors.primary),
     );
   }
 
