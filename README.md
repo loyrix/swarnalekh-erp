@@ -143,8 +143,8 @@ Login -> Role-Based Access -> Mutating Action -> Activity Log -> Backup Export -
 | M2  | Mortgage  | Aadhaar/PAN/photo/customer photo support     | Built       | Verify frontend/backend sync                               |
 | M3  | Mortgage  | Interest/payable/due/pending calculations    | Built       | Verify with tests                                          |
 | M4  | Mortgage  | Collect interest/principal                   | Built       | Verify payment history                                     |
-| M5  | Mortgage  | Receipt generation                           | Built       | Needs production-grade verification                        |
-| M6  | Mortgage  | Close loan                                   | Built       | Needs full-flow test                                       |
+| M5  | Mortgage  | Receipt generation                           | Built       | Verified payload and PDF branding                          |
+| M6  | Mortgage  | Close loan                                   | Built       | Full-flow test verified                                    |
 | R1  | Reports   | Inventory reports                            | Built       | Current stock, sold products, low stock                    |
 | R2  | Reports   | Billing reports                              | Built       | Daily, monthly, GST                                        |
 | R3  | Reports   | Mortgage reports                             | Built       | Active, interest collection, closed                        |

@@ -96,6 +96,9 @@ describe('MortgageService', () => {
         findMany: jest.fn(),
         findFirst: jest.fn(),
       },
+      tenant: {
+        findUnique: jest.fn(),
+      },
     };
 
     return {
@@ -307,6 +310,9 @@ describe('MortgageService', () => {
           },
         ],
       }),
+    });
+    prisma.tenant.findUnique.mockResolvedValue({
+      shopName: 'SwarnaLekh',
     });
 
     const result = await service.getPaymentReceiptPdf(

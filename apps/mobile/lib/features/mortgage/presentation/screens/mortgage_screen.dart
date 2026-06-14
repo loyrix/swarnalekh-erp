@@ -1109,34 +1109,36 @@ class _CloseLoanDialogState extends State<_CloseLoanDialog> {
         width: 520,
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _field(
-                _amount,
-                'Settlement Amount *',
-                required: true,
-                numeric: true,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              DropdownButtonFormField<String>(
-                initialValue: _paymentMode,
-                decoration: const InputDecoration(labelText: 'Payment Mode'),
-                items: const [
-                  DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                  DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                  DropdownMenuItem(value: 'card', child: Text('Card')),
-                  DropdownMenuItem(
-                    value: 'bank_transfer',
-                    child: Text('Bank Transfer'),
-                  ),
-                ],
-                onChanged: (value) =>
-                    setState(() => _paymentMode = value ?? 'cash'),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _field(_notes, 'Notes'),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _field(
+                  _amount,
+                  'Settlement Amount *',
+                  required: true,
+                  numeric: true,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                DropdownButtonFormField<String>(
+                  initialValue: _paymentMode,
+                  decoration: const InputDecoration(labelText: 'Payment Mode'),
+                  items: const [
+                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
+                    DropdownMenuItem(value: 'upi', child: Text('UPI')),
+                    DropdownMenuItem(value: 'card', child: Text('Card')),
+                    DropdownMenuItem(
+                      value: 'bank_transfer',
+                      child: Text('Bank Transfer'),
+                    ),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _paymentMode = value ?? 'cash'),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _field(_notes, 'Notes'),
+              ],
+            ),
           ),
         ),
       ),
