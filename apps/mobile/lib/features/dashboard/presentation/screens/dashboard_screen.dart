@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/core/network/api_client.dart';
@@ -180,7 +181,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         const SizedBox(height: AppSpacing.lg),
         StaggeredSection(index: 1, child: _buildQuickActions()),
         const SizedBox(height: AppSpacing.lg),
-        StaggeredSection(index: 2, child: _buildStatsGrid()),
+        StaggeredSection(index: 2, child: _buildCharts()),
+        const SizedBox(height: AppSpacing.lg),
+        StaggeredSection(index: 3, child: _buildStatsGrid()),
       ],
     );
   }
@@ -389,6 +392,125 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ],
         );
+      },
+    );
+  }
+
+  Widget _buildCharts() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth > 800;
+        final chartHeight = 300.0;
+
+        // Use a mock line chart for Revenue trend ending at actual monthly revenue
+        final actualRevenue = _number(_stats['monthlyRevenue']);
+
+        final revenueChart = GlassCard(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Revenue Trend (Mock)',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.text1(context),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              SizedBox(
+                height: chartHeight,
+                child: LineChart(
+                  LineChartData(
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: actualRevenue > 0
+                          ? actualRevenue / 4
+                          : 1000,
+                      getDrawingHorizontalLine: (value) =>
+                          FlLine(color: AppColors.div(context), strokeWidth: 1),
+                    ),
+                    titlesData: FlTitlesData(
+                      show: true,
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 30,
+                          interval: 1,
+                          getTitlesWidget: (value, meta) {
+                            final days = ['W1', 'W2', 'W3', 'W4'];
+                            if (value >= 0 && value < days.length) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  days[value.toInt()],
+                                  style: TextStyle(
+                                    color: AppColors.text3(context),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: actualRevenue > 0
+                              ? actualRevenue / 4
+                              : 1000,
+                          reservedSize: 50,
+                          getTitlesWidget: (value, meta) {
+                            return Text(
+                              _formatMoney(value),
+                              style: TextStyle(
+                                color: AppColors.text3(context),
+                                fontSize: 11,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: [
+                          FlSpot(0, actualRevenue * 0.2),
+                          FlSpot(1, actualRevenue * 0.4),
+                          FlSpot(2, actualRevenue * 0.7),
+                          FlSpot(3, actualRevenue),
+                        ],
+                        isCurved: true,
+                        color: AppColors.primary,
+                        barWidth: 4,
+                        isStrokeCapRound: true,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        return isWide
+            ? Row(children: [Expanded(child: revenueChart)])
+            : revenueChart;
       },
     );
   }

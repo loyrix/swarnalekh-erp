@@ -195,11 +195,19 @@ CustomTransitionPage _fadeTransitionPage({
     transitionDuration: const Duration(milliseconds: 300),
     reverseTransitionDuration: const Duration(milliseconds: 200),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final fadeAnim = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOut,
+      );
+      final scaleAnim = Tween<double>(
+        begin: 0.98,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
       return ColoredBox(
         color: AppColors.bg(context),
         child: FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-          child: child,
+          opacity: fadeAnim,
+          child: ScaleTransition(scale: scaleAnim, child: child),
         ),
       );
     },

@@ -10,6 +10,7 @@ import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/application/data_image.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 
 class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
@@ -182,8 +183,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadProfile,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+      child: KeyboardAwareScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

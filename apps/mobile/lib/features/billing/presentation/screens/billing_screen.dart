@@ -12,6 +12,7 @@ import 'package:swarnbook/shared/application/data_image.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BillingScreen extends StatefulWidget {
@@ -274,7 +275,7 @@ class _BillingScreenState extends State<BillingScreen> {
       ),
     ];
 
-    return SingleChildScrollView(
+    return KeyboardAwareScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1538,7 +1539,7 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
               )
             : Form(
                 key: _formKey,
-                child: SingleChildScrollView(
+                child: KeyboardAwareScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,

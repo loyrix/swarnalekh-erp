@@ -6,6 +6,7 @@ import 'package:swarnbook/features/users/application/user_management_payloads.da
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 
 class UserManagementScreen extends StatefulWidget {
@@ -135,8 +136,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadUsers,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+      child: KeyboardAwareScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,7 +450,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         width: 460,
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
+          child: KeyboardAwareScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

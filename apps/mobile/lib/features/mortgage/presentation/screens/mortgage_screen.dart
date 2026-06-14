@@ -10,6 +10,7 @@ import 'package:swarnbook/features/mortgage/application/mortgage_receipt_payload
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 
 class MortgageScreen extends StatefulWidget {
   const MortgageScreen({super.key});
@@ -174,8 +175,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: _loadData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+      child: KeyboardAwareScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -835,7 +835,7 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
         width: 760,
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
+          child: KeyboardAwareScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -986,7 +986,7 @@ class _CollectPaymentDialogState extends State<_CollectPaymentDialog> {
         width: 520,
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
+          child: KeyboardAwareScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1109,7 +1109,7 @@ class _CloseLoanDialogState extends State<_CloseLoanDialog> {
         width: 520,
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
+          child: KeyboardAwareScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
