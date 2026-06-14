@@ -56,6 +56,7 @@ dev_dependencies:
 
   # Testing
   mocktail: ^1.0.4
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -64,3 +65,14 @@ flutter:
     - assets/brand/swarnalekh-logo.png
     - assets/brand/swarnalekh-mark.png
     - assets/brand/swarnalekh-mark-transparent.png
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/brand/swarnalekh-mark.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/brand/swarnalekh-mark.png"
+    background_color: "#161B22"
+    theme_color: "#161B22"
