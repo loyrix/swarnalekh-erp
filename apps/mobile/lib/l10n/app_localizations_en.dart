@@ -437,6 +437,148 @@ class AppLocalizationsEn extends AppLocalizations {
       'Products with a saved selling price use that price. Items without selling price need current rates before billing.';
 
   @override
+  String get billingSectionDashboard => 'Dashboard';
+
+  @override
+  String get billingSectionHistory => 'Invoice History';
+
+  @override
+  String get billingTodayRevenue => 'Today\'s Revenue';
+
+  @override
+  String get billingMonthlyRevenue => 'Monthly Revenue';
+
+  @override
+  String get billingTotalBills => 'Total Bills';
+
+  @override
+  String get billingAverageBill => 'Average Bill';
+
+  @override
+  String get billingTopSellingProducts => 'Top Selling Products';
+
+  @override
+  String get billingFromDate => 'From date';
+
+  @override
+  String get billingToDate => 'To date';
+
+  @override
+  String get billingDateHint => 'YYYY-MM-DD';
+
+  @override
+  String get billingClearFilters => 'Clear filters';
+
+  @override
+  String get billingRefresh => 'Refresh invoices';
+
+  @override
+  String get billingViewInvoiceDetails => 'View invoice details';
+
+  @override
+  String get billingReprintInvoice => 'Reprint invoice';
+
+  @override
+  String get billingDownloadPdf => 'Download PDF';
+
+  @override
+  String get billingShareWhatsApp => 'Share on WhatsApp';
+
+  @override
+  String get billingInvoiceDetails => 'Invoice Details';
+
+  @override
+  String get billingInvoiceNumber => 'Invoice No';
+
+  @override
+  String get billingInvoiceDate => 'Invoice Date';
+
+  @override
+  String get billingPaymentMethod => 'Payment Method';
+
+  @override
+  String get billingMobile => 'Mobile';
+
+  @override
+  String get billingGstin => 'GSTIN';
+
+  @override
+  String get billingPurity => 'Purity';
+
+  @override
+  String get billingGross => 'Gross';
+
+  @override
+  String get billingNet => 'Net';
+
+  @override
+  String get billingRate => 'Rate';
+
+  @override
+  String get billingGstBase => 'GST Base';
+
+  @override
+  String get billingNoProductsFound => 'No products found';
+
+  @override
+  String get billingGstBreakdown => 'GST Breakdown';
+
+  @override
+  String get billingTaxableAmount => 'Taxable Amount';
+
+  @override
+  String get billingTotalGst => 'Total GST';
+
+  @override
+  String get billingBillCalculation => 'Bill Calculation';
+
+  @override
+  String get billingGoldValue => 'Gold Value';
+
+  @override
+  String get billingStoneValue => 'Stone Value';
+
+  @override
+  String get billingDiscount => 'Discount';
+
+  @override
+  String get billingOldGold => 'Old Gold';
+
+  @override
+  String get billingInvoiceProtection => 'Invoice Protection';
+
+  @override
+  String get billingVerification => 'Verification';
+
+  @override
+  String get billingQrPayload => 'QR Payload';
+
+  @override
+  String get billingGenerated => 'Generated';
+
+  @override
+  String get billingInvoicePdfReady => 'Invoice PDF ready';
+
+  @override
+  String get billingWhatsAppOpened => 'WhatsApp opened';
+
+  @override
+  String get errorInvoiceIdMissing => 'Invoice ID is missing';
+
+  @override
+  String get errorFailedLoadInvoiceDetails => 'Failed to load invoice details';
+
+  @override
+  String get errorFailedGenerateInvoicePdf => 'Failed to generate invoice PDF';
+
+  @override
+  String get errorCouldNotOpenWhatsApp => 'Could not open WhatsApp';
+
+  @override
+  String get errorFailedPrepareWhatsAppInvoice =>
+      'Failed to prepare WhatsApp invoice';
+
+  @override
   String get errorFailedLoadShopProfile => 'Failed to load shop profile';
 
   @override
@@ -577,6 +719,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardAddFirstCustomer => 'Add First Customer';
+
+  @override
+  String get dashboardSoldProducts => 'Sold Products';
+
+  @override
+  String get dashboardSoldThisMonthSubtitle => 'Sold this month';
 
   @override
   String get errorFailedLoadDashboard => 'Failed to load dashboard data';

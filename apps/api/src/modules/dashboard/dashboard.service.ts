@@ -44,6 +44,7 @@ export class DashboardService {
       monthlyInvoices,
       totalBillsGenerated,
       activeMortgageLoans,
+      monthlySoldItemsObj,
     ] = await Promise.all([
       this.prisma.inventoryItem.findMany({
         where: { tenantId, deletedAt: null },
@@ -95,6 +96,16 @@ export class DashboardService {
       }),
       this.prisma.mortgageLoan.findMany({
         where: { tenantId, status: 'active', deletedAt: null },
+      }),
+      this.prisma.invoiceItem.aggregate({
+        where: {
+          invoice: {
+            tenantId,
+            invoiceDate: { gte: monthStart },
+            deletedAt: null,
+          },
+        },
+        _sum: { quantity: true },
       }),
     ]);
 
@@ -157,6 +168,8 @@ export class DashboardService {
       0,
     );
 
+    const soldProductsThisMonth = monthlySoldItemsObj._sum.quantity ?? 0;
+
     return {
       totalGoldStock: this.round(totalGoldStock, 3),
       totalSilverStock: this.round(totalSilverStock, 3),
@@ -167,6 +180,7 @@ export class DashboardService {
       todaysSales: this.round(todaysSales),
       totalBillsGenerated,
       activeMortgagePrincipal: this.round(activeMortgagePrincipal),
+      soldProductsThisMonth,
     };
   }
 

@@ -286,12 +286,36 @@ describe('InvoiceService', () => {
         where: expect.objectContaining({
           tenantId: 'tenant-1',
           deletedAt: null,
+          invoiceDate: {
+            gte: new Date('2026-06-01T00:00:00.000Z'),
+            lte: new Date('2026-06-10T23:59:59.999Z'),
+          },
           OR: expect.arrayContaining([
             { invoiceNumber: { contains: 'Asha', mode: 'insensitive' } },
             { customerName: { contains: 'Asha', mode: 'insensitive' } },
             { customerPhone: { contains: 'Asha', mode: 'insensitive' } },
           ]),
         }),
+      }),
+    );
+  });
+
+  it('keeps invoice history unfiltered when search and dates are blank', async () => {
+    const { service, prisma } = createService();
+    prisma.invoice.findMany.mockResolvedValue([]);
+
+    await service.findAll('tenant-1', {
+      search: '   ',
+      dateFrom: '',
+      dateTo: 'not-a-date',
+    });
+
+    expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tenantId: 'tenant-1',
+          deletedAt: null,
+        },
       }),
     );
   });

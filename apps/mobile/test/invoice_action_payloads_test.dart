@@ -7,6 +7,7 @@ void main() {
   test('decodes invoice PDF payload bytes and file name', () {
     final payload = decodeInvoicePdfPayload({
       'fileName': 'SLK-2026-0001.pdf',
+      'mimeType': 'application/pdf',
       'base64': base64Encode([0x25, 0x50, 0x44, 0x46]),
     }, fallbackFileName: 'invoice.pdf');
 
@@ -16,11 +17,11 @@ void main() {
 
   test('uses fallback file name when PDF payload omits one', () {
     final payload = decodeInvoicePdfPayload({
-      'base64': base64Encode([1, 2, 3]),
+      'base64': base64Encode([0x25, 0x50, 0x44, 0x46]),
     }, fallbackFileName: 'invoice-fallback.pdf');
 
     expect(payload.fileName, 'invoice-fallback.pdf');
-    expect(payload.bytes, [1, 2, 3]);
+    expect(payload.bytes, [0x25, 0x50, 0x44, 0x46]);
   });
 
   test('parses WhatsApp invoice URL', () {
@@ -40,6 +41,23 @@ void main() {
     );
     expect(
       () => invoiceWhatsAppUri({'whatsappUrl': 'not a url'}),
+      throwsFormatException,
+    );
+    expect(
+      () => decodeInvoicePdfPayload({
+        'mimeType': 'text/plain',
+        'base64': base64Encode([0x25, 0x50, 0x44, 0x46]),
+      }, fallbackFileName: 'invoice.pdf'),
+      throwsFormatException,
+    );
+    expect(
+      () => decodeInvoicePdfPayload({
+        'base64': base64Encode([1, 2, 3]),
+      }, fallbackFileName: 'invoice.pdf'),
+      throwsFormatException,
+    );
+    expect(
+      () => invoiceWhatsAppUri({'whatsappUrl': 'https://example.com/share'}),
       throwsFormatException,
     );
   });

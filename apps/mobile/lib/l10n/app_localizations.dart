@@ -940,6 +940,288 @@ abstract class AppLocalizations {
   /// **'Products with a saved selling price use that price. Items without selling price need current rates before billing.'**
   String get billingRatesHint;
 
+  /// No description provided for @billingSectionDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get billingSectionDashboard;
+
+  /// No description provided for @billingSectionHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice History'**
+  String get billingSectionHistory;
+
+  /// No description provided for @billingTodayRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Revenue'**
+  String get billingTodayRevenue;
+
+  /// No description provided for @billingMonthlyRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Revenue'**
+  String get billingMonthlyRevenue;
+
+  /// No description provided for @billingTotalBills.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Bills'**
+  String get billingTotalBills;
+
+  /// No description provided for @billingAverageBill.
+  ///
+  /// In en, this message translates to:
+  /// **'Average Bill'**
+  String get billingAverageBill;
+
+  /// No description provided for @billingTopSellingProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Selling Products'**
+  String get billingTopSellingProducts;
+
+  /// No description provided for @billingFromDate.
+  ///
+  /// In en, this message translates to:
+  /// **'From date'**
+  String get billingFromDate;
+
+  /// No description provided for @billingToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'To date'**
+  String get billingToDate;
+
+  /// No description provided for @billingDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'YYYY-MM-DD'**
+  String get billingDateHint;
+
+  /// No description provided for @billingClearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get billingClearFilters;
+
+  /// No description provided for @billingRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh invoices'**
+  String get billingRefresh;
+
+  /// No description provided for @billingViewInvoiceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View invoice details'**
+  String get billingViewInvoiceDetails;
+
+  /// No description provided for @billingReprintInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Reprint invoice'**
+  String get billingReprintInvoice;
+
+  /// No description provided for @billingDownloadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get billingDownloadPdf;
+
+  /// No description provided for @billingShareWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Share on WhatsApp'**
+  String get billingShareWhatsApp;
+
+  /// No description provided for @billingInvoiceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Details'**
+  String get billingInvoiceDetails;
+
+  /// No description provided for @billingInvoiceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice No'**
+  String get billingInvoiceNumber;
+
+  /// No description provided for @billingInvoiceDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Date'**
+  String get billingInvoiceDate;
+
+  /// No description provided for @billingPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get billingPaymentMethod;
+
+  /// No description provided for @billingMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get billingMobile;
+
+  /// No description provided for @billingGstin.
+  ///
+  /// In en, this message translates to:
+  /// **'GSTIN'**
+  String get billingGstin;
+
+  /// No description provided for @billingPurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Purity'**
+  String get billingPurity;
+
+  /// No description provided for @billingGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross'**
+  String get billingGross;
+
+  /// No description provided for @billingNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get billingNet;
+
+  /// No description provided for @billingRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate'**
+  String get billingRate;
+
+  /// No description provided for @billingGstBase.
+  ///
+  /// In en, this message translates to:
+  /// **'GST Base'**
+  String get billingGstBase;
+
+  /// No description provided for @billingNoProductsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No products found'**
+  String get billingNoProductsFound;
+
+  /// No description provided for @billingGstBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'GST Breakdown'**
+  String get billingGstBreakdown;
+
+  /// No description provided for @billingTaxableAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Taxable Amount'**
+  String get billingTaxableAmount;
+
+  /// No description provided for @billingTotalGst.
+  ///
+  /// In en, this message translates to:
+  /// **'Total GST'**
+  String get billingTotalGst;
+
+  /// No description provided for @billingBillCalculation.
+  ///
+  /// In en, this message translates to:
+  /// **'Bill Calculation'**
+  String get billingBillCalculation;
+
+  /// No description provided for @billingGoldValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Value'**
+  String get billingGoldValue;
+
+  /// No description provided for @billingStoneValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Stone Value'**
+  String get billingStoneValue;
+
+  /// No description provided for @billingDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get billingDiscount;
+
+  /// No description provided for @billingOldGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Old Gold'**
+  String get billingOldGold;
+
+  /// No description provided for @billingInvoiceProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Protection'**
+  String get billingInvoiceProtection;
+
+  /// No description provided for @billingVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification'**
+  String get billingVerification;
+
+  /// No description provided for @billingQrPayload.
+  ///
+  /// In en, this message translates to:
+  /// **'QR Payload'**
+  String get billingQrPayload;
+
+  /// No description provided for @billingGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated'**
+  String get billingGenerated;
+
+  /// No description provided for @billingInvoicePdfReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice PDF ready'**
+  String get billingInvoicePdfReady;
+
+  /// No description provided for @billingWhatsAppOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp opened'**
+  String get billingWhatsAppOpened;
+
+  /// No description provided for @errorInvoiceIdMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice ID is missing'**
+  String get errorInvoiceIdMissing;
+
+  /// No description provided for @errorFailedLoadInvoiceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load invoice details'**
+  String get errorFailedLoadInvoiceDetails;
+
+  /// No description provided for @errorFailedGenerateInvoicePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate invoice PDF'**
+  String get errorFailedGenerateInvoicePdf;
+
+  /// No description provided for @errorCouldNotOpenWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open WhatsApp'**
+  String get errorCouldNotOpenWhatsApp;
+
+  /// No description provided for @errorFailedPrepareWhatsAppInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to prepare WhatsApp invoice'**
+  String get errorFailedPrepareWhatsAppInvoice;
+
   /// No description provided for @errorFailedLoadShopProfile.
   ///
   /// In en, this message translates to:
@@ -1221,6 +1503,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add First Customer'**
   String get dashboardAddFirstCustomer;
+
+  /// No description provided for @dashboardSoldProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Products'**
+  String get dashboardSoldProducts;
+
+  /// No description provided for @dashboardSoldThisMonthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold this month'**
+  String get dashboardSoldThisMonthSubtitle;
 
   /// No description provided for @errorFailedLoadDashboard.
   ///

@@ -394,6 +394,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildStatsGrid() {
+    final l10n = AppLocalizations.of(context)!;
     final metrics = [
       _DashboardMetric(
         icon: Icons.scale_rounded,
@@ -450,6 +451,13 @@ class _DashboardScreenState extends State<DashboardScreen>
         value: _formatCount(_stats['totalBillsGenerated']),
         subtitle: 'Generated invoices',
         accentColor: AppColors.primary,
+      ),
+      _DashboardMetric(
+        icon: Icons.shopping_bag_rounded,
+        label: l10n.dashboardSoldProducts,
+        value: _formatCount(_stats['soldProductsThisMonth']),
+        subtitle: l10n.dashboardSoldThisMonthSubtitle,
+        accentColor: AppColors.info,
       ),
     ];
 

@@ -119,7 +119,7 @@ Login -> Role-Based Access -> Mutating Action -> Activity Log -> Backup Export -
 | D1  | Dashboard | Gold stock, silver stock, inventory value    | Built       | Verify live data                                           |
 | D2  | Dashboard | Monthly revenue, today sales, total bills    | Built       | Verify live data                                           |
 | D3  | Dashboard | Pending interest and active loans            | Built       | Verify live data                                           |
-| D4  | Dashboard | Sold products summary                        | Pending     | Missing PDF dashboard item                                 |
+| D4  | Dashboard | Sold products summary                        | Built       | Missing PDF dashboard item added                           |
 | D5  | Dashboard | Quick actions                                | Built       | Verify role visibility                                     |
 | D6  | Dashboard | Optional charts                              | Pending     | Monthly sales, stock trend, loan collection, daily billing |
 | I1  | Inventory | Add stock form fields from PDF               | Partial     | Cleanup field alignment                                    |
@@ -135,8 +135,8 @@ Login -> Role-Based Access -> Mutating Action -> Activity Log -> Backup Export -
 | B3  | Billing   | Frontend/backend totals match                | Built       | Explicit price flow covered, rate fallback preserved       |
 | B4  | Billing   | Payment methods from PDF                     | Built       | Cash, UPI, cards, bank transfer                            |
 | B5  | Billing   | Generate invoice and reduce stock            | Built       | Covered by invoice service regression tests                |
-| B6  | Billing   | Invoice history search/filter                | Partial     | Verify customer/date/invoice search                        |
-| B7  | Billing   | Reprint/download/share invoice               | Partial     | Needs production-grade verification                        |
+| B6  | Billing   | Invoice history search/filter                | Built       | Search, date filters, refresh, and clear filters verified  |
+| B7  | Billing   | Reprint/download/share invoice               | Built       | Validated PDF and WhatsApp action flows                    |
 | B8  | Billing   | Branded invoice PDF with shop logo           | Built       | Shop profile logo is reused in invoice preview and PDF     |
 | B9  | Billing   | Optional QR code                             | Pending     | Optional per PDF                                           |
 | M1  | Mortgage  | Add mortgage with customer/gold/loan details | Built       | Verify fields and validation                               |

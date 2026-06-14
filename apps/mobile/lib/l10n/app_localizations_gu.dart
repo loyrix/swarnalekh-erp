@@ -437,6 +437,148 @@ class AppLocalizationsGu extends AppLocalizations {
       'સેવ કરેલી સેલિંગ પ્રાઇસ ધરાવતા પ્રોડક્ટ એ જ કિંમતે બિલ થશે. સેલિંગ પ્રાઇસ વગરના આઇટમ્સ માટે બિલિંગ પહેલાં હાલના દર જરૂરી છે.';
 
   @override
+  String get billingSectionDashboard => 'ડેશબોર્ડ';
+
+  @override
+  String get billingSectionHistory => 'ઇન્વોઇસ ઇતિહાસ';
+
+  @override
+  String get billingTodayRevenue => 'આજનું વેચાણ';
+
+  @override
+  String get billingMonthlyRevenue => 'માસિક વેચાણ';
+
+  @override
+  String get billingTotalBills => 'કુલ બિલ';
+
+  @override
+  String get billingAverageBill => 'સરેરાશ બિલ';
+
+  @override
+  String get billingTopSellingProducts => 'સૌથી વધુ વેચાયેલા પ્રોડક્ટ';
+
+  @override
+  String get billingFromDate => 'શરૂ તારીખ';
+
+  @override
+  String get billingToDate => 'અંતિમ તારીખ';
+
+  @override
+  String get billingDateHint => 'YYYY-MM-DD';
+
+  @override
+  String get billingClearFilters => 'ફિલ્ટર સાફ કરો';
+
+  @override
+  String get billingRefresh => 'ઇન્વોઇસ રિફ્રેશ કરો';
+
+  @override
+  String get billingViewInvoiceDetails => 'ઇન્વોઇસ વિગતો જુઓ';
+
+  @override
+  String get billingReprintInvoice => 'ઇન્વોઇસ ફરી પ્રિન્ટ કરો';
+
+  @override
+  String get billingDownloadPdf => 'PDF ડાઉનલોડ કરો';
+
+  @override
+  String get billingShareWhatsApp => 'WhatsApp પર શેર કરો';
+
+  @override
+  String get billingInvoiceDetails => 'ઇન્વોઇસ વિગતો';
+
+  @override
+  String get billingInvoiceNumber => 'ઇન્વોઇસ નંબર';
+
+  @override
+  String get billingInvoiceDate => 'ઇન્વોઇસ તારીખ';
+
+  @override
+  String get billingPaymentMethod => 'ચુકવણી રીત';
+
+  @override
+  String get billingMobile => 'મોબાઇલ';
+
+  @override
+  String get billingGstin => 'GSTIN';
+
+  @override
+  String get billingPurity => 'શુદ્ધતા';
+
+  @override
+  String get billingGross => 'ગ્રોસ';
+
+  @override
+  String get billingNet => 'નેટ';
+
+  @override
+  String get billingRate => 'દર';
+
+  @override
+  String get billingGstBase => 'GST બેઝ';
+
+  @override
+  String get billingNoProductsFound => 'કોઈ પ્રોડક્ટ મળ્યો નથી';
+
+  @override
+  String get billingGstBreakdown => 'GST બ્રેકડાઉન';
+
+  @override
+  String get billingTaxableAmount => 'ટેક્સેબલ રકમ';
+
+  @override
+  String get billingTotalGst => 'કુલ GST';
+
+  @override
+  String get billingBillCalculation => 'બિલ ગણતરી';
+
+  @override
+  String get billingGoldValue => 'સોનાની વેલ્યૂ';
+
+  @override
+  String get billingStoneValue => 'સ્ટોન વેલ્યૂ';
+
+  @override
+  String get billingDiscount => 'ડિસ્કાઉન્ટ';
+
+  @override
+  String get billingOldGold => 'જૂનું સોનું';
+
+  @override
+  String get billingInvoiceProtection => 'ઇન્વોઇસ સુરક્ષા';
+
+  @override
+  String get billingVerification => 'વેરિફિકેશન';
+
+  @override
+  String get billingQrPayload => 'QR પેલોડ';
+
+  @override
+  String get billingGenerated => 'જનરેટેડ';
+
+  @override
+  String get billingInvoicePdfReady => 'ઇન્વોઇસ PDF તૈયાર છે';
+
+  @override
+  String get billingWhatsAppOpened => 'WhatsApp ખુલ્યું';
+
+  @override
+  String get errorInvoiceIdMissing => 'ઇન્વોઇસ ID મળ્યું નથી';
+
+  @override
+  String get errorFailedLoadInvoiceDetails => 'ઇન્વોઇસ વિગતો લોડ ન થઈ શકી';
+
+  @override
+  String get errorFailedGenerateInvoicePdf => 'ઇન્વોઇસ PDF બની શકી નહીં';
+
+  @override
+  String get errorCouldNotOpenWhatsApp => 'WhatsApp ખૂલી શક્યું નહીં';
+
+  @override
+  String get errorFailedPrepareWhatsAppInvoice =>
+      'WhatsApp ઇન્વોઇસ તૈયાર થઈ શકી નહીં';
+
+  @override
   String get errorFailedLoadShopProfile => 'દુકાન પ્રોફાઇલ લોડ ન થઈ શકી';
 
   @override
@@ -578,6 +720,12 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get dashboardAddFirstCustomer => 'પ્રથમ ગ્રાહક ઉમેરો';
+
+  @override
+  String get dashboardSoldProducts => 'વેચાયેલા પ્રોડક્ટ';
+
+  @override
+  String get dashboardSoldThisMonthSubtitle => 'આ મહિને વેચાયેલા';
 
   @override
   String get errorFailedLoadDashboard => 'ડેશબોર્ડ ડેટા લોડ ન થઈ શક્યો';

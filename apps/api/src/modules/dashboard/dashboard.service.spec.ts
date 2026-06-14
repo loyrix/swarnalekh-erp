@@ -27,6 +27,9 @@ describe('DashboardService', () => {
         findMany: jest.fn(),
         count: jest.fn(),
       },
+      invoiceItem: {
+        aggregate: jest.fn(),
+      },
       mortgageLoan: {
         findMany: jest.fn(),
       },
@@ -104,6 +107,7 @@ describe('DashboardService', () => {
       ]);
     prisma.invoice.count.mockResolvedValue(12);
     prisma.mortgageLoan.findMany.mockResolvedValue([makeActiveLoan()]);
+    prisma.invoiceItem.aggregate.mockResolvedValue({ _sum: { quantity: 5 } });
 
     await expect(service.getStats('tenant-1')).resolves.toEqual({
       totalGoldStock: 21,
@@ -115,6 +119,7 @@ describe('DashboardService', () => {
       todaysSales: 15000,
       totalBillsGenerated: 12,
       activeMortgagePrincipal: 100000,
+      soldProductsThisMonth: 5,
     });
     expect(prisma.inventoryItem.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -138,6 +143,7 @@ describe('DashboardService', () => {
       todaysSales: 0,
       totalBillsGenerated: 0,
       activeMortgagePrincipal: 0,
+      soldProductsThisMonth: 0,
     };
 
     jest.spyOn(service, 'getStats').mockResolvedValue(stats);
