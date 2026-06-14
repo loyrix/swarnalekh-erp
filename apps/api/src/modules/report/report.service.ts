@@ -210,10 +210,24 @@ export class ReportService {
       throw new BadRequestException('Unsupported report type');
     }
 
-    const overview = await this.getOverview(tenantId, filters);
+    const [overview, tenant] = await Promise.all([
+      this.getOverview(tenantId, filters),
+      this.prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { shopName: true },
+      }),
+    ]);
+    const shopName = tenant?.shopName ?? 'SwarnaLekh';
+
     const rows = this.rowsForType(overview.reports, type);
     const title = REPORT_LABELS[type];
-    const pdf = this.buildReportPdf(title, rows, REPORT_COLUMNS[type], filters);
+    const pdf = this.buildReportPdf(
+      shopName,
+      title,
+      rows,
+      REPORT_COLUMNS[type],
+      filters,
+    );
 
     return {
       reportType: type,
@@ -519,13 +533,14 @@ export class ReportService {
   }
 
   private buildReportPdf(
+    shopName: string,
     title: string,
     rows: any[],
     columns: Array<{ label: string; key: string }>,
     filters: ReportQueryDto,
   ) {
     const lines = [
-      'SwarnaLekh',
+      shopName,
       title,
       `Generated: ${this.formatDate(new Date())}`,
       `Filters: ${this.filterSummary(filters)}`,

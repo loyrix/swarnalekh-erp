@@ -17,6 +17,9 @@ describe('ReportService', () => {
       mortgageLoan: {
         findMany: jest.fn(),
       },
+      tenant: {
+        findUnique: jest.fn(),
+      },
     };
 
     return {
@@ -184,6 +187,7 @@ describe('ReportService', () => {
   it('exports a PDF payload for a selected report', async () => {
     const { service, prisma } = createService();
     seedReportMocks(prisma);
+    prisma.tenant.findUnique.mockResolvedValue({ shopName: 'My Shop' });
 
     const exportPayload = await service.getExport('tenant-1', 'sold-products', {
       dateFrom: '2026-06-10',

@@ -148,7 +148,7 @@ Login -> Role-Based Access -> Mutating Action -> Activity Log -> Backup Export -
 | R1  | Reports   | Inventory reports                            | Built       | Current stock, sold products, low stock                    |
 | R2  | Reports   | Billing reports                              | Built       | Daily, monthly, GST                                        |
 | R3  | Reports   | Mortgage reports                             | Built       | Active, interest collection, closed                        |
-| R4  | Reports   | Search and filters                           | Partial     | Verify date/category/branch/status                         |
+| R4  | Reports   | Search and filters                           | Built       | Date/category/branch/status applied to API and UI          |
 | S1  | Security  | Activity logs                                | Built       | Mutating API calls are logged                              |
 | S2  | Security  | Backup export                                | Built       | Needs final verification                                   |
 | S3  | Security  | Invoice protection                           | Partial     | Verify invoice code/QR behavior                            |

@@ -11,6 +11,8 @@ import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 
+import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
+
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
 
@@ -209,25 +211,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
       );
     }
 
-    return RefreshIndicator(
-      color: AppColors.primary,
-      onRefresh: _loadReports,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildFilters(),
-            const SizedBox(height: AppSpacing.md),
-            _buildGroupSwitch(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildActiveSummary(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildActiveReport(),
-          ],
+    return KeyboardDismissRegion(
+      child: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: _loadReports,
+        child: KeyboardAwareScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: AppSpacing.lg),
+              _buildFilters(),
+              const SizedBox(height: AppSpacing.md),
+              _buildGroupSwitch(),
+              const SizedBox(height: AppSpacing.lg),
+              _buildActiveSummary(),
+              const SizedBox(height: AppSpacing.lg),
+              _buildActiveReport(),
+            ],
+          ),
         ),
       ),
     );
