@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/billing/application/billing_pricing_calculations.dart';
@@ -1116,11 +1117,16 @@ class _InvoiceDetailDialog extends StatelessWidget {
             l10n.billingVerification,
             _text(printable['verificationCode'], '-'),
           ),
-          _protectionMetric(
-            context,
-            l10n.billingQrPayload,
-            _text(printable['qrPayload'], '-'),
-          ),
+          if (_hasText(printable['qrPayload']))
+            SizedBox(
+              width: 80,
+              height: 80,
+              child: QrImageView(
+                data: printable['qrPayload'],
+                version: QrVersions.auto,
+                backgroundColor: Colors.white,
+              ),
+            ),
           _protectionMetric(
             context,
             l10n.billingGenerated,

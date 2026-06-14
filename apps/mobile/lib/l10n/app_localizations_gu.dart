@@ -939,4 +939,11 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get otpBackToLogin => 'લોગિન પર પાછા જાઓ';
+
+  @override
+  String get userOnboardingTipTitle => 'Staff Onboarding';
+
+  @override
+  String get userOnboardingTipDesc =>
+      'Newly added staff must download the app and use the Sign Up option with the exact email address provided here to set their password and link their account.';
 }

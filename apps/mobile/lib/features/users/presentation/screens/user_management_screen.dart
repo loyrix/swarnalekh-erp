@@ -6,6 +6,7 @@ import 'package:swarnbook/features/users/application/user_management_payloads.da
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/l10n/app_localizations.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -142,6 +143,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           children: [
             _buildHeader(),
             const SizedBox(height: AppSpacing.lg),
+            _buildOnboardingTip(),
+            const SizedBox(height: AppSpacing.lg),
             _buildSearch(),
             const SizedBox(height: AppSpacing.lg),
             _buildUserList(),
@@ -176,6 +179,52 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           onPressed: () => _openUserDialog(),
         ),
       ],
+    );
+  }
+
+  Widget _buildOnboardingTip() {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.info.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            color: AppColors.info,
+            size: 20,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.userOnboardingTipTitle,
+                  style: const TextStyle(
+                    color: AppColors.info,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.userOnboardingTipDesc,
+                  style: TextStyle(
+                    color: AppColors.text2(context),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

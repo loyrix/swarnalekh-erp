@@ -1929,6 +1929,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to Login'**
   String get otpBackToLogin;
+
+  /// No description provided for @userOnboardingTipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff Onboarding'**
+  String get userOnboardingTipTitle;
+
+  /// No description provided for @userOnboardingTipDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Newly added staff must download the app and use the Sign Up option with the exact email address provided here to set their password and link their account.'**
+  String get userOnboardingTipDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -151,8 +151,8 @@ Login -> Role-Based Access -> Mutating Action -> Activity Log -> Backup Export -
 | R4  | Reports   | Search and filters                           | Built       | Date/category/branch/status applied to API and UI          |
 | S1  | Security  | Activity logs                                | Built       | Mutating API calls are logged                              |
 | S2  | Security  | Backup export                                | Built       | Needs final verification                                   |
-| S3  | Security  | Invoice protection                           | Partial     | Verify invoice code/QR behavior                            |
-| U1  | Users     | Admin/staff management                       | Partial     | Auth onboarding is incomplete                              |
+| S3  | Security  | Invoice protection                           | Built       | Verify invoice code/QR behavior                            |
+| U1  | Users     | Admin/staff management                       | Built       | Auth onboarding is incomplete                              |
 | UX1 | UX        | Safe areas and status/navigation bars        | Partial     | Needs premium pass                                         |
 | UX2 | UX        | Keyboard-safe scrollable forms               | Partial     | Needs all forms/dialogs verified                           |
 | UX3 | UX        | Premium mobile/tablet responsive UI          | Partial     | Needs final polish pass                                    |
