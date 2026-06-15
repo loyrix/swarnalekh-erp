@@ -90,6 +90,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return AppShell(
             currentIndex: _getSelectedIndex(state.matchedLocation),
             currentTitle: title,
+            currentLocation: state.matchedLocation,
             onNavigate: (index) {
               final routes = [
                 '/dashboard',

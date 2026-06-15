@@ -13,6 +13,7 @@ import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
+import 'package:swarnbook/shared/widgets/compact_stat_strip.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BillingScreen extends StatefulWidget {
@@ -153,7 +154,7 @@ class _BillingScreenState extends State<BillingScreen> {
   }
 
   Future<void> _openCreateInvoice() async {
-    final created = await showDialog<bool>(
+    final created = await showResponsiveDialog<bool>(
       context: context,
       builder: (context) => _CreateInvoiceDialog(api: _api),
     );
@@ -166,6 +167,7 @@ class _BillingScreenState extends State<BillingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isWide = MediaQuery.of(context).size.width > 768;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -180,30 +182,42 @@ class _BillingScreenState extends State<BillingScreen> {
               Expanded(
                 child: Text(
                   l10n.billingInvoiceHistory,
-                  style: Theme.of(context).textTheme.displaySmall,
+                  style: isWide
+                      ? Theme.of(context).textTheme.displaySmall
+                      : Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                 ),
               ),
-              GoldButton(
-                label: l10n.billingCreateInvoice,
-                icon: Icons.add_rounded,
-                onPressed: _openCreateInvoice,
-              ),
+              if (!isWide)
+                FloatingActionButton.small(
+                  heroTag: 'createInvoice',
+                  onPressed: _openCreateInvoice,
+                  child: const Icon(Icons.add_rounded),
+                )
+              else
+                GoldButton(
+                  label: l10n.billingCreateInvoice,
+                  icon: Icons.add_rounded,
+                  onPressed: _openCreateInvoice,
+                ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
-            l10n.billingCreateSalesSubtitle,
-            style: TextStyle(color: AppColors.text3(context)),
-          ),
+          if (isWide)
+            Text(
+              l10n.billingCreateSalesSubtitle,
+              style: TextStyle(color: AppColors.text3(context)),
+            ),
           const SizedBox(height: AppSpacing.lg),
           _buildSectionSwitch(),
           const SizedBox(height: AppSpacing.lg),
           if (_activeSection == 'dashboard')
-            Expanded(child: _buildDashboard())
+            Expanded(child: _buildDashboard(isWide))
           else ...[
             _buildSearch(),
             const SizedBox(height: AppSpacing.lg),
-            Expanded(child: _buildInvoiceHistory()),
+            Expanded(child: _buildInvoiceHistory(isWide)),
           ],
         ],
       ),
@@ -244,11 +258,11 @@ class _BillingScreenState extends State<BillingScreen> {
     );
   }
 
-  Widget _buildDashboard() {
+  Widget _buildDashboard(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
     final topSelling =
         (_dashboard['topSellingProducts'] as List<dynamic>? ?? const []);
-    final cards = [
+    final stats = <({IconData icon, String label, String value, Color color})>[
       (
         icon: Icons.today_outlined,
         label: l10n.billingTodayRevenue,
@@ -279,31 +293,34 @@ class _BillingScreenState extends State<BillingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 920 ? 4 : 2;
-              final width =
-                  (constraints.maxWidth -
-                      (crossAxisCount - 1) * AppSpacing.md) /
-                  crossAxisCount;
-              return Wrap(
-                spacing: AppSpacing.md,
-                runSpacing: AppSpacing.md,
-                children: [
-                  for (final card in cards)
-                    SizedBox(
-                      width: width,
-                      child: StatCard(
-                        icon: card.icon,
-                        label: card.label,
-                        value: card.value,
-                        accentColor: card.color,
+          if (isWide)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final crossAxisCount = constraints.maxWidth > 920 ? 4 : 2;
+                final width =
+                    (constraints.maxWidth -
+                        (crossAxisCount - 1) * AppSpacing.md) /
+                    crossAxisCount;
+                return Wrap(
+                  spacing: AppSpacing.md,
+                  runSpacing: AppSpacing.md,
+                  children: [
+                    for (final card in stats)
+                      SizedBox(
+                        width: width,
+                        child: StatCard(
+                          icon: card.icon,
+                          label: card.label,
+                          value: card.value,
+                          accentColor: card.color,
+                        ),
                       ),
-                    ),
-                ],
-              );
-            },
-          ),
+                  ],
+                );
+              },
+            )
+          else
+            CompactStatStrip(stats: stats),
           const SizedBox(height: AppSpacing.lg),
           GlassCard(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -448,7 +465,7 @@ class _BillingScreenState extends State<BillingScreen> {
     );
   }
 
-  Widget _buildInvoiceHistory() {
+  Widget _buildInvoiceHistory(bool isWide) {
     if (_isInvoicesLoading && _invoices.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -466,6 +483,7 @@ class _BillingScreenState extends State<BillingScreen> {
                   itemBuilder: (context, index) => _InvoiceCard(
                     api: _api,
                     invoice: _invoices[index] as Map<String, dynamic>,
+                    compact: !isWide,
                   ),
                 ),
               ),
@@ -493,8 +511,13 @@ enum _InvoiceAction { view, print, download, share }
 class _InvoiceCard extends StatefulWidget {
   final ApiClient api;
   final Map<String, dynamic> invoice;
+  final bool compact;
 
-  const _InvoiceCard({required this.api, required this.invoice});
+  const _InvoiceCard({
+    required this.api,
+    required this.invoice,
+    this.compact = false,
+  });
 
   @override
   State<_InvoiceCard> createState() => _InvoiceCardState();
@@ -643,6 +666,85 @@ class _InvoiceCardState extends State<_InvoiceCard> {
         double.tryParse(widget.invoice['balanceDue']?.toString() ?? '0') ?? 0;
     final items = (widget.invoice['items'] as List?) ?? const [];
 
+    if (widget.compact) {
+      return GlassCard(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.invoice['invoiceNumber']?.toString() ??
+                            l10n.billingInvoiceFallback,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        widget.invoice['customerName']?.toString().isNotEmpty ==
+                                true
+                            ? widget.invoice['customerName'].toString()
+                            : l10n.customerWalkIn,
+                        style: TextStyle(
+                          color: AppColors.text3(context),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                StatusBadge(
+                  label: balance > 0
+                      ? l10n.billingStatusPending
+                      : l10n.billingStatusCompleted,
+                  color: balance > 0 ? AppColors.warning : AppColors.success,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '₹${grandTotal.toStringAsFixed(0)} | ${l10n.billingPaid}: ₹${amountPaid.toStringAsFixed(0)} | ${l10n.billingBalance}: ₹${balance.toStringAsFixed(0)} | ${items.length} ${l10n.billingItems}',
+              style: TextStyle(fontSize: 12, color: AppColors.text2(context)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                _smallAction(
+                  Icons.visibility_outlined,
+                  l10n.billingViewInvoiceDetails,
+                  () => _openDetails(context),
+                ),
+                const SizedBox(width: 4),
+                _smallAction(
+                  Icons.print_outlined,
+                  l10n.billingReprintInvoice,
+                  () => _printInvoice(context),
+                ),
+                const SizedBox(width: 4),
+                _smallAction(
+                  Icons.download_outlined,
+                  l10n.billingDownloadPdf,
+                  () => _downloadPdf(context),
+                ),
+                const SizedBox(width: 4),
+                _smallAction(
+                  Icons.share_outlined,
+                  l10n.billingShareWhatsApp,
+                  () => _shareWhatsApp(context),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -737,6 +839,17 @@ class _InvoiceCardState extends State<_InvoiceCard> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _smallAction(IconData icon, String tooltip, VoidCallback onPressed) {
+    return IconButton(
+      icon: Icon(icon, size: 18, color: AppColors.text2(context)),
+      onPressed: onPressed,
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+      padding: EdgeInsets.zero,
     );
   }
 
@@ -837,7 +950,7 @@ class _InvoiceDetailDialog extends StatelessWidget {
         ],
       ),
       content: SizedBox(
-        width: 860,
+        width: MediaQuery.of(context).size.width * 0.9,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -877,6 +990,7 @@ class _InvoiceDetailDialog extends StatelessWidget {
   }
 
   Widget _buildShopHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final logoUrl = _shop['logoUrl']?.toString();
     final hasLogo = logoUrl != null && logoUrl.isNotEmpty;
     final address = [
@@ -913,7 +1027,7 @@ class _InvoiceDetailDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _text(_shop['name'], 'SwarnaLekh'),
+                  _text(_shop['name'], l10n.appTitle),
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 4),
@@ -928,7 +1042,7 @@ class _InvoiceDetailDialog extends StatelessWidget {
                   children: [
                     if (_hasText(_shop['phone']))
                       Text(
-                        'Phone: ${_shop['phone']}',
+                        '${l10n.billingMobile}: ${_shop['phone']}',
                         style: TextStyle(color: AppColors.text2(context)),
                       ),
                     if (_hasText(_shop['gstin']))
@@ -1143,8 +1257,7 @@ class _InvoiceDetailDialog extends StatelessWidget {
     required String title,
     required List<(String, String)> rows,
   }) {
-    return SizedBox(
-      width: 300,
+    return Flexible(
       child: _summaryPanel(context, title: title, rows: rows),
     );
   }
@@ -1155,7 +1268,6 @@ class _InvoiceDetailDialog extends StatelessWidget {
     required List<(String, String)> rows,
   }) {
     return Container(
-      width: 380,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surfL(context),
@@ -1487,40 +1599,61 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
         if (rows.isEmpty)
           Text('—', style: TextStyle(color: AppColors.text3(context)))
         else
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: [
-                DataColumn(label: Text(l10n.billingProduct)),
-                DataColumn(label: Text(l10n.billingWeight)),
-                DataColumn(label: Text(l10n.billingPrice)),
-                DataColumn(label: Text(l10n.billingQty)),
-                DataColumn(label: Text(l10n.billingTotal)),
-              ],
-              rows: rows.map((entry) {
-                final item = entry.item;
-                final breakdown = _lineBreakdown(item, entry.quantity);
-                return DataRow(
-                  cells: [
-                    DataCell(
-                      Text(
-                        item['itemName']?.toString() ??
-                            l10n.billingItemFallback,
+          ...rows.map((entry) {
+            final item = entry.item;
+            final breakdown = _lineBreakdown(item, entry.quantity);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      item['itemName']?.toString() ?? l10n.billingItemFallback,
+                      style: TextStyle(
+                        color: AppColors.text1(context),
+                        fontSize: 13,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 50,
+                    child: Text(
+                      '${item['netWeight'] ?? 0}g',
+                      style: TextStyle(
+                        color: AppColors.text3(context),
+                        fontSize: 12,
                       ),
                     ),
-                    DataCell(Text('${item['netWeight'] ?? 0} g')),
-                    DataCell(
-                      Text('₹${breakdown.lineTotal.toStringAsFixed(0)}'),
+                  ),
+                  SizedBox(
+                    width: 50,
+                    child: Text(
+                      'x${entry.quantity}',
+                      style: TextStyle(
+                        color: AppColors.text3(context),
+                        fontSize: 12,
+                      ),
                     ),
-                    DataCell(Text('${entry.quantity}')),
-                    DataCell(
-                      Text('₹${breakdown.lineTotal.toStringAsFixed(0)}'),
+                  ),
+                  SizedBox(
+                    width: 80,
+                    child: Text(
+                      '₹${breakdown.lineTotal.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        color: AppColors.text1(context),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                      textAlign: TextAlign.right,
                     ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
+                  ),
+                ],
+              ),
+            );
+          }),
       ],
     );
   }
@@ -1531,7 +1664,7 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
     return AlertDialog(
       title: Text(l10n.billingCreateInvoice),
       content: SizedBox(
-        width: 720,
+        width: MediaQuery.of(context).size.width * 0.9,
         child: _isLoading
             ? const SizedBox(
                 height: 220,

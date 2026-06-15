@@ -13,6 +13,8 @@ import 'package:swarnbook/shared/widgets/shimmer_loading.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/staggered_animation.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/compact_data_row.dart';
+import 'package:swarnbook/shared/widgets/compact_stat_strip.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 
 class InventoryListScreen extends StatefulWidget {
@@ -150,7 +152,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
 
   Future<void> _openInventoryForm({Map<String, dynamic>? item}) async {
     if (!_canManageInventory) return;
-    final changed = await showDialog<bool>(
+    final changed = await showResponsiveDialog<bool>(
       context: context,
       builder: (context) => _InventoryFormDialog(api: _api, item: item),
     );
@@ -161,6 +163,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   }
 
   Future<void> _scanReceipt(ImageSource source) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final image = await _imagePicker.pickImage(
         source: source,
@@ -199,10 +202,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
           .toList();
 
       if (rows.isEmpty) {
-        AppToast.warning(
-          context,
-          'No inventory rows were found in this receipt',
-        );
+        AppToast.warning(context, l10n.inventoryNoRowsFound);
         return;
       }
 
@@ -212,7 +212,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
       );
 
       if (imported == true && mounted) {
-        AppToast.success(context, 'Inventory imported');
+        AppToast.success(context, l10n.inventoryImported);
         setState(() => _activeSection = 'manage');
         _loadData();
       }
@@ -224,12 +224,13 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   }
 
   String _ocrErrorMessage(Object error) {
+    final l10n = AppLocalizations.of(context)!;
     if (error is DioException && error.message != null) {
       return error.message!;
     }
     final details = error.toString();
     if (details.trim().isEmpty || details == 'null') {
-      return 'Failed to scan HUID receipt';
+      return l10n.inventoryFailedScanHuid;
     }
     return details;
   }
@@ -299,6 +300,8 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
       return _buildShimmerState();
     }
 
+    final isWide = MediaQuery.of(context).size.width > 768;
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -311,16 +314,16 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
           if (_activeSection == 'add')
             Expanded(child: _buildAddInventorySection())
           else ...[
-            _buildStatsRow(),
+            _buildStatsRow(isWide),
             const SizedBox(height: AppSpacing.md),
-            _buildInventoryAlerts(),
+            _buildInventoryAlerts(isWide),
             const SizedBox(height: AppSpacing.lg),
-            _buildFilters(),
+            _buildFilters(isWide),
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: _activeSection == 'sold'
-                  ? _buildSoldProductsView()
-                  : _buildListView(),
+                  ? _buildSoldProductsView(isWide)
+                  : _buildListView(isWide),
             ),
           ],
         ],
@@ -329,11 +332,12 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: Text(
-            'Inventory Management',
+            l10n.inventoryManagement,
             style: Theme.of(context).textTheme.displaySmall,
           ),
         ),
@@ -342,14 +346,23 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   }
 
   Widget _buildSectionSwitch() {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       children: [
-        _sectionChip('view', 'View Inventory', Icons.inventory_2_outlined),
+        _sectionChip(
+          'view',
+          l10n.inventoryViewInventory,
+          Icons.inventory_2_outlined,
+        ),
         if (_canManageInventory)
-          _sectionChip('add', 'Add Stock', Icons.add_box_outlined),
-        _sectionChip('sold', 'Sold Products', Icons.shopping_bag_outlined),
+          _sectionChip('add', l10n.inventoryAddStock, Icons.add_box_outlined),
+        _sectionChip(
+          'sold',
+          l10n.inventorySoldProducts,
+          Icons.shopping_bag_outlined,
+        ),
       ],
     );
   }
@@ -369,6 +382,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   }
 
   Widget _buildAddInventorySection() {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,16 +393,14 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
             children: [
               _addInventoryAction(
                 icon: Icons.camera_alt_outlined,
-                title: 'Scan HUID Receipt',
-                subtitle:
-                    'Capture a receipt and review AI-filled inventory rows before saving.',
+                title: l10n.inventoryScanHuidReceipt,
+                subtitle: l10n.inventoryScanHuidSubtitle,
                 onTap: _isOcrUploading ? null : () => _showReceiptSourceSheet(),
               ),
               _addInventoryAction(
                 icon: Icons.edit_note_rounded,
-                title: 'Add Manually',
-                subtitle:
-                    'Enter a single item using the regular inventory form.',
+                title: l10n.inventoryAddManually,
+                subtitle: l10n.inventoryAddManuallySubtitle,
                 onTap: _isOcrUploading ? null : () => _openInventoryForm(),
               ),
             ],
@@ -398,7 +410,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
             const LinearProgressIndicator(),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Reading HUID receipt...',
+              l10n.inventoryReadingHuid,
               style: TextStyle(color: AppColors.text2(context)),
             ),
           ],
@@ -432,6 +444,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   }
 
   Future<void> _showReceiptSourceSheet() async {
+    final l10n = AppLocalizations.of(context)!;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (context) => SafeArea(
@@ -440,12 +453,12 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Take photo'),
+              title: Text(l10n.inventoryTakePhoto),
               onTap: () => Navigator.of(context).pop(ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from gallery'),
+              title: Text(l10n.inventoryChooseFromGallery),
               onTap: () => Navigator.of(context).pop(ImageSource.gallery),
             ),
           ],
@@ -513,33 +526,38 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
     );
   }
 
-  Widget _buildStatsRow() {
-    final cards = [
+  Widget _buildStatsRow(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
+    final stats = <({IconData icon, String label, String value, Color color})>[
       (
         icon: Icons.scale_rounded,
-        label: 'Total Gold Weight',
+        label: l10n.inventoryTotalGoldWeight,
         value: _weightText(_stats?['totalGoldWeight']),
         color: AppColors.gold,
       ),
       (
         icon: Icons.scale_outlined,
-        label: 'Total Silver Weight',
+        label: l10n.inventoryTotalSilverWeight,
         value: _weightText(_stats?['totalSilverWeight']),
         color: AppColors.silver,
       ),
       (
         icon: Icons.inventory_2_rounded,
-        label: 'Total Products',
+        label: l10n.inventoryTotalProducts,
         value: '${_stats?['totalProducts'] ?? 0}',
         color: AppColors.primary,
       ),
       (
         icon: Icons.shopping_bag_rounded,
-        label: 'Sold This Month',
+        label: l10n.inventorySoldProducts,
         value: '${_stats?['soldThisMonth'] ?? 0}',
         color: AppColors.success,
       ),
     ];
+
+    if (!isWide) {
+      return CompactStatStrip(stats: stats);
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -551,16 +569,16 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
           spacing: AppSpacing.md,
           runSpacing: AppSpacing.md,
           children: [
-            for (var index = 0; index < cards.length; index++)
+            for (var index = 0; index < stats.length; index++)
               SizedBox(
                 width: width,
                 child: StaggeredFadeSlide(
                   index: index,
                   child: StatCard(
-                    icon: cards[index].icon,
-                    label: cards[index].label,
-                    value: cards[index].value,
-                    accentColor: cards[index].color,
+                    icon: stats[index].icon,
+                    label: stats[index].label,
+                    value: stats[index].value,
+                    accentColor: stats[index].color,
                   ),
                 ),
               ),
@@ -570,34 +588,79 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
     );
   }
 
-  Widget _buildInventoryAlerts() {
+  Widget _buildInventoryAlerts(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
     final alerts = (_stats?['alerts'] as Map<String, dynamic>? ?? {});
     final items = [
-      (
-        label: 'Low Stock',
-        value: alerts['lowStock'] ?? 0,
-        icon: Icons.low_priority_rounded,
-        color: AppColors.warning,
-      ),
-      (
-        label: 'Out of Stock',
-        value: alerts['outOfStock'] ?? 0,
-        icon: Icons.remove_shopping_cart_outlined,
-        color: AppColors.error,
-      ),
-      (
-        label: 'High Value',
-        value: alerts['highValueProducts'] ?? 0,
-        icon: Icons.diamond_outlined,
-        color: AppColors.primary,
-      ),
-      (
-        label: 'Unsold',
-        value: alerts['unsoldProducts'] ?? 0,
-        icon: Icons.hourglass_bottom_rounded,
-        color: AppColors.info,
-      ),
+      if ((alerts['lowStock'] ?? 0) > 0)
+        (
+          label: l10n.inventoryAlertLowStock,
+          value: alerts['lowStock'],
+          icon: Icons.low_priority_rounded,
+          color: AppColors.warning,
+        ),
+      if ((alerts['outOfStock'] ?? 0) > 0)
+        (
+          label: l10n.inventoryAlertOutOfStock,
+          value: alerts['outOfStock'],
+          icon: Icons.remove_shopping_cart_outlined,
+          color: AppColors.error,
+        ),
+      if ((alerts['highValueProducts'] ?? 0) > 0)
+        (
+          label: l10n.inventoryAlertHighValue,
+          value: alerts['highValueProducts'],
+          icon: Icons.diamond_outlined,
+          color: AppColors.primary,
+        ),
+      if ((alerts['unsoldProducts'] ?? 0) > 0)
+        (
+          label: l10n.inventoryAlertUnsold,
+          value: alerts['unsoldProducts'],
+          icon: Icons.hourglass_bottom_rounded,
+          color: AppColors.info,
+        ),
     ];
+
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    if (!isWide) {
+      return SizedBox(
+        height: 32,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 6),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: item.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.full),
+                border: Border.all(color: item.color.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(item.icon, size: 12, color: item.color),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${item.value}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: item.color,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    }
 
     return Wrap(
       spacing: AppSpacing.sm,
@@ -614,7 +677,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
     );
   }
 
-  Widget _buildFilters() {
+  Widget _buildFilters(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
     if (_activeSection == 'sold') {
       return Column(
@@ -628,26 +691,134 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
               suffixIcon: _searchController.text.trim().isEmpty
                   ? null
                   : IconButton(
-                      tooltip: 'Clear search',
+                      tooltip: l10n.inventoryClearSearch,
                       icon: const Icon(Icons.close_rounded),
                       onPressed: () {
                         _searchController.clear();
                         _loadData();
                       },
                     ),
-              hintText:
-                  'Search invoice, customer, product, mobile, payment method',
+              hintText: l10n.inventorySearchHintSold,
               border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            '${_soldProducts.length} sold products',
+            l10n.inventoryCountSold(_soldProducts.length),
             style: TextStyle(color: AppColors.text3(context), fontSize: 13),
           ),
         ],
       );
     }
+
+    if (!isWide) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _searchController.text.trim().isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: l10n.inventoryClearSearch,
+                            icon: const Icon(Icons.close_rounded),
+                            onPressed: () {
+                              _searchController.clear();
+                              _loadData();
+                            },
+                          ),
+                    hintText: l10n.inventorySearchHintStock,
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              IconButton(
+                icon: Icon(
+                  Icons.filter_list_rounded,
+                  color:
+                      _filterMetal != 'all' ||
+                          _categoryFilterController.text.trim().isNotEmpty ||
+                          _branchFilterController.text.trim().isNotEmpty ||
+                          _filterStatus != 'in_stock'
+                      ? AppColors.primary
+                      : AppColors.text2(context),
+                ),
+                onPressed: () => _showMobileFilterSheet(l10n),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              ..._metalOptions.map((option) {
+                final val = option['value']!;
+                final selected = _filterMetal == val;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() => _filterMetal = val);
+                      _loadData();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? (val == 'gold'
+                                      ? AppColors.gold
+                                      : AppColors.silver)
+                                  .withValues(alpha: 0.15)
+                            : AppColors.surfL(context),
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                        border: Border.all(
+                          color: selected
+                              ? (val == 'gold'
+                                        ? AppColors.gold
+                                        : AppColors.silver)
+                                    .withValues(alpha: 0.4)
+                              : AppColors.brd(context),
+                        ),
+                      ),
+                      child: Text(
+                        _metalLabel(l10n, val),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          color: selected
+                              ? (val == 'gold'
+                                    ? AppColors.gold
+                                    : AppColors.silver)
+                              : AppColors.text2(context),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              const Spacer(),
+              Text(
+                '${_filtered.length} ${l10n.inventoryItemsSuffix}',
+                style: TextStyle(color: AppColors.text3(context), fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
     final filterOptions = [
       {'label': l10n.inventoryAll, 'value': 'all', 'color': null},
       ..._metalOptions.map(
@@ -676,14 +847,14 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
             suffixIcon: _searchController.text.trim().isEmpty
                 ? null
                 : IconButton(
-                    tooltip: 'Clear search',
+                    tooltip: l10n.inventoryClearSearch,
                     icon: const Icon(Icons.close_rounded),
                     onPressed: () {
                       _searchController.clear();
                       _loadData();
                     },
                   ),
-            hintText: 'Search product, design number, tag, HUID',
+            hintText: l10n.inventorySearchHintStock,
             border: const OutlineInputBorder(),
           ),
         ),
@@ -703,14 +874,14 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
               width: 160,
               child: _compactFilterField(
                 controller: _categoryFilterController,
-                label: 'Category',
+                label: l10n.inventoryFilterCategory,
               ),
             ),
             SizedBox(
               width: 160,
               child: _compactFilterField(
                 controller: _branchFilterController,
-                label: 'Branch',
+                label: l10n.inventoryFilterBranch,
               ),
             ),
             Container(
@@ -757,6 +928,86 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  void _showMobileFilterSheet(AppLocalizations l10n) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.inventoryFilters,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _compactFilterField(
+                controller: _categoryFilterController,
+                label: l10n.inventoryFilterCategory,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _compactFilterField(
+                controller: _branchFilterController,
+                label: l10n.inventoryFilterBranch,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              DropdownButtonFormField<String>(
+                initialValue: _filterStatus,
+                decoration: InputDecoration(
+                  labelText: l10n.inventoryFilterStatus,
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: _statusOptions
+                    .map(
+                      (option) => DropdownMenuItem<String>(
+                        value: option['value'],
+                        child: Text(_statusLabel(l10n, option['value'])),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setSheetState(() => _filterStatus = value);
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setSheetState(() {
+                          _filterStatus = 'in_stock';
+                          _filterMetal = 'all';
+                          _categoryFilterController.clear();
+                          _branchFilterController.clear();
+                        });
+                      },
+                      child: Text(l10n.inventoryFilterReset),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _loadData();
+                      },
+                      child: Text(l10n.inventoryFilterApply),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -821,12 +1072,100 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
     );
   }
 
-  Widget _buildListView() {
+  Widget _buildListView(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
     final list = _filtered;
     if (list.isEmpty) {
       return EmptyState.inventory(
         onAction: _canManageInventory ? () => _openInventoryForm() : null,
+      );
+    }
+
+    if (!isWide) {
+      return ListView.builder(
+        itemCount: list.length,
+        itemBuilder: (context, index) {
+          final item = list[index] as Map<String, dynamic>;
+          final purity = _purityText(item);
+          final designTag =
+              (item['designNumber'] ??
+                      item['barcode'] ??
+                      item['tagNumber'] ??
+                      '—')
+                  .toString();
+          return CompactDataRow(
+            leading: _productImage(item),
+            title: (item['itemName'] ?? l10n.inventoryUnnamedItem).toString(),
+            subtitle: '${item['categoryName'] ?? '—'} • $purity • $designTag',
+            metrics: [
+              (l10n.inventoryCompactNet, '${item['netWeight'] ?? '0'}g'),
+              (
+                l10n.inventoryCompactPrice,
+                _currencyText(item['estimatedSellingPrice']),
+              ),
+            ],
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                StatusBadge(
+                  label: _statusLabel(l10n, item['status'] ?? 'in_stock'),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert_rounded, size: 18),
+                  color: AppColors.surfL(context),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    side: BorderSide(color: AppColors.brd(context)),
+                  ),
+                  onSelected: (value) {
+                    if (value == 'view') _openProductDetails(item);
+                    if (value == 'edit' && _canManageInventory) {
+                      _openInventoryForm(item: item);
+                    }
+                    if (value == 'delete' && _canManageInventory) {
+                      _deleteInventoryItem(item);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'view',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.visibility_outlined, size: 18),
+                          const SizedBox(width: 8),
+                          Text(l10n.inventoryView),
+                        ],
+                      ),
+                    ),
+                    if (_canManageInventory)
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit_outlined, size: 18),
+                            const SizedBox(width: 8),
+                            Text(l10n.commonEdit),
+                          ],
+                        ),
+                      ),
+                    if (_canManageInventory)
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete_outline_rounded, size: 18),
+                            const SizedBox(width: 8),
+                            Text(l10n.commonDelete),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            onTap: () => _openProductDetails(item),
+          );
+        },
       );
     }
 
@@ -840,16 +1179,13 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
             dataRowMinHeight: 56,
             dataRowMaxHeight: 64,
             columns: [
-              const DataColumn(label: Text('Image')),
               DataColumn(label: Text(l10n.inventoryColumnItem)),
-              const DataColumn(label: Text('Category')),
-              const DataColumn(label: Text('Design Number')),
-              const DataColumn(label: Text('Purity')),
-              const DataColumn(label: Text('Gross Weight')),
-              const DataColumn(label: Text('Net Weight')),
-              const DataColumn(label: Text('Selling Price')),
+              DataColumn(label: Text(l10n.inventoryColumnCategory)),
+              DataColumn(label: Text(l10n.inventoryColumnDesignNumber)),
+              DataColumn(label: Text(l10n.inventoryColumnPurity)),
+              DataColumn(label: Text(l10n.inventoryColumnNetWeight)),
+              DataColumn(label: Text(l10n.inventoryColumnSellingPrice)),
               DataColumn(label: Text(l10n.inventoryColumnStatus)),
-              const DataColumn(label: Text('Branch')),
               DataColumn(label: Text(l10n.inventoryColumnActions)),
             ],
             rows: list.map<DataRow>((item) {
@@ -857,7 +1193,6 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
               return DataRow(
                 onSelectChanged: (_) => _openProductDetails(inventoryItem),
                 cells: [
-                  DataCell(_productImage(inventoryItem)),
                   DataCell(
                     Text(
                       (inventoryItem['itemName'] ?? l10n.inventoryUnnamedItem)
@@ -882,7 +1217,6 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
                     ),
                   ),
                   DataCell(Text(_purityText(inventoryItem))),
-                  DataCell(Text('${inventoryItem['grossWeight'] ?? '0'} g')),
                   DataCell(Text('${inventoryItem['netWeight'] ?? '0'} g')),
                   DataCell(
                     Text(_currencyText(inventoryItem['estimatedSellingPrice'])),
@@ -895,13 +1229,12 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
                       ),
                     ),
                   ),
-                  DataCell(Text((inventoryItem['location'] ?? '—').toString())),
                   DataCell(
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          tooltip: 'View details',
+                          tooltip: l10n.inventoryViewDetails,
                           onPressed: () => _openProductDetails(inventoryItem),
                           icon: const Icon(Icons.visibility_outlined, size: 18),
                           color: AppColors.info,
@@ -937,13 +1270,39 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
     );
   }
 
-  Widget _buildSoldProductsView() {
+  Widget _buildSoldProductsView(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
     if (_soldProducts.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.shopping_bag_outlined,
-        title: 'No sold products found',
-        subtitle: 'Sold products will appear here after billing is completed.',
+        title: l10n.inventoryNoSoldFound,
+        subtitle: l10n.inventoryNoSoldSubtitle,
         iconColor: AppColors.success,
+      );
+    }
+
+    if (!isWide) {
+      return ListView.builder(
+        itemCount: _soldProducts.length,
+        itemBuilder: (context, index) {
+          final row = Map<String, dynamic>.from(_soldProducts[index] as Map);
+          return CompactDataRow(
+            title: _textValue(row['productName']),
+            subtitle:
+                'Invoice: ${_textValue(row['invoiceNumber'])} • ${_shortDate(row['soldDate'])}',
+            metrics: [
+              (l10n.inventoryCompactPrice, _currencyText(row['sellingPrice'])),
+              (
+                l10n.inventoryCompactPayment,
+                _readableValue(row['paymentMethod']),
+              ),
+            ],
+            trailing: Text(
+              _textValue(row['customerName']),
+              style: TextStyle(fontSize: 11, color: AppColors.text3(context)),
+            ),
+          );
+        },
       );
     }
 
@@ -956,13 +1315,13 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
             headingRowHeight: 48,
             dataRowMinHeight: 56,
             dataRowMaxHeight: 64,
-            columns: const [
-              DataColumn(label: Text('Invoice Number')),
-              DataColumn(label: Text('Customer Name')),
-              DataColumn(label: Text('Product Name')),
-              DataColumn(label: Text('Sold Date')),
-              DataColumn(label: Text('Selling Price')),
-              DataColumn(label: Text('Payment Method')),
+            columns: [
+              DataColumn(label: Text(l10n.inventoryColumnInvoiceNumber)),
+              DataColumn(label: Text(l10n.inventoryColumnCustomerName)),
+              DataColumn(label: Text(l10n.inventoryColumnProductName)),
+              DataColumn(label: Text(l10n.inventoryColumnSoldDate)),
+              DataColumn(label: Text(l10n.inventoryColumnSellingPrice)),
+              DataColumn(label: Text(l10n.inventoryColumnPaymentMethod)),
             ],
             rows: _soldProducts.map<DataRow>((entry) {
               final row = Map<String, dynamic>.from(entry as Map);
@@ -1012,40 +1371,49 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                _detailsGroup('Product Information', [
-                  ('Product Name', item['itemName'] ?? '—'),
-                  ('Product Code', item['productCode'] ?? item['tagNumber']),
+                _detailsGroup(l10n.inventoryProductInfo, [
+                  (l10n.inventoryProductName, item['itemName'] ?? '—'),
                   (
-                    'Design Number',
+                    l10n.inventoryProductCode,
+                    item['productCode'] ?? item['tagNumber'],
+                  ),
+                  (
+                    l10n.inventoryFieldDesignNumber,
                     item['designNumber'] ?? item['barcode'] ?? '—',
                   ),
                   (
-                    'Category',
+                    l10n.inventoryFieldCategory,
                     item['categoryName'] ?? item['category']?['name'] ?? '—',
                   ),
-                  ('Purity', _purityText(item)),
-                  ('Branch', item['location'] ?? '—'),
+                  (l10n.inventoryColumnPurity, _purityText(item)),
+                  (l10n.inventoryFieldBranch, item['location'] ?? '—'),
                 ]),
                 const SizedBox(height: AppSpacing.md),
-                _detailsGroup('Weight Information', [
-                  ('Gross Weight', '${item['grossWeight'] ?? 0} g'),
-                  ('Stone Weight', _optionalWeightText(item['stoneWeight'])),
-                  ('Net Weight', '${item['netWeight'] ?? 0} g'),
-                ]),
-                const SizedBox(height: AppSpacing.md),
-                _detailsGroup('Pricing Information', [
-                  ('Purchase Price', _purchasePriceText(item)),
+                _detailsGroup(l10n.inventoryWeightDetails, [
+                  (l10n.inventoryGrossWeight, '${item['grossWeight'] ?? 0} g'),
                   (
-                    'Selling Price',
+                    l10n.inventoryStoneWeight,
+                    _optionalWeightText(item['stoneWeight']),
+                  ),
+                  (l10n.inventoryCalcNetWeight, '${item['netWeight'] ?? 0} g'),
+                ]),
+                const SizedBox(height: AppSpacing.md),
+                _detailsGroup(l10n.inventoryPriceDetails, [
+                  (l10n.inventoryPurchasePrice, _purchasePriceText(item)),
+                  (
+                    l10n.inventoryFieldSellingPrice,
                     _currencyText(item['estimatedSellingPrice']),
                   ),
-                  ('Making Charges', _makingText(item)),
-                  ('GST', '3% calculated during billing'),
+                  (l10n.inventoryMakingCharges, _makingText(item)),
+                  (l10n.inventoryGstInfo, l10n.inventoryGstInfo),
                 ]),
                 const SizedBox(height: AppSpacing.md),
-                _detailsGroup('Status Information', [
-                  ('Status', _statusLabel(l10n, item['status'])),
-                  ('Quantity', item['quantity'] ?? 1),
+                _detailsGroup(l10n.inventoryStatusInfo, [
+                  (
+                    l10n.inventoryFormStatus,
+                    _statusLabel(l10n, item['status']),
+                  ),
+                  (l10n.inventoryQuantity, item['quantity'] ?? 1),
                 ]),
               ],
             ),
@@ -1054,7 +1422,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(l10n.inventoryClose),
           ),
         ],
       ),
@@ -1292,14 +1660,16 @@ class _OcrReviewDialogState extends State<_OcrReviewDialog> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      AppToast.error(context, 'Failed to import inventory rows');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(context, l10n.inventoryFailedImportRows);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Review HUID Receipt Items'),
+      title: Text(l10n.inventoryReviewHuidTitle),
       content: SizedBox(
         width: 980,
         child: Form(
@@ -1310,7 +1680,7 @@ class _OcrReviewDialogState extends State<_OcrReviewDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Check the AI-filled rows before adding them to inventory.',
+                  l10n.inventoryReviewHuidSubtitle,
                   style: TextStyle(color: AppColors.text2(context)),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -1406,10 +1776,10 @@ class _OcrReviewDialogState extends State<_OcrReviewDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.commonCancel),
         ),
         GoldButton(
-          label: 'Import Items',
+          label: l10n.inventoryImportItems,
           isLoading: _isSaving,
           onPressed: _save,
         ),
@@ -1898,7 +2268,7 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _formSectionTitle('Product Details'),
+                _formSectionTitle(l10n.inventoryProductDetails),
                 _field(
                   _nameController,
                   l10n.inventoryFieldItemName,
@@ -1907,9 +2277,12 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
                 const SizedBox(height: AppSpacing.md),
                 _field(_tagController, l10n.inventoryFieldTagNumber),
                 const SizedBox(height: AppSpacing.md),
-                _field(_designNumberController, 'Design Number'),
+                _field(
+                  _designNumberController,
+                  l10n.inventoryFieldDesignNumber,
+                ),
                 const SizedBox(height: AppSpacing.md),
-                _field(_categoryController, 'Category'),
+                _field(_categoryController, l10n.inventoryFieldCategory),
                 const SizedBox(height: AppSpacing.md),
                 _dropdownField(
                   label: l10n.inventoryFieldStockType,
@@ -1969,7 +2342,7 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
                   allowEmpty: true,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                _formSectionTitle('Weight Details'),
+                _formSectionTitle(l10n.inventoryWeightDetails),
                 const SizedBox(height: AppSpacing.md),
                 _weightRow(
                   title: l10n.inventoryFieldGrossWeight,
@@ -1987,15 +2360,15 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
                 const SizedBox(height: AppSpacing.md),
                 _field(
                   _stoneWeightController,
-                  'Stone Weight (g)',
+                  l10n.inventoryFieldStoneWeight,
                   isNumber: true,
                   onChanged: (_) => _syncNetWeightFromGrossAndStone(),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                _formSectionTitle('Price Details'),
+                _formSectionTitle(l10n.inventoryPriceDetails),
                 _field(
                   _purchaseRateController,
-                  'Purchase Price / g',
+                  l10n.inventoryFieldPurchasePrice,
                   isNumber: true,
                   onChanged: (_) => _onPricingChanged(),
                 ),
@@ -2028,19 +2401,19 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
                 const SizedBox(height: AppSpacing.md),
                 _field(
                   _sellingPriceController,
-                  'Selling Price',
+                  l10n.inventoryFieldSellingPrice,
                   isNumber: true,
                   onChanged: _onSellingPriceChanged,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _autoCalculationSummary(),
                 const SizedBox(height: AppSpacing.lg),
-                _field(_locationController, 'Branch'),
+                _field(_locationController, l10n.inventoryFieldBranch),
                 const SizedBox(height: AppSpacing.lg),
-                _formSectionTitle('Upload Image'),
+                _formSectionTitle(l10n.inventoryUploadImage),
                 _imageUploadField(),
                 const SizedBox(height: AppSpacing.lg),
-                _formSectionTitle('Status'),
+                _formSectionTitle(l10n.inventoryFormStatus),
                 _dropdownField(
                   label: l10n.inventoryColumnStatus,
                   value: _status,
@@ -2084,6 +2457,7 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
   }
 
   Widget _imageUploadField() {
+    final l10n = AppLocalizations.of(context)!;
     final imageSource = _photoUrlController.text.trim().isEmpty
         ? null
         : _photoUrlController.text.trim();
@@ -2110,13 +2484,13 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
                   runSpacing: AppSpacing.sm,
                   children: [
                     GoldButton(
-                      label: 'Choose Product Image',
+                      label: l10n.inventoryChooseProductImage,
                       icon: Icons.photo_library_outlined,
                       isOutlined: true,
                       onPressed: _chooseProductImage,
                     ),
                     IconButton.filledTonal(
-                      tooltip: 'Remove product image',
+                      tooltip: l10n.inventoryRemoveImage,
                       onPressed: imageSource == null
                           ? null
                           : _clearProductImage,
@@ -2138,7 +2512,7 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    'Selected product image is ready to save.',
+                    l10n.inventoryImageReady,
                     style: TextStyle(
                       color: AppColors.text2(context),
                       fontWeight: FontWeight.w600,
@@ -2151,8 +2525,8 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
             TextFormField(
               controller: _photoUrlController,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                labelText: 'Product Image URL',
+              decoration: InputDecoration(
+                labelText: l10n.inventoryFieldImageUrl,
                 border: OutlineInputBorder(),
               ),
             ),
@@ -2162,10 +2536,20 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
   }
 
   Widget _autoCalculationSummary() {
+    final l10n = AppLocalizations.of(context)!;
     final rows = [
-      ('Net Weight', '${_currentNetWeight.toStringAsFixed(3)} g'),
-      ('Making Charges', _currencyValue(_calculatedMakingCharges)),
-      ('Final Selling Price', _currencyValue(_calculatedFinalSellingPrice)),
+      (
+        l10n.inventoryCalcNetWeight,
+        '${_currentNetWeight.toStringAsFixed(3)} g',
+      ),
+      (
+        l10n.inventoryCalcMakingCharges,
+        _currencyValue(_calculatedMakingCharges),
+      ),
+      (
+        l10n.inventoryCalcFinalSellingPrice,
+        _currencyValue(_calculatedFinalSellingPrice),
+      ),
     ];
 
     return Container(
@@ -2180,7 +2564,7 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Auto Calculations',
+            l10n.inventoryAutoCalculations,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w700,

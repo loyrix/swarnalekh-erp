@@ -947,4 +947,822 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get userOnboardingTipDesc =>
       'Newly added staff must download the app and use the Sign Up option with the exact email address provided here to set their password and link their account.';
+
+  @override
+  String get appShellToggleTheme => 'Toggle theme';
+
+  @override
+  String get appShellSecurity => 'Security';
+
+  @override
+  String get appShellUserManagement => 'User Management';
+
+  @override
+  String get dashboardTotalGoldStock => 'Total Gold Stock';
+
+  @override
+  String get dashboardAvailableNetWeight => 'Available net weight';
+
+  @override
+  String get dashboardTotalSilverStock => 'Total Silver Stock';
+
+  @override
+  String get dashboardInventoryValue => 'Inventory Value';
+
+  @override
+  String get dashboardAvailableStockValue => 'Available stock value';
+
+  @override
+  String get dashboardThisMonth => 'This month';
+
+  @override
+  String get dashboardMortgageDues => 'Mortgage dues';
+
+  @override
+  String get dashboardMortgageAccounts => 'Mortgage accounts';
+
+  @override
+  String get dashboardBilledToday => 'Billed today';
+
+  @override
+  String get dashboardGeneratedInvoices => 'Generated invoices';
+
+  @override
+  String get dashboardGold => 'Gold';
+
+  @override
+  String get dashboardSilver => 'Silver';
+
+  @override
+  String get dashboardRevenue => 'Revenue';
+
+  @override
+  String get dashboardLoans => 'Loans';
+
+  @override
+  String dashboardViewAllStats(int count) {
+    return 'View all stats ($count)';
+  }
+
+  @override
+  String get dashboardRevenueTrend => 'Revenue Trend';
+
+  @override
+  String get dashboardMonthlyRevenue => 'Monthly Revenue';
+
+  @override
+  String get dashboardPendingInterest => 'Pending Interest';
+
+  @override
+  String get dashboardActiveLoans => 'Active Loans';
+
+  @override
+  String get dashboardTodaysSales => 'Today\'s Sales';
+
+  @override
+  String get dashboardTotalBills => 'Total Bills';
+
+  @override
+  String get reportsTitle => 'Reports';
+
+  @override
+  String get reportsSubtitle =>
+      'Inventory, billing, GST, and mortgage reports from the Jewellery ERP flow.';
+
+  @override
+  String get reportsSearchHint =>
+      'Search product, design, customer, invoice, or mobile';
+
+  @override
+  String get reportsFromDate => 'From date';
+
+  @override
+  String get reportsToDate => 'To date';
+
+  @override
+  String get reportsDateHint => 'YYYY-MM-DD';
+
+  @override
+  String get reportsCategory => 'Category';
+
+  @override
+  String get reportsBranch => 'Branch';
+
+  @override
+  String get reportsStatus => 'Status';
+
+  @override
+  String get reportsAllStatus => 'All Status';
+
+  @override
+  String get reportsInStock => 'In Stock';
+
+  @override
+  String get reportsReserved => 'Reserved';
+
+  @override
+  String get reportsSold => 'Sold';
+
+  @override
+  String get reportsActiveLoan => 'Active Loan';
+
+  @override
+  String get reportsClosedLoan => 'Closed Loan';
+
+  @override
+  String get reportsRefresh => 'Refresh reports';
+
+  @override
+  String get reportsFilters => 'Filters';
+
+  @override
+  String get reportsReset => 'Reset';
+
+  @override
+  String get reportsApply => 'Apply';
+
+  @override
+  String get reportsInventoryReports => 'Inventory Reports';
+
+  @override
+  String get reportsBillingReports => 'Billing Reports';
+
+  @override
+  String get reportsMortgageReports => 'Mortgage Reports';
+
+  @override
+  String get reportsDailySales => 'Daily Sales Report';
+
+  @override
+  String get reportsMonthlySales => 'Monthly Sales Report';
+
+  @override
+  String get reportsGst => 'GST Report';
+
+  @override
+  String get reportsActiveLoans => 'Active Loans Report';
+
+  @override
+  String get reportsInterestCollection => 'Interest Collection Report';
+
+  @override
+  String get reportsClosedLoans => 'Closed Loans Report';
+
+  @override
+  String get reportsCurrentStock => 'Current Stock Report';
+
+  @override
+  String get reportsSoldProducts => 'Sold Products Report';
+
+  @override
+  String get reportsLowStock => 'Low Stock Report';
+
+  @override
+  String get reportsNoSalesDay => 'No sales found for this day.';
+
+  @override
+  String get reportsNoSalesMonth => 'No sales found for this month.';
+
+  @override
+  String get reportsNoGstData => 'No GST data found.';
+
+  @override
+  String get reportsNoActiveLoans => 'No active loans found.';
+
+  @override
+  String get reportsNoInterestCollections => 'No interest collections found.';
+
+  @override
+  String get reportsNoClosedLoans => 'No closed loans found.';
+
+  @override
+  String get reportsNoCurrentStock => 'No current stock found.';
+
+  @override
+  String get reportsNoSoldProducts => 'No sold products found.';
+
+  @override
+  String get reportsNoLowStock => 'No low stock products found.';
+
+  @override
+  String get reportsGstSubtitle =>
+      'Tax collected from filtered invoice history.';
+
+  @override
+  String get reportsActiveLoansSubtitle =>
+      'Open gold loans with pending balances and due dates.';
+
+  @override
+  String get reportsInterestCollectionSubtitle =>
+      'Receipts generated for interest and settlement payments.';
+
+  @override
+  String get reportsClosedLoansSubtitle =>
+      'Settled loans moved out of active mortgage tracking.';
+
+  @override
+  String reportsCurrentStockSubtitle(String goldWeight, String silverWeight) {
+    return '$goldWeight gold, $silverWeight silver in stock.';
+  }
+
+  @override
+  String get reportsSoldProductsSubtitle =>
+      'Sold products linked to invoice history.';
+
+  @override
+  String get reportsLowStockSubtitle =>
+      'Bulk products with two or fewer units available.';
+
+  @override
+  String get reportsProduct => 'Product';
+
+  @override
+  String get reportsUncategorised => 'Uncategorised';
+
+  @override
+  String get reportsNoDesignNumber => 'No design number';
+
+  @override
+  String get reportsPurity => 'Purity';
+
+  @override
+  String get reportsGross => 'Gross';
+
+  @override
+  String get reportsNet => 'Net';
+
+  @override
+  String get reportsSellingPrice => 'Selling Price';
+
+  @override
+  String get reportsMain => 'Main';
+
+  @override
+  String get reportsInvoice => 'Invoice';
+
+  @override
+  String get reportsCustomer => 'Customer';
+
+  @override
+  String get reportsPayment => 'Payment';
+
+  @override
+  String get reportsSoldDate => 'Sold Date';
+
+  @override
+  String get reportsMobile => 'Mobile';
+
+  @override
+  String get reportsAvailableQty => 'Available Qty';
+
+  @override
+  String get reportsDate => 'Date';
+
+  @override
+  String get reportsTotal => 'Total';
+
+  @override
+  String get reportsItems => 'Items';
+
+  @override
+  String get reportsTaxable => 'Taxable';
+
+  @override
+  String get reportsCgst => 'CGST';
+
+  @override
+  String get reportsSgst => 'SGST';
+
+  @override
+  String get reportsTotalGst => 'Total GST';
+
+  @override
+  String get reportsMortgageLoan => 'Mortgage Loan';
+
+  @override
+  String get reportsLoanAmount => 'Loan Amount';
+
+  @override
+  String get reportsPendingInterest => 'Pending Interest';
+
+  @override
+  String get reportsPayable => 'Payable';
+
+  @override
+  String get reportsNextDue => 'Next Due';
+
+  @override
+  String get reportsReceipt => 'Receipt';
+
+  @override
+  String get reportsAmount => 'Amount';
+
+  @override
+  String get reportsMode => 'Mode';
+
+  @override
+  String get reportsInterestPaid => 'Interest Paid';
+
+  @override
+  String get reportsClosingDate => 'Closing Date';
+
+  @override
+  String get reportsLoanStatus => 'Loan Status';
+
+  @override
+  String get reportsExportPdf => 'Export report PDF';
+
+  @override
+  String get reportsAdminOnly => 'Reports are for Admin users';
+
+  @override
+  String get reportsStaffSubtitle =>
+      'Staff can continue using Billing, Inventory View, and Mortgage collections.';
+
+  @override
+  String get reportsRestricted => 'Restricted';
+
+  @override
+  String reportsSalesGeneratedOn(String date) {
+    return 'Sales generated on $date.';
+  }
+
+  @override
+  String reportsSalesGeneratedIn(String date) {
+    return 'Sales generated in $date.';
+  }
+
+  @override
+  String get mortgageTitle => 'Mortgage / Gold Loan';
+
+  @override
+  String get mortgageAddMortgage => 'Add Mortgage';
+
+  @override
+  String get mortgageActive => 'Active Loans';
+
+  @override
+  String get mortgageClosed => 'Closed Loans';
+
+  @override
+  String get mortgagePendingInterest => 'Pending Interest';
+
+  @override
+  String get mortgageTotalLoanAmount => 'Total Loan Amount';
+
+  @override
+  String get mortgageTodaysCollections => 'Today\'s Collections';
+
+  @override
+  String get mortgageOverdueLoans => 'Overdue Loans';
+
+  @override
+  String get mortgageSearchHint => 'Search customer, mobile, or loan number';
+
+  @override
+  String get mortgageStatusActive => 'Active';
+
+  @override
+  String get mortgageStatusClosed => 'Closed';
+
+  @override
+  String get mortgageStatusAll => 'All';
+
+  @override
+  String get mortgageNoLoansFound => 'No mortgage loans found';
+
+  @override
+  String get mortgageNoLoansSubtitle =>
+      'Create a gold loan or adjust the search and filters.';
+
+  @override
+  String get mortgageLoanFallback => 'Mortgage Loan';
+
+  @override
+  String get mortgageCustomerFallback => 'Customer';
+
+  @override
+  String get mortgageCollect => 'Collect';
+
+  @override
+  String get mortgageClose => 'Close';
+
+  @override
+  String get mortgageOutstanding => 'Outstanding';
+
+  @override
+  String get mortgageTotalPayable => 'Total Payable';
+
+  @override
+  String get mortgageInterestPaid => 'Interest Paid';
+
+  @override
+  String get mortgageClosingDate => 'Closing Date';
+
+  @override
+  String get mortgageLoanStatus => 'Loan Status';
+
+  @override
+  String get mortgageInterestRate => 'Interest Rate';
+
+  @override
+  String get mortgageNextDue => 'Next Due';
+
+  @override
+  String get mortgageOrnaments => 'Ornaments';
+
+  @override
+  String get mortgageReceipt => 'Receipt';
+
+  @override
+  String get mortgageCreated => 'Mortgage loan created';
+
+  @override
+  String get mortgagePaymentSaved => 'Payment saved';
+
+  @override
+  String get mortgageLoanClosed => 'Loan closed';
+
+  @override
+  String get mortgagePaymentReceiptMissing => 'Payment receipt is missing';
+
+  @override
+  String get mortgageFailedGenerateReceipt =>
+      'Failed to generate payment receipt';
+
+  @override
+  String get mortgageAddTitle => 'Add Mortgage';
+
+  @override
+  String get mortgageCustomerDetails => 'Customer Details';
+
+  @override
+  String get mortgageCustomerName => 'Customer Name *';
+
+  @override
+  String get mortgageMobileNumber => 'Mobile Number';
+
+  @override
+  String get mortgageAddress => 'Address';
+
+  @override
+  String get mortgageAadhaarNumber => 'Aadhaar Number';
+
+  @override
+  String get mortgagePanNumber => 'PAN Number';
+
+  @override
+  String get mortgageCustomerVerification => 'Customer Verification';
+
+  @override
+  String get mortgagePhotoId => 'Photo ID';
+
+  @override
+  String get mortgageCustomerPhoto => 'Customer Photo';
+
+  @override
+  String get mortgageGoldDetails => 'Gold Details';
+
+  @override
+  String get mortgageOrnamentType => 'Ornament Type *';
+
+  @override
+  String get mortgageGrossWeight => 'Gross Weight *';
+
+  @override
+  String get mortgageNetWeight => 'Net Weight *';
+
+  @override
+  String get mortgageLoanDetails => 'Loan Details';
+
+  @override
+  String get mortgageLoanAmount => 'Loan Amount *';
+
+  @override
+  String get mortgageMonthlyInterestRate => 'Monthly Interest Rate % *';
+
+  @override
+  String get mortgageLoanDate => 'Loan Date *';
+
+  @override
+  String get mortgageSaveLoan => 'Save Loan';
+
+  @override
+  String get mortgageCollectPayment => 'Collect Payment';
+
+  @override
+  String get mortgageAmount => 'Amount *';
+
+  @override
+  String get mortgagePaymentType => 'Payment Type';
+
+  @override
+  String get mortgageInterest => 'Interest';
+
+  @override
+  String get mortgagePrincipal => 'Principal';
+
+  @override
+  String get mortgagePaymentMode => 'Payment Mode';
+
+  @override
+  String get mortgageReferenceNumber => 'Reference Number';
+
+  @override
+  String get mortgageSavePayment => 'Save Payment';
+
+  @override
+  String get mortgageCloseLoan => 'Close Loan';
+
+  @override
+  String get mortgageSettlementAmount => 'Settlement Amount *';
+
+  @override
+  String get mortgageSelected => 'Selected';
+
+  @override
+  String get mortgageChooseImage => 'Choose image';
+
+  @override
+  String get mortgageEnterValidLoanDate => 'Enter a valid loan date';
+
+  @override
+  String get mortgageNetWeightExceedsGross =>
+      'Net weight cannot exceed gross weight';
+
+  @override
+  String get mortgageFailedCreate => 'Failed to create mortgage';
+
+  @override
+  String get mortgageFailedSavePayment => 'Failed to save payment';
+
+  @override
+  String get mortgageFailedCloseLoan => 'Failed to close loan';
+
+  @override
+  String get mortgageSelectLoanDate => 'Select loan date';
+
+  @override
+  String get mortgagePurity => 'Purity';
+
+  @override
+  String get mortgageRequired => 'Required';
+
+  @override
+  String get mortgageEnterValidAmount => 'Enter a valid amount';
+
+  @override
+  String get inventoryManagement => 'Inventory Management';
+
+  @override
+  String get inventoryViewInventory => 'View Inventory';
+
+  @override
+  String get inventoryAddStock => 'Add Stock';
+
+  @override
+  String get inventorySoldProducts => 'Sold Products';
+
+  @override
+  String get inventoryTotalGoldWeight => 'Total Gold Weight';
+
+  @override
+  String get inventoryTotalSilverWeight => 'Total Silver Weight';
+
+  @override
+  String get inventoryTotalProducts => 'Total Products';
+
+  @override
+  String get inventoryAlertLowStock => 'Low Stock';
+
+  @override
+  String get inventoryAlertOutOfStock => 'Out of Stock';
+
+  @override
+  String get inventoryAlertHighValue => 'High Value';
+
+  @override
+  String get inventoryAlertUnsold => 'Unsold';
+
+  @override
+  String get inventoryScanHuidReceipt => 'Scan HUID Receipt';
+
+  @override
+  String get inventoryScanHuidSubtitle =>
+      'Capture a receipt and review AI-filled inventory rows before saving.';
+
+  @override
+  String get inventoryAddManually => 'Add Manually';
+
+  @override
+  String get inventoryAddManuallySubtitle =>
+      'Enter a single item using the regular inventory form.';
+
+  @override
+  String get inventoryReadingHuid => 'Reading HUID receipt...';
+
+  @override
+  String get inventoryTakePhoto => 'Take photo';
+
+  @override
+  String get inventoryChooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get inventoryNoRowsFound =>
+      'No inventory rows were found in this receipt';
+
+  @override
+  String get inventoryImported => 'Inventory imported';
+
+  @override
+  String get inventoryFailedScanHuid => 'Failed to scan HUID receipt';
+
+  @override
+  String get inventoryFailedImportRows => 'Failed to import inventory rows';
+
+  @override
+  String get inventoryClearSearch => 'Clear search';
+
+  @override
+  String get inventorySearchHintSold =>
+      'Search invoice, customer, product, mobile, payment method';
+
+  @override
+  String get inventorySearchHintStock =>
+      'Search product, design number, tag, HUID';
+
+  @override
+  String inventoryCountSold(int count) {
+    return '$count sold products';
+  }
+
+  @override
+  String get inventoryNoSoldFound => 'No sold products found';
+
+  @override
+  String get inventoryNoSoldSubtitle =>
+      'Sold products will appear here after billing is completed.';
+
+  @override
+  String get inventoryView => 'View';
+
+  @override
+  String get inventoryViewDetails => 'View details';
+
+  @override
+  String get inventoryFilters => 'Filters';
+
+  @override
+  String get inventoryFilterReset => 'Reset';
+
+  @override
+  String get inventoryFilterApply => 'Apply';
+
+  @override
+  String get inventoryFilterStatus => 'Status';
+
+  @override
+  String get inventoryFilterCategory => 'Category';
+
+  @override
+  String get inventoryFilterBranch => 'Branch';
+
+  @override
+  String get inventoryProductDetails => 'Product Details';
+
+  @override
+  String get inventoryWeightDetails => 'Weight Details';
+
+  @override
+  String get inventoryPriceDetails => 'Price Details';
+
+  @override
+  String get inventoryUploadImage => 'Upload Image';
+
+  @override
+  String get inventoryFormStatus => 'Status';
+
+  @override
+  String get inventoryFieldDesignNumber => 'Design Number';
+
+  @override
+  String get inventoryFieldCategory => 'Category';
+
+  @override
+  String get inventoryFieldStoneWeight => 'Stone Weight (g)';
+
+  @override
+  String get inventoryFieldPurchasePrice => 'Purchase Price / g';
+
+  @override
+  String get inventoryFieldBranch => 'Branch';
+
+  @override
+  String get inventoryFieldSellingPrice => 'Selling Price';
+
+  @override
+  String get inventoryChooseProductImage => 'Choose Product Image';
+
+  @override
+  String get inventoryRemoveImage => 'Remove product image';
+
+  @override
+  String get inventoryImageReady => 'Selected product image is ready to save.';
+
+  @override
+  String get inventoryFieldImageUrl => 'Product Image URL';
+
+  @override
+  String get inventoryAutoCalculations => 'Auto Calculations';
+
+  @override
+  String get inventoryCalcNetWeight => 'Net Weight';
+
+  @override
+  String get inventoryCalcMakingCharges => 'Making Charges';
+
+  @override
+  String get inventoryCalcFinalSellingPrice => 'Final Selling Price';
+
+  @override
+  String get inventoryProductInfo => 'Product Information';
+
+  @override
+  String get inventoryProductName => 'Product Name';
+
+  @override
+  String get inventoryProductCode => 'Product Code';
+
+  @override
+  String get inventoryGrossWeight => 'Gross Weight';
+
+  @override
+  String get inventoryStoneWeight => 'Stone Weight';
+
+  @override
+  String get inventoryPurchasePrice => 'Purchase Price';
+
+  @override
+  String get inventoryMakingCharges => 'Making Charges';
+
+  @override
+  String get inventoryGstInfo => '3% calculated during billing';
+
+  @override
+  String get inventoryStatusInfo => 'Status Information';
+
+  @override
+  String get inventoryQuantity => 'Quantity';
+
+  @override
+  String get inventoryClose => 'Close';
+
+  @override
+  String get inventoryReviewHuidTitle => 'Review HUID Receipt Items';
+
+  @override
+  String get inventoryReviewHuidSubtitle =>
+      'Check the AI-filled rows before adding them to inventory.';
+
+  @override
+  String get inventoryImportItems => 'Import Items';
+
+  @override
+  String get inventoryColumnCategory => 'Category';
+
+  @override
+  String get inventoryColumnDesignNumber => 'Design Number';
+
+  @override
+  String get inventoryColumnPurity => 'Purity';
+
+  @override
+  String get inventoryColumnNetWeight => 'Net Weight';
+
+  @override
+  String get inventoryColumnSellingPrice => 'Selling Price';
+
+  @override
+  String get inventoryColumnInvoiceNumber => 'Invoice Number';
+
+  @override
+  String get inventoryColumnCustomerName => 'Customer Name';
+
+  @override
+  String get inventoryColumnProductName => 'Product Name';
+
+  @override
+  String get inventoryColumnSoldDate => 'Sold Date';
+
+  @override
+  String get inventoryColumnPaymentMethod => 'Payment Method';
+
+  @override
+  String get inventoryCompactNet => 'Net';
+
+  @override
+  String get inventoryCompactPrice => 'Price';
+
+  @override
+  String get inventoryCompactPayment => 'Payment';
 }

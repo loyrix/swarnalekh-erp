@@ -13,6 +13,7 @@ class AppShell extends ConsumerStatefulWidget {
   final Widget child;
   final int currentIndex;
   final String currentTitle;
+  final String currentLocation;
   final Function(int) onNavigate;
   final Future<String?> Function()? loadRole;
   final Future<CurrentUserContext> Function()? loadUserContext;
@@ -23,6 +24,7 @@ class AppShell extends ConsumerStatefulWidget {
     required this.child,
     required this.currentIndex,
     required this.currentTitle,
+    required this.currentLocation,
     required this.onNavigate,
     this.loadRole,
     this.loadUserContext,
@@ -46,36 +48,45 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Future<void> _loadUserContext() async {
     try {
+      String? role;
       if (widget.loadUserContext != null) {
         final userContext = await widget.loadUserContext!();
         if (mounted) {
-          setState(() {
-            _role = userContext.role;
-            _profileInitials = profileInitialsFromName(
-              userContext.shopName ?? userContext.userName,
-            );
-          });
-        }
-        return;
-      }
-
-      if (widget.loadRole != null) {
-        final role = await widget.loadRole!();
-        if (mounted) setState(() => _role = role);
-        return;
-      }
-
-      final userContext = await fetchCurrentUserContext(ApiClient());
-      if (mounted) {
-        setState(() {
-          _role = userContext.role;
+          role = userContext.role;
           _profileInitials = profileInitialsFromName(
             userContext.shopName ?? userContext.userName,
           );
-        });
+        }
+      } else if (widget.loadRole != null) {
+        role = await widget.loadRole!();
+      } else {
+        final userContext = await fetchCurrentUserContext(ApiClient());
+        if (mounted) {
+          _profileInitials = profileInitialsFromName(
+            userContext.shopName ?? userContext.userName,
+          );
+        }
+        role = userContext.role;
+      }
+      if (mounted) {
+        setState(() => _role = role);
+        _redirectIfRestricted(role);
       }
     } catch (_) {
       if (mounted) setState(() => _role = null);
+    }
+  }
+
+  void _redirectIfRestricted(String? role) {
+    if (!mounted) return;
+    final location = widget.currentLocation;
+    final isStaff = isStaffRole(role);
+    if (isStaff &&
+        (location == '/reports' ||
+            location == '/security' ||
+            location == '/user-management' ||
+            location == '/shop-profile')) {
+      context.go('/dashboard');
     }
   }
 
@@ -112,7 +123,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     return Scaffold(
       backgroundColor: AppColors.bg(context),
       body: SafeArea(
-        bottom: false,
+        bottom: !isWide,
         child: Row(
           children: [
             // Sidebar
@@ -123,7 +134,16 @@ class _AppShellState extends ConsumerState<AppShell> {
               child: Column(
                 children: [
                   _buildTopBar(isWide),
-                  Expanded(child: widget.child),
+                  Expanded(
+                    child: isWide
+                        ? widget.child
+                        : SafeArea(
+                            top: false,
+                            left: false,
+                            right: false,
+                            child: widget.child,
+                          ),
+                  ),
                 ],
               ),
             ),
@@ -162,9 +182,9 @@ class _AppShellState extends ConsumerState<AppShell> {
                 const BrandMark(size: 36, padding: 2, elevated: false),
                 if (_isExpanded) ...[
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'SwarnaLekh',
+                      l10n.appTitle,
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w700,
@@ -299,12 +319,6 @@ class _AppShellState extends ConsumerState<AppShell> {
       ),
       child: Row(
         children: [
-          if (!isWide)
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.menu_rounded),
-              onPressed: () {},
-            ),
           // Page title
           Expanded(
             child: Text(
@@ -361,7 +375,7 @@ class _AppShellState extends ConsumerState<AppShell> {
               color: AppColors.text2(context),
             ),
             onPressed: () => themeNotifier.toggle(),
-            tooltip: 'Toggle theme',
+            tooltip: l10n.appShellToggleTheme,
           ),
           if (showSecondaryActions) const SizedBox(width: AppSpacing.xs),
           // Notifications
@@ -373,9 +387,11 @@ class _AppShellState extends ConsumerState<AppShell> {
               ),
               onPressed: () {},
             ),
-          SizedBox(width: isWide ? AppSpacing.sm : AppSpacing.xs),
-          _buildLanguageMenu(showSecondaryActions),
-          SizedBox(width: isWide ? AppSpacing.sm : AppSpacing.xs),
+          if (isWide) ...[
+            SizedBox(width: AppSpacing.sm),
+            _buildLanguageMenu(showSecondaryActions),
+            SizedBox(width: AppSpacing.sm),
+          ],
           PopupMenuButton<_ProfileAction>(
             tooltip: l10n.pageShopProfile,
             color: AppColors.surfL(context),
@@ -396,6 +412,18 @@ class _AppShellState extends ConsumerState<AppShell> {
                 context.go('/user-management');
                 return;
               }
+              if (value == _ProfileAction.langEn) {
+                setAppLocale(const Locale('en'));
+                return;
+              }
+              if (value == _ProfileAction.langHi) {
+                setAppLocale(const Locale('hi'));
+                return;
+              }
+              if (value == _ProfileAction.langGu) {
+                setAppLocale(const Locale('gu'));
+                return;
+              }
 
               await _signOut();
             },
@@ -412,27 +440,70 @@ class _AppShellState extends ConsumerState<AppShell> {
                   ),
                 ),
               if (isAdminRole(_role))
-                const PopupMenuItem<_ProfileAction>(
+                PopupMenuItem<_ProfileAction>(
                   value: _ProfileAction.security,
                   child: Row(
                     children: [
-                      Icon(Icons.security_rounded, size: 18),
-                      SizedBox(width: 10),
-                      Text('Security'),
+                      const Icon(Icons.security_rounded, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.appShellSecurity),
                     ],
                   ),
                 ),
               if (isAdminRole(_role))
-                const PopupMenuItem<_ProfileAction>(
+                PopupMenuItem<_ProfileAction>(
                   value: _ProfileAction.users,
                   child: Row(
                     children: [
-                      Icon(Icons.manage_accounts_rounded, size: 18),
-                      SizedBox(width: 10),
-                      Text('User Management'),
+                      const Icon(Icons.manage_accounts_rounded, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.appShellUserManagement),
                     ],
                   ),
                 ),
+              if (!isWide) ...[
+                const PopupMenuDivider(),
+                PopupMenuItem<_ProfileAction>(
+                  value: _ProfileAction.language,
+                  enabled: false,
+                  child: Text(
+                    l10n.menuLanguage,
+                    style: TextStyle(
+                      color: AppColors.text3(context),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                PopupMenuItem<_ProfileAction>(
+                  value: _ProfileAction.langEn,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 28),
+                      Text(l10n.languageEnglish),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<_ProfileAction>(
+                  value: _ProfileAction.langHi,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 28),
+                      Text(l10n.languageHindi),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<_ProfileAction>(
+                  value: _ProfileAction.langGu,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 28),
+                      Text(l10n.languageGujarati),
+                    ],
+                  ),
+                ),
+              ],
+              const PopupMenuDivider(),
               PopupMenuItem<_ProfileAction>(
                 value: _ProfileAction.logout,
                 child: Row(
@@ -565,4 +636,13 @@ class _NavItem {
   const _NavItem({required this.icon});
 }
 
-enum _ProfileAction { profile, security, users, logout }
+enum _ProfileAction {
+  profile,
+  security,
+  users,
+  language,
+  langEn,
+  langHi,
+  langGu,
+  logout,
+}

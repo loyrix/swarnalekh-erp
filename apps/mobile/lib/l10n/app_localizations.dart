@@ -1941,6 +1941,1584 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Newly added staff must download the app and use the Sign Up option with the exact email address provided here to set their password and link their account.'**
   String get userOnboardingTipDesc;
+
+  /// No description provided for @appShellToggleTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle theme'**
+  String get appShellToggleTheme;
+
+  /// No description provided for @appShellSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get appShellSecurity;
+
+  /// No description provided for @appShellUserManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'User Management'**
+  String get appShellUserManagement;
+
+  /// No description provided for @dashboardTotalGoldStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Gold Stock'**
+  String get dashboardTotalGoldStock;
+
+  /// No description provided for @dashboardAvailableNetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Available net weight'**
+  String get dashboardAvailableNetWeight;
+
+  /// No description provided for @dashboardTotalSilverStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Silver Stock'**
+  String get dashboardTotalSilverStock;
+
+  /// No description provided for @dashboardInventoryValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory Value'**
+  String get dashboardInventoryValue;
+
+  /// No description provided for @dashboardAvailableStockValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Available stock value'**
+  String get dashboardAvailableStockValue;
+
+  /// No description provided for @dashboardThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get dashboardThisMonth;
+
+  /// No description provided for @dashboardMortgageDues.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage dues'**
+  String get dashboardMortgageDues;
+
+  /// No description provided for @dashboardMortgageAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage accounts'**
+  String get dashboardMortgageAccounts;
+
+  /// No description provided for @dashboardBilledToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed today'**
+  String get dashboardBilledToday;
+
+  /// No description provided for @dashboardGeneratedInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated invoices'**
+  String get dashboardGeneratedInvoices;
+
+  /// No description provided for @dashboardGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get dashboardGold;
+
+  /// No description provided for @dashboardSilver.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver'**
+  String get dashboardSilver;
+
+  /// No description provided for @dashboardRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get dashboardRevenue;
+
+  /// No description provided for @dashboardLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Loans'**
+  String get dashboardLoans;
+
+  /// No description provided for @dashboardViewAllStats.
+  ///
+  /// In en, this message translates to:
+  /// **'View all stats ({count})'**
+  String dashboardViewAllStats(int count);
+
+  /// No description provided for @dashboardRevenueTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue Trend'**
+  String get dashboardRevenueTrend;
+
+  /// No description provided for @dashboardMonthlyRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Revenue'**
+  String get dashboardMonthlyRevenue;
+
+  /// No description provided for @dashboardPendingInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Interest'**
+  String get dashboardPendingInterest;
+
+  /// No description provided for @dashboardActiveLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Loans'**
+  String get dashboardActiveLoans;
+
+  /// No description provided for @dashboardTodaysSales.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Sales'**
+  String get dashboardTodaysSales;
+
+  /// No description provided for @dashboardTotalBills.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Bills'**
+  String get dashboardTotalBills;
+
+  /// No description provided for @reportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get reportsTitle;
+
+  /// No description provided for @reportsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory, billing, GST, and mortgage reports from the Jewellery ERP flow.'**
+  String get reportsSubtitle;
+
+  /// No description provided for @reportsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search product, design, customer, invoice, or mobile'**
+  String get reportsSearchHint;
+
+  /// No description provided for @reportsFromDate.
+  ///
+  /// In en, this message translates to:
+  /// **'From date'**
+  String get reportsFromDate;
+
+  /// No description provided for @reportsToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'To date'**
+  String get reportsToDate;
+
+  /// No description provided for @reportsDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'YYYY-MM-DD'**
+  String get reportsDateHint;
+
+  /// No description provided for @reportsCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get reportsCategory;
+
+  /// No description provided for @reportsBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get reportsBranch;
+
+  /// No description provided for @reportsStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get reportsStatus;
+
+  /// No description provided for @reportsAllStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'All Status'**
+  String get reportsAllStatus;
+
+  /// No description provided for @reportsInStock.
+  ///
+  /// In en, this message translates to:
+  /// **'In Stock'**
+  String get reportsInStock;
+
+  /// No description provided for @reportsReserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved'**
+  String get reportsReserved;
+
+  /// No description provided for @reportsSold.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold'**
+  String get reportsSold;
+
+  /// No description provided for @reportsActiveLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Loan'**
+  String get reportsActiveLoan;
+
+  /// No description provided for @reportsClosedLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed Loan'**
+  String get reportsClosedLoan;
+
+  /// No description provided for @reportsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh reports'**
+  String get reportsRefresh;
+
+  /// No description provided for @reportsFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get reportsFilters;
+
+  /// No description provided for @reportsReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reportsReset;
+
+  /// No description provided for @reportsApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get reportsApply;
+
+  /// No description provided for @reportsInventoryReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory Reports'**
+  String get reportsInventoryReports;
+
+  /// No description provided for @reportsBillingReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing Reports'**
+  String get reportsBillingReports;
+
+  /// No description provided for @reportsMortgageReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage Reports'**
+  String get reportsMortgageReports;
+
+  /// No description provided for @reportsDailySales.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Sales Report'**
+  String get reportsDailySales;
+
+  /// No description provided for @reportsMonthlySales.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Sales Report'**
+  String get reportsMonthlySales;
+
+  /// No description provided for @reportsGst.
+  ///
+  /// In en, this message translates to:
+  /// **'GST Report'**
+  String get reportsGst;
+
+  /// No description provided for @reportsActiveLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Loans Report'**
+  String get reportsActiveLoans;
+
+  /// No description provided for @reportsInterestCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Collection Report'**
+  String get reportsInterestCollection;
+
+  /// No description provided for @reportsClosedLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed Loans Report'**
+  String get reportsClosedLoans;
+
+  /// No description provided for @reportsCurrentStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Stock Report'**
+  String get reportsCurrentStock;
+
+  /// No description provided for @reportsSoldProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Products Report'**
+  String get reportsSoldProducts;
+
+  /// No description provided for @reportsLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Stock Report'**
+  String get reportsLowStock;
+
+  /// No description provided for @reportsNoSalesDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No sales found for this day.'**
+  String get reportsNoSalesDay;
+
+  /// No description provided for @reportsNoSalesMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No sales found for this month.'**
+  String get reportsNoSalesMonth;
+
+  /// No description provided for @reportsNoGstData.
+  ///
+  /// In en, this message translates to:
+  /// **'No GST data found.'**
+  String get reportsNoGstData;
+
+  /// No description provided for @reportsNoActiveLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'No active loans found.'**
+  String get reportsNoActiveLoans;
+
+  /// No description provided for @reportsNoInterestCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No interest collections found.'**
+  String get reportsNoInterestCollections;
+
+  /// No description provided for @reportsNoClosedLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'No closed loans found.'**
+  String get reportsNoClosedLoans;
+
+  /// No description provided for @reportsNoCurrentStock.
+  ///
+  /// In en, this message translates to:
+  /// **'No current stock found.'**
+  String get reportsNoCurrentStock;
+
+  /// No description provided for @reportsNoSoldProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'No sold products found.'**
+  String get reportsNoSoldProducts;
+
+  /// No description provided for @reportsNoLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'No low stock products found.'**
+  String get reportsNoLowStock;
+
+  /// No description provided for @reportsGstSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax collected from filtered invoice history.'**
+  String get reportsGstSubtitle;
+
+  /// No description provided for @reportsActiveLoansSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open gold loans with pending balances and due dates.'**
+  String get reportsActiveLoansSubtitle;
+
+  /// No description provided for @reportsInterestCollectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipts generated for interest and settlement payments.'**
+  String get reportsInterestCollectionSubtitle;
+
+  /// No description provided for @reportsClosedLoansSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled loans moved out of active mortgage tracking.'**
+  String get reportsClosedLoansSubtitle;
+
+  /// No description provided for @reportsCurrentStockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{goldWeight} gold, {silverWeight} silver in stock.'**
+  String reportsCurrentStockSubtitle(String goldWeight, String silverWeight);
+
+  /// No description provided for @reportsSoldProductsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold products linked to invoice history.'**
+  String get reportsSoldProductsSubtitle;
+
+  /// No description provided for @reportsLowStockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk products with two or fewer units available.'**
+  String get reportsLowStockSubtitle;
+
+  /// No description provided for @reportsProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get reportsProduct;
+
+  /// No description provided for @reportsUncategorised.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncategorised'**
+  String get reportsUncategorised;
+
+  /// No description provided for @reportsNoDesignNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'No design number'**
+  String get reportsNoDesignNumber;
+
+  /// No description provided for @reportsPurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Purity'**
+  String get reportsPurity;
+
+  /// No description provided for @reportsGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross'**
+  String get reportsGross;
+
+  /// No description provided for @reportsNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get reportsNet;
+
+  /// No description provided for @reportsSellingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling Price'**
+  String get reportsSellingPrice;
+
+  /// No description provided for @reportsMain.
+  ///
+  /// In en, this message translates to:
+  /// **'Main'**
+  String get reportsMain;
+
+  /// No description provided for @reportsInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice'**
+  String get reportsInvoice;
+
+  /// No description provided for @reportsCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get reportsCustomer;
+
+  /// No description provided for @reportsPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get reportsPayment;
+
+  /// No description provided for @reportsSoldDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Date'**
+  String get reportsSoldDate;
+
+  /// No description provided for @reportsMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get reportsMobile;
+
+  /// No description provided for @reportsAvailableQty.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Qty'**
+  String get reportsAvailableQty;
+
+  /// No description provided for @reportsDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get reportsDate;
+
+  /// No description provided for @reportsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get reportsTotal;
+
+  /// No description provided for @reportsItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get reportsItems;
+
+  /// No description provided for @reportsTaxable.
+  ///
+  /// In en, this message translates to:
+  /// **'Taxable'**
+  String get reportsTaxable;
+
+  /// No description provided for @reportsCgst.
+  ///
+  /// In en, this message translates to:
+  /// **'CGST'**
+  String get reportsCgst;
+
+  /// No description provided for @reportsSgst.
+  ///
+  /// In en, this message translates to:
+  /// **'SGST'**
+  String get reportsSgst;
+
+  /// No description provided for @reportsTotalGst.
+  ///
+  /// In en, this message translates to:
+  /// **'Total GST'**
+  String get reportsTotalGst;
+
+  /// No description provided for @reportsMortgageLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage Loan'**
+  String get reportsMortgageLoan;
+
+  /// No description provided for @reportsLoanAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Amount'**
+  String get reportsLoanAmount;
+
+  /// No description provided for @reportsPendingInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Interest'**
+  String get reportsPendingInterest;
+
+  /// No description provided for @reportsPayable.
+  ///
+  /// In en, this message translates to:
+  /// **'Payable'**
+  String get reportsPayable;
+
+  /// No description provided for @reportsNextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Due'**
+  String get reportsNextDue;
+
+  /// No description provided for @reportsReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get reportsReceipt;
+
+  /// No description provided for @reportsAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get reportsAmount;
+
+  /// No description provided for @reportsMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get reportsMode;
+
+  /// No description provided for @reportsInterestPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Paid'**
+  String get reportsInterestPaid;
+
+  /// No description provided for @reportsClosingDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing Date'**
+  String get reportsClosingDate;
+
+  /// No description provided for @reportsLoanStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Status'**
+  String get reportsLoanStatus;
+
+  /// No description provided for @reportsExportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export report PDF'**
+  String get reportsExportPdf;
+
+  /// No description provided for @reportsAdminOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports are for Admin users'**
+  String get reportsAdminOnly;
+
+  /// No description provided for @reportsStaffSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff can continue using Billing, Inventory View, and Mortgage collections.'**
+  String get reportsStaffSubtitle;
+
+  /// No description provided for @reportsRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'Restricted'**
+  String get reportsRestricted;
+
+  /// No description provided for @reportsSalesGeneratedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales generated on {date}.'**
+  String reportsSalesGeneratedOn(String date);
+
+  /// No description provided for @reportsSalesGeneratedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales generated in {date}.'**
+  String reportsSalesGeneratedIn(String date);
+
+  /// No description provided for @mortgageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage / Gold Loan'**
+  String get mortgageTitle;
+
+  /// No description provided for @mortgageAddMortgage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Mortgage'**
+  String get mortgageAddMortgage;
+
+  /// No description provided for @mortgageActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Loans'**
+  String get mortgageActive;
+
+  /// No description provided for @mortgageClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed Loans'**
+  String get mortgageClosed;
+
+  /// No description provided for @mortgagePendingInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Interest'**
+  String get mortgagePendingInterest;
+
+  /// No description provided for @mortgageTotalLoanAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Loan Amount'**
+  String get mortgageTotalLoanAmount;
+
+  /// No description provided for @mortgageTodaysCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Collections'**
+  String get mortgageTodaysCollections;
+
+  /// No description provided for @mortgageOverdueLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue Loans'**
+  String get mortgageOverdueLoans;
+
+  /// No description provided for @mortgageSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search customer, mobile, or loan number'**
+  String get mortgageSearchHint;
+
+  /// No description provided for @mortgageStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get mortgageStatusActive;
+
+  /// No description provided for @mortgageStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get mortgageStatusClosed;
+
+  /// No description provided for @mortgageStatusAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get mortgageStatusAll;
+
+  /// No description provided for @mortgageNoLoansFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No mortgage loans found'**
+  String get mortgageNoLoansFound;
+
+  /// No description provided for @mortgageNoLoansSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a gold loan or adjust the search and filters.'**
+  String get mortgageNoLoansSubtitle;
+
+  /// No description provided for @mortgageLoanFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage Loan'**
+  String get mortgageLoanFallback;
+
+  /// No description provided for @mortgageCustomerFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get mortgageCustomerFallback;
+
+  /// No description provided for @mortgageCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect'**
+  String get mortgageCollect;
+
+  /// No description provided for @mortgageClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get mortgageClose;
+
+  /// No description provided for @mortgageOutstanding.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding'**
+  String get mortgageOutstanding;
+
+  /// No description provided for @mortgageTotalPayable.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Payable'**
+  String get mortgageTotalPayable;
+
+  /// No description provided for @mortgageInterestPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Paid'**
+  String get mortgageInterestPaid;
+
+  /// No description provided for @mortgageClosingDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing Date'**
+  String get mortgageClosingDate;
+
+  /// No description provided for @mortgageLoanStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Status'**
+  String get mortgageLoanStatus;
+
+  /// No description provided for @mortgageInterestRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Rate'**
+  String get mortgageInterestRate;
+
+  /// No description provided for @mortgageNextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Due'**
+  String get mortgageNextDue;
+
+  /// No description provided for @mortgageOrnaments.
+  ///
+  /// In en, this message translates to:
+  /// **'Ornaments'**
+  String get mortgageOrnaments;
+
+  /// No description provided for @mortgageReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get mortgageReceipt;
+
+  /// No description provided for @mortgageCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage loan created'**
+  String get mortgageCreated;
+
+  /// No description provided for @mortgagePaymentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment saved'**
+  String get mortgagePaymentSaved;
+
+  /// No description provided for @mortgageLoanClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan closed'**
+  String get mortgageLoanClosed;
+
+  /// No description provided for @mortgagePaymentReceiptMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment receipt is missing'**
+  String get mortgagePaymentReceiptMissing;
+
+  /// No description provided for @mortgageFailedGenerateReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate payment receipt'**
+  String get mortgageFailedGenerateReceipt;
+
+  /// No description provided for @mortgageAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Mortgage'**
+  String get mortgageAddTitle;
+
+  /// No description provided for @mortgageCustomerDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Details'**
+  String get mortgageCustomerDetails;
+
+  /// No description provided for @mortgageCustomerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Name *'**
+  String get mortgageCustomerName;
+
+  /// No description provided for @mortgageMobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Number'**
+  String get mortgageMobileNumber;
+
+  /// No description provided for @mortgageAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get mortgageAddress;
+
+  /// No description provided for @mortgageAadhaarNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Aadhaar Number'**
+  String get mortgageAadhaarNumber;
+
+  /// No description provided for @mortgagePanNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'PAN Number'**
+  String get mortgagePanNumber;
+
+  /// No description provided for @mortgageCustomerVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Verification'**
+  String get mortgageCustomerVerification;
+
+  /// No description provided for @mortgagePhotoId.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo ID'**
+  String get mortgagePhotoId;
+
+  /// No description provided for @mortgageCustomerPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Photo'**
+  String get mortgageCustomerPhoto;
+
+  /// No description provided for @mortgageGoldDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Details'**
+  String get mortgageGoldDetails;
+
+  /// No description provided for @mortgageOrnamentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Ornament Type *'**
+  String get mortgageOrnamentType;
+
+  /// No description provided for @mortgageGrossWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross Weight *'**
+  String get mortgageGrossWeight;
+
+  /// No description provided for @mortgageNetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Weight *'**
+  String get mortgageNetWeight;
+
+  /// No description provided for @mortgageLoanDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Details'**
+  String get mortgageLoanDetails;
+
+  /// No description provided for @mortgageLoanAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Amount *'**
+  String get mortgageLoanAmount;
+
+  /// No description provided for @mortgageMonthlyInterestRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Interest Rate % *'**
+  String get mortgageMonthlyInterestRate;
+
+  /// No description provided for @mortgageLoanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Date *'**
+  String get mortgageLoanDate;
+
+  /// No description provided for @mortgageSaveLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Loan'**
+  String get mortgageSaveLoan;
+
+  /// No description provided for @mortgageCollectPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect Payment'**
+  String get mortgageCollectPayment;
+
+  /// No description provided for @mortgageAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount *'**
+  String get mortgageAmount;
+
+  /// No description provided for @mortgagePaymentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Type'**
+  String get mortgagePaymentType;
+
+  /// No description provided for @mortgageInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest'**
+  String get mortgageInterest;
+
+  /// No description provided for @mortgagePrincipal.
+  ///
+  /// In en, this message translates to:
+  /// **'Principal'**
+  String get mortgagePrincipal;
+
+  /// No description provided for @mortgagePaymentMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Mode'**
+  String get mortgagePaymentMode;
+
+  /// No description provided for @mortgageReferenceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference Number'**
+  String get mortgageReferenceNumber;
+
+  /// No description provided for @mortgageSavePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Payment'**
+  String get mortgageSavePayment;
+
+  /// No description provided for @mortgageCloseLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Loan'**
+  String get mortgageCloseLoan;
+
+  /// No description provided for @mortgageSettlementAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement Amount *'**
+  String get mortgageSettlementAmount;
+
+  /// No description provided for @mortgageSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get mortgageSelected;
+
+  /// No description provided for @mortgageChooseImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image'**
+  String get mortgageChooseImage;
+
+  /// No description provided for @mortgageEnterValidLoanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid loan date'**
+  String get mortgageEnterValidLoanDate;
+
+  /// No description provided for @mortgageNetWeightExceedsGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Net weight cannot exceed gross weight'**
+  String get mortgageNetWeightExceedsGross;
+
+  /// No description provided for @mortgageFailedCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create mortgage'**
+  String get mortgageFailedCreate;
+
+  /// No description provided for @mortgageFailedSavePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save payment'**
+  String get mortgageFailedSavePayment;
+
+  /// No description provided for @mortgageFailedCloseLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to close loan'**
+  String get mortgageFailedCloseLoan;
+
+  /// No description provided for @mortgageSelectLoanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select loan date'**
+  String get mortgageSelectLoanDate;
+
+  /// No description provided for @mortgagePurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Purity'**
+  String get mortgagePurity;
+
+  /// No description provided for @mortgageRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get mortgageRequired;
+
+  /// No description provided for @mortgageEnterValidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid amount'**
+  String get mortgageEnterValidAmount;
+
+  /// No description provided for @inventoryManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory Management'**
+  String get inventoryManagement;
+
+  /// No description provided for @inventoryViewInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'View Inventory'**
+  String get inventoryViewInventory;
+
+  /// No description provided for @inventoryAddStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Stock'**
+  String get inventoryAddStock;
+
+  /// No description provided for @inventorySoldProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Products'**
+  String get inventorySoldProducts;
+
+  /// No description provided for @inventoryTotalGoldWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Gold Weight'**
+  String get inventoryTotalGoldWeight;
+
+  /// No description provided for @inventoryTotalSilverWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Silver Weight'**
+  String get inventoryTotalSilverWeight;
+
+  /// No description provided for @inventoryTotalProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Products'**
+  String get inventoryTotalProducts;
+
+  /// No description provided for @inventoryAlertLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Stock'**
+  String get inventoryAlertLowStock;
+
+  /// No description provided for @inventoryAlertOutOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Stock'**
+  String get inventoryAlertOutOfStock;
+
+  /// No description provided for @inventoryAlertHighValue.
+  ///
+  /// In en, this message translates to:
+  /// **'High Value'**
+  String get inventoryAlertHighValue;
+
+  /// No description provided for @inventoryAlertUnsold.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsold'**
+  String get inventoryAlertUnsold;
+
+  /// No description provided for @inventoryScanHuidReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan HUID Receipt'**
+  String get inventoryScanHuidReceipt;
+
+  /// No description provided for @inventoryScanHuidSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture a receipt and review AI-filled inventory rows before saving.'**
+  String get inventoryScanHuidSubtitle;
+
+  /// No description provided for @inventoryAddManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Manually'**
+  String get inventoryAddManually;
+
+  /// No description provided for @inventoryAddManuallySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a single item using the regular inventory form.'**
+  String get inventoryAddManuallySubtitle;
+
+  /// No description provided for @inventoryReadingHuid.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading HUID receipt...'**
+  String get inventoryReadingHuid;
+
+  /// No description provided for @inventoryTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get inventoryTakePhoto;
+
+  /// No description provided for @inventoryChooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get inventoryChooseFromGallery;
+
+  /// No description provided for @inventoryNoRowsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No inventory rows were found in this receipt'**
+  String get inventoryNoRowsFound;
+
+  /// No description provided for @inventoryImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory imported'**
+  String get inventoryImported;
+
+  /// No description provided for @inventoryFailedScanHuid.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to scan HUID receipt'**
+  String get inventoryFailedScanHuid;
+
+  /// No description provided for @inventoryFailedImportRows.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to import inventory rows'**
+  String get inventoryFailedImportRows;
+
+  /// No description provided for @inventoryClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get inventoryClearSearch;
+
+  /// No description provided for @inventorySearchHintSold.
+  ///
+  /// In en, this message translates to:
+  /// **'Search invoice, customer, product, mobile, payment method'**
+  String get inventorySearchHintSold;
+
+  /// No description provided for @inventorySearchHintStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Search product, design number, tag, HUID'**
+  String get inventorySearchHintStock;
+
+  /// No description provided for @inventoryCountSold.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sold products'**
+  String inventoryCountSold(int count);
+
+  /// No description provided for @inventoryNoSoldFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No sold products found'**
+  String get inventoryNoSoldFound;
+
+  /// No description provided for @inventoryNoSoldSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold products will appear here after billing is completed.'**
+  String get inventoryNoSoldSubtitle;
+
+  /// No description provided for @inventoryView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get inventoryView;
+
+  /// No description provided for @inventoryViewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View details'**
+  String get inventoryViewDetails;
+
+  /// No description provided for @inventoryFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get inventoryFilters;
+
+  /// No description provided for @inventoryFilterReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get inventoryFilterReset;
+
+  /// No description provided for @inventoryFilterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get inventoryFilterApply;
+
+  /// No description provided for @inventoryFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get inventoryFilterStatus;
+
+  /// No description provided for @inventoryFilterCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get inventoryFilterCategory;
+
+  /// No description provided for @inventoryFilterBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get inventoryFilterBranch;
+
+  /// No description provided for @inventoryProductDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Details'**
+  String get inventoryProductDetails;
+
+  /// No description provided for @inventoryWeightDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight Details'**
+  String get inventoryWeightDetails;
+
+  /// No description provided for @inventoryPriceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Details'**
+  String get inventoryPriceDetails;
+
+  /// No description provided for @inventoryUploadImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Image'**
+  String get inventoryUploadImage;
+
+  /// No description provided for @inventoryFormStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get inventoryFormStatus;
+
+  /// No description provided for @inventoryFieldDesignNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Design Number'**
+  String get inventoryFieldDesignNumber;
+
+  /// No description provided for @inventoryFieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get inventoryFieldCategory;
+
+  /// No description provided for @inventoryFieldStoneWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Stone Weight (g)'**
+  String get inventoryFieldStoneWeight;
+
+  /// No description provided for @inventoryFieldPurchasePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase Price / g'**
+  String get inventoryFieldPurchasePrice;
+
+  /// No description provided for @inventoryFieldBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get inventoryFieldBranch;
+
+  /// No description provided for @inventoryFieldSellingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling Price'**
+  String get inventoryFieldSellingPrice;
+
+  /// No description provided for @inventoryChooseProductImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Product Image'**
+  String get inventoryChooseProductImage;
+
+  /// No description provided for @inventoryRemoveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove product image'**
+  String get inventoryRemoveImage;
+
+  /// No description provided for @inventoryImageReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected product image is ready to save.'**
+  String get inventoryImageReady;
+
+  /// No description provided for @inventoryFieldImageUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Image URL'**
+  String get inventoryFieldImageUrl;
+
+  /// No description provided for @inventoryAutoCalculations.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Calculations'**
+  String get inventoryAutoCalculations;
+
+  /// No description provided for @inventoryCalcNetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Weight'**
+  String get inventoryCalcNetWeight;
+
+  /// No description provided for @inventoryCalcMakingCharges.
+  ///
+  /// In en, this message translates to:
+  /// **'Making Charges'**
+  String get inventoryCalcMakingCharges;
+
+  /// No description provided for @inventoryCalcFinalSellingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Selling Price'**
+  String get inventoryCalcFinalSellingPrice;
+
+  /// No description provided for @inventoryProductInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Information'**
+  String get inventoryProductInfo;
+
+  /// No description provided for @inventoryProductName.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Name'**
+  String get inventoryProductName;
+
+  /// No description provided for @inventoryProductCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Code'**
+  String get inventoryProductCode;
+
+  /// No description provided for @inventoryGrossWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross Weight'**
+  String get inventoryGrossWeight;
+
+  /// No description provided for @inventoryStoneWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Stone Weight'**
+  String get inventoryStoneWeight;
+
+  /// No description provided for @inventoryPurchasePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase Price'**
+  String get inventoryPurchasePrice;
+
+  /// No description provided for @inventoryMakingCharges.
+  ///
+  /// In en, this message translates to:
+  /// **'Making Charges'**
+  String get inventoryMakingCharges;
+
+  /// No description provided for @inventoryGstInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'3% calculated during billing'**
+  String get inventoryGstInfo;
+
+  /// No description provided for @inventoryStatusInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Status Information'**
+  String get inventoryStatusInfo;
+
+  /// No description provided for @inventoryQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get inventoryQuantity;
+
+  /// No description provided for @inventoryClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get inventoryClose;
+
+  /// No description provided for @inventoryReviewHuidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review HUID Receipt Items'**
+  String get inventoryReviewHuidTitle;
+
+  /// No description provided for @inventoryReviewHuidSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the AI-filled rows before adding them to inventory.'**
+  String get inventoryReviewHuidSubtitle;
+
+  /// No description provided for @inventoryImportItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Items'**
+  String get inventoryImportItems;
+
+  /// No description provided for @inventoryColumnCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get inventoryColumnCategory;
+
+  /// No description provided for @inventoryColumnDesignNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Design Number'**
+  String get inventoryColumnDesignNumber;
+
+  /// No description provided for @inventoryColumnPurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Purity'**
+  String get inventoryColumnPurity;
+
+  /// No description provided for @inventoryColumnNetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Weight'**
+  String get inventoryColumnNetWeight;
+
+  /// No description provided for @inventoryColumnSellingPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling Price'**
+  String get inventoryColumnSellingPrice;
+
+  /// No description provided for @inventoryColumnInvoiceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Number'**
+  String get inventoryColumnInvoiceNumber;
+
+  /// No description provided for @inventoryColumnCustomerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Name'**
+  String get inventoryColumnCustomerName;
+
+  /// No description provided for @inventoryColumnProductName.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Name'**
+  String get inventoryColumnProductName;
+
+  /// No description provided for @inventoryColumnSoldDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold Date'**
+  String get inventoryColumnSoldDate;
+
+  /// No description provided for @inventoryColumnPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get inventoryColumnPaymentMethod;
+
+  /// No description provided for @inventoryCompactNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get inventoryCompactNet;
+
+  /// No description provided for @inventoryCompactPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get inventoryCompactPrice;
+
+  /// No description provided for @inventoryCompactPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get inventoryCompactPayment;
 }
 
 class _AppLocalizationsDelegate

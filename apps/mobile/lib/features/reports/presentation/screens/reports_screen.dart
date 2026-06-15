@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
+import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/auth/application/app_permissions.dart';
@@ -67,6 +68,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _loadRoleAndReports() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final role = await fetchCurrentUserRole(_api);
       if (!mounted) return;
@@ -79,11 +81,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error(context, 'Failed to load reports');
+      AppToast.error(context, l10n.errorFailedLoadDashboard);
     }
   }
 
   Future<void> _loadReports() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_canViewReports) return;
     try {
       final response = await _api.dio.get(
@@ -111,7 +114,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error(context, 'Failed to load reports');
+      AppToast.error(context, l10n.errorFailedLoadDashboard);
     }
   }
 
@@ -179,6 +182,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _exportReport(String reportType) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final response = await _api.dio.get(
         '/reports/export/$reportType',
@@ -191,22 +195,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
       await Printing.sharePdf(bytes: payload.bytes, filename: payload.fileName);
     } catch (_) {
       if (!mounted) return;
-      AppToast.error(context, 'Failed to export report');
+      AppToast.error(context, l10n.errorFailedLoadDashboard);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isWide = MediaQuery.of(context).size.width > 768;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (!_canViewReports) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.lock_outline_rounded,
-        title: 'Reports are for Admin users',
-        subtitle:
-            'Staff can continue using Billing, Inventory View, and Mortgage collections.',
+        title: l10n.reportsAdminOnly,
+        subtitle: l10n.reportsStaffSubtitle,
         iconColor: AppColors.warning,
       );
     }
@@ -220,15 +225,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(isWide),
               const SizedBox(height: AppSpacing.lg),
-              _buildFilters(),
+              _buildFilters(isWide),
               const SizedBox(height: AppSpacing.md),
               _buildGroupSwitch(),
               const SizedBox(height: AppSpacing.lg),
-              _buildActiveSummary(),
+              _buildActiveSummary(isWide),
               const SizedBox(height: AppSpacing.lg),
-              _buildActiveReport(),
+              _buildActiveReport(isWide),
             ],
           ),
         ),
@@ -236,21 +241,77 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Reports', style: Theme.of(context).textTheme.displaySmall),
-        const SizedBox(height: 6),
         Text(
-          'Inventory, billing, GST, and mortgage reports from the Jewellery ERP flow.',
-          style: TextStyle(color: AppColors.text3(context)),
+          l10n.reportsTitle,
+          style: isWide
+              ? Theme.of(context).textTheme.displaySmall
+              : Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
         ),
+        if (isWide) ...[
+          const SizedBox(height: 6),
+          Text(
+            l10n.reportsSubtitle,
+            style: TextStyle(color: AppColors.text3(context)),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildFilters() {
+  Widget _buildFilters(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!isWide) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onFilterChanged,
+                  decoration: InputDecoration(
+                    hintText: l10n.reportsSearchHint,
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: AppColors.text3(context),
+                    ),
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              IconButton(
+                icon: Icon(
+                  Icons.filter_list_rounded,
+                  color:
+                      _dateFromController.text.trim().isNotEmpty ||
+                          _dateToController.text.trim().isNotEmpty ||
+                          _categoryController.text.trim().isNotEmpty ||
+                          _branchController.text.trim().isNotEmpty ||
+                          _statusFilter != 'all'
+                      ? AppColors.primary
+                      : AppColors.text2(context),
+                ),
+                onPressed: () => _showMobileFilterSheet(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded),
+                onPressed: _loadReports,
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Wrap(
@@ -264,8 +325,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               controller: _searchController,
               onChanged: _onFilterChanged,
               decoration: InputDecoration(
-                hintText:
-                    'Search product, design, customer, invoice, or mobile',
+                hintText: l10n.reportsSearchHint,
                 prefixIcon: Icon(
                   Icons.search_rounded,
                   color: AppColors.text3(context),
@@ -279,10 +339,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: TextField(
               controller: _dateFromController,
               onChanged: _onFilterChanged,
-              decoration: const InputDecoration(
-                labelText: 'From date',
-                hintText: 'YYYY-MM-DD',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reportsFromDate,
+                hintText: l10n.reportsDateHint,
+                border: const OutlineInputBorder(),
               ),
             ),
           ),
@@ -291,10 +351,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: TextField(
               controller: _dateToController,
               onChanged: _onFilterChanged,
-              decoration: const InputDecoration(
-                labelText: 'To date',
-                hintText: 'YYYY-MM-DD',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reportsToDate,
+                hintText: l10n.reportsDateHint,
+                border: const OutlineInputBorder(),
               ),
             ),
           ),
@@ -303,9 +363,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: TextField(
               controller: _categoryController,
               onChanged: _onFilterChanged,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reportsCategory,
+                border: const OutlineInputBorder(),
               ),
             ),
           ),
@@ -314,9 +374,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: TextField(
               controller: _branchController,
               onChanged: _onFilterChanged,
-              decoration: const InputDecoration(
-                labelText: 'Branch',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reportsBranch,
+                border: const OutlineInputBorder(),
               ),
             ),
           ),
@@ -324,17 +384,32 @@ class _ReportsScreenState extends State<ReportsScreen> {
             width: 180,
             child: DropdownButtonFormField<String>(
               initialValue: _statusFilter,
-              decoration: const InputDecoration(
-                labelText: 'Status',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reportsStatus,
+                border: const OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem(value: 'all', child: Text('All Status')),
-                DropdownMenuItem(value: 'in_stock', child: Text('In Stock')),
-                DropdownMenuItem(value: 'reserved', child: Text('Reserved')),
-                DropdownMenuItem(value: 'sold', child: Text('Sold')),
-                DropdownMenuItem(value: 'active', child: Text('Active Loan')),
-                DropdownMenuItem(value: 'closed', child: Text('Closed Loan')),
+              items: [
+                DropdownMenuItem(
+                  value: 'all',
+                  child: Text(l10n.reportsAllStatus),
+                ),
+                DropdownMenuItem(
+                  value: 'in_stock',
+                  child: Text(l10n.reportsInStock),
+                ),
+                DropdownMenuItem(
+                  value: 'reserved',
+                  child: Text(l10n.reportsReserved),
+                ),
+                DropdownMenuItem(value: 'sold', child: Text(l10n.reportsSold)),
+                DropdownMenuItem(
+                  value: 'active',
+                  child: Text(l10n.reportsActiveLoan),
+                ),
+                DropdownMenuItem(
+                  value: 'closed',
+                  child: Text(l10n.reportsClosedLoan),
+                ),
               ],
               onChanged: (value) {
                 setState(() => _statusFilter = value ?? 'all');
@@ -343,7 +418,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ),
           IconButton.filledTonal(
-            tooltip: 'Refresh reports',
+            tooltip: l10n.reportsRefresh,
             onPressed: _loadReports,
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -352,20 +427,152 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
+  void _showMobileFilterSheet() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.reportsFilters,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _dateFromController,
+                decoration: InputDecoration(
+                  labelText: l10n.reportsFromDate,
+                  hintText: l10n.reportsDateHint,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _dateToController,
+                decoration: InputDecoration(
+                  labelText: l10n.reportsToDate,
+                  hintText: l10n.reportsDateHint,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _categoryController,
+                decoration: InputDecoration(
+                  labelText: l10n.reportsCategory,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _branchController,
+                decoration: InputDecoration(
+                  labelText: l10n.reportsBranch,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              DropdownButtonFormField<String>(
+                initialValue: _statusFilter,
+                decoration: InputDecoration(
+                  labelText: l10n.reportsStatus,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 'all',
+                    child: Text(l10n.reportsAllStatus),
+                  ),
+                  DropdownMenuItem(
+                    value: 'in_stock',
+                    child: Text(l10n.reportsInStock),
+                  ),
+                  DropdownMenuItem(
+                    value: 'reserved',
+                    child: Text(l10n.reportsReserved),
+                  ),
+                  DropdownMenuItem(
+                    value: 'sold',
+                    child: Text(l10n.reportsSold),
+                  ),
+                  DropdownMenuItem(
+                    value: 'active',
+                    child: Text(l10n.reportsActiveLoan),
+                  ),
+                  DropdownMenuItem(
+                    value: 'closed',
+                    child: Text(l10n.reportsClosedLoan),
+                  ),
+                ],
+                onChanged: (value) {
+                  setSheetState(() => _statusFilter = value ?? 'all');
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setSheetState(() {
+                          _statusFilter = 'all';
+                          _dateFromController.clear();
+                          _dateToController.clear();
+                          _categoryController.clear();
+                          _branchController.clear();
+                        });
+                      },
+                      child: Text(l10n.reportsReset),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _loadReports();
+                      },
+                      child: Text(l10n.reportsApply),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGroupSwitch() {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       children: [
         _groupChip(
           'inventory',
-          'Inventory Reports',
+          l10n.reportsInventoryReports,
           Icons.inventory_2_outlined,
         ),
-        _groupChip('billing', 'Billing Reports', Icons.receipt_long_outlined),
+        _groupChip(
+          'billing',
+          l10n.reportsBillingReports,
+          Icons.receipt_long_outlined,
+        ),
         _groupChip(
           'mortgage',
-          'Mortgage Reports',
+          l10n.reportsMortgageReports,
           Icons.account_balance_outlined,
         ),
       ],
@@ -386,25 +593,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildActiveSummary() {
+  Widget _buildActiveSummary(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
     switch (_activeGroup) {
       case 'billing':
         return _buildSummaryGrid([
           _ReportMetric(
             icon: Icons.today_outlined,
-            label: 'Daily Sales Report',
+            label: l10n.reportsDailySales,
             value: _money(_dailySalesTotal),
             color: AppColors.success,
           ),
           _ReportMetric(
             icon: Icons.calendar_month_outlined,
-            label: 'Monthly Sales Report',
+            label: l10n.reportsMonthlySales,
             value: _money(_monthlySalesTotal),
             color: AppColors.primary,
           ),
           _ReportMetric(
             icon: Icons.percent_rounded,
-            label: 'GST Report',
+            label: l10n.reportsGst,
             value: _money(_gstTotal),
             color: AppColors.warning,
           ),
@@ -413,19 +621,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return _buildSummaryGrid([
           _ReportMetric(
             icon: Icons.pending_actions_rounded,
-            label: 'Active Loans Report',
+            label: l10n.reportsActiveLoans,
             value: _activeLoansReport.length.toString(),
             color: AppColors.info,
           ),
           _ReportMetric(
             icon: Icons.payments_outlined,
-            label: 'Interest Collection Report',
+            label: l10n.reportsInterestCollection,
             value: _money(_interestCollectionTotal),
             color: AppColors.success,
           ),
           _ReportMetric(
             icon: Icons.check_circle_outline_rounded,
-            label: 'Closed Loans Report',
+            label: l10n.reportsClosedLoans,
             value: _closedLoansReport.length.toString(),
             color: AppColors.primary,
           ),
@@ -434,19 +642,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return _buildSummaryGrid([
           _ReportMetric(
             icon: Icons.inventory_2_outlined,
-            label: 'Current Stock Report',
+            label: l10n.reportsCurrentStock,
             value: _currentStockReport.length.toString(),
             color: AppColors.info,
           ),
           _ReportMetric(
             icon: Icons.shopping_bag_outlined,
-            label: 'Sold Products Report',
+            label: l10n.reportsSoldProducts,
             value: _soldProductsReport.length.toString(),
             color: AppColors.success,
           ),
           _ReportMetric(
             icon: Icons.warning_amber_rounded,
-            label: 'Low Stock Report',
+            label: l10n.reportsLowStock,
             value: _lowStockReport.length.toString(),
             color: AppColors.warning,
           ),
@@ -482,31 +690,32 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildActiveReport() {
+  Widget _buildActiveReport(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
     switch (_activeGroup) {
       case 'billing':
         return Column(
           children: [
             _ReportSection(
-              title: 'Daily Sales Report',
+              title: l10n.reportsDailySales,
               subtitle: _dailySalesSubtitle,
-              emptyText: 'No sales found for this day.',
+              emptyText: l10n.reportsNoSalesDay,
               rows: _dailySalesReport.map(_dailySalesRow).toList(),
               onExport: () => _exportReport('daily-sales'),
             ),
             const SizedBox(height: AppSpacing.lg),
             _ReportSection(
-              title: 'Monthly Sales Report',
+              title: l10n.reportsMonthlySales,
               subtitle: _monthlySalesSubtitle,
-              emptyText: 'No sales found for this month.',
+              emptyText: l10n.reportsNoSalesMonth,
               rows: _monthlySalesReport.map(_monthlySalesRow).toList(),
               onExport: () => _exportReport('monthly-sales'),
             ),
             const SizedBox(height: AppSpacing.lg),
             _ReportSection(
-              title: 'GST Report',
-              subtitle: 'Tax collected from filtered invoice history.',
-              emptyText: 'No GST data found.',
+              title: l10n.reportsGst,
+              subtitle: l10n.reportsGstSubtitle,
+              emptyText: l10n.reportsNoGstData,
               rows: _gstReport.map(_gstRow).toList(),
               onExport: () => _exportReport('gst'),
             ),
@@ -516,18 +725,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return Column(
           children: [
             _ReportSection(
-              title: 'Active Loans Report',
-              subtitle: 'Open gold loans with pending balances and due dates.',
-              emptyText: 'No active loans found.',
+              title: l10n.reportsActiveLoans,
+              subtitle: l10n.reportsActiveLoansSubtitle,
+              emptyText: l10n.reportsNoActiveLoans,
               rows: _activeLoansReport.map(_activeLoanRow).toList(),
               onExport: () => _exportReport('active-loans'),
             ),
             const SizedBox(height: AppSpacing.lg),
             _ReportSection(
-              title: 'Interest Collection Report',
-              subtitle:
-                  'Receipts generated for interest and settlement payments.',
-              emptyText: 'No interest collections found.',
+              title: l10n.reportsInterestCollection,
+              subtitle: l10n.reportsInterestCollectionSubtitle,
+              emptyText: l10n.reportsNoInterestCollections,
               rows: _interestCollectionReport
                   .map(_interestCollectionRow)
                   .toList(),
@@ -535,9 +743,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             _ReportSection(
-              title: 'Closed Loans Report',
-              subtitle: 'Settled loans moved out of active mortgage tracking.',
-              emptyText: 'No closed loans found.',
+              title: l10n.reportsClosedLoans,
+              subtitle: l10n.reportsClosedLoansSubtitle,
+              emptyText: l10n.reportsNoClosedLoans,
               rows: _closedLoansReport.map(_closedLoanRow).toList(),
               onExport: () => _exportReport('closed-loans'),
             ),
@@ -547,26 +755,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return Column(
           children: [
             _ReportSection(
-              title: 'Current Stock Report',
-              subtitle:
-                  '${_weight(_inventoryStats['totalGoldWeight'])} gold, ${_weight(_inventoryStats['totalSilverWeight'])} silver in stock.',
-              emptyText: 'No current stock found.',
+              title: l10n.reportsCurrentStock,
+              subtitle: l10n.reportsCurrentStockSubtitle(
+                _weight(_inventoryStats['totalGoldWeight']),
+                _weight(_inventoryStats['totalSilverWeight']),
+              ),
+              emptyText: l10n.reportsNoCurrentStock,
               rows: _currentStockReport.map(_currentStockRow).toList(),
               onExport: () => _exportReport('current-stock'),
             ),
             const SizedBox(height: AppSpacing.lg),
             _ReportSection(
-              title: 'Sold Products Report',
-              subtitle: 'Sold products linked to invoice history.',
-              emptyText: 'No sold products found.',
+              title: l10n.reportsSoldProducts,
+              subtitle: l10n.reportsSoldProductsSubtitle,
+              emptyText: l10n.reportsNoSoldProducts,
               rows: _soldProductsReport.map(_soldProductRow).toList(),
               onExport: () => _exportReport('sold-products'),
             ),
             const SizedBox(height: AppSpacing.lg),
             _ReportSection(
-              title: 'Low Stock Report',
-              subtitle: 'Bulk products with two or fewer units available.',
-              emptyText: 'No low stock products found.',
+              title: l10n.reportsLowStock,
+              subtitle: l10n.reportsLowStockSubtitle,
+              emptyText: l10n.reportsNoLowStock,
               rows: _lowStockReport.map(_lowStockRow).toList(),
               onExport: () => _exportReport('low-stock'),
             ),
@@ -576,50 +786,71 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   _ReportRow _currentStockRow(Map<String, dynamic> item) {
-    final productName = _fallback(item['itemName'], 'Product');
+    final l10n = AppLocalizations.of(context)!;
+    final productName = _fallback(item['itemName'], l10n.reportsProduct);
     return _ReportRow(
       leadingIcon: Icons.diamond_outlined,
       title: productName,
       subtitle:
-          '${_fallback(item['categoryName'], 'Uncategorised')} • ${_fallback(item['tagNumber'] ?? item['barcode'], 'No design number')}',
+          '${_fallback(item['categoryName'], l10n.reportsUncategorised)} • ${_fallback(item['tagNumber'] ?? item['barcode'], l10n.reportsNoDesignNumber)}',
       statusLabel: _readableStatus(item['status']),
       metrics: [
-        _ReportCell('Purity', _fallback(item['karat'] ?? item['purity'], '-')),
-        _ReportCell('Gross', _weight(item['grossWeight'])),
-        _ReportCell('Net', _weight(item['netWeight'])),
-        _ReportCell('Selling Price', _money(item['estimatedSellingPrice'])),
-        _ReportCell('Branch', _fallback(item['location'], 'Main')),
+        _ReportCell(
+          l10n.reportsPurity,
+          _fallback(item['karat'] ?? item['purity'], '-'),
+        ),
+        _ReportCell(l10n.reportsGross, _weight(item['grossWeight'])),
+        _ReportCell(l10n.reportsNet, _weight(item['netWeight'])),
+        _ReportCell(
+          l10n.reportsSellingPrice,
+          _money(item['estimatedSellingPrice']),
+        ),
+        _ReportCell(
+          l10n.reportsBranch,
+          _fallback(item['location'], l10n.reportsMain),
+        ),
       ],
     );
   }
 
   _ReportRow _soldProductRow(Map<String, dynamic> row) {
+    final l10n = AppLocalizations.of(context)!;
     return _ReportRow(
       leadingIcon: Icons.shopping_bag_outlined,
-      title: _fallback(row['productName'], 'Product'),
+      title: _fallback(row['productName'], l10n.reportsProduct),
       subtitle:
-          '${_fallback(row['invoiceNumber'], 'Invoice')} • ${_fallback(row['customerName'], 'Customer')}',
-      statusLabel: _fallback(row['paymentMode'], 'Payment'),
+          '${_fallback(row['invoiceNumber'], l10n.reportsInvoice)} • ${_fallback(row['customerName'], l10n.reportsCustomer)}',
+      statusLabel: _fallback(row['paymentMode'], l10n.reportsPayment),
       metrics: [
-        _ReportCell('Sold Date', _formatDate(row['soldDate'])),
-        _ReportCell('Selling Price', _money(row['sellingPrice'])),
-        _ReportCell('Mobile', _fallback(row['customerPhone'], '-')),
+        _ReportCell(l10n.reportsSoldDate, _formatDate(row['soldDate'])),
+        _ReportCell(l10n.reportsSellingPrice, _money(row['sellingPrice'])),
+        _ReportCell(l10n.reportsMobile, _fallback(row['customerPhone'], '-')),
       ],
     );
   }
 
   _ReportRow _lowStockRow(Map<String, dynamic> item) {
+    final l10n = AppLocalizations.of(context)!;
     return _ReportRow(
       leadingIcon: Icons.warning_amber_rounded,
-      title: _fallback(item['itemName'], 'Product'),
+      title: _fallback(item['itemName'], l10n.reportsProduct),
       subtitle:
-          '${_fallback(item['categoryName'], 'Uncategorised')} • ${_fallback(item['tagNumber'] ?? item['barcode'], 'No design number')}',
-      statusLabel: 'Low Stock',
+          '${_fallback(item['categoryName'], l10n.reportsUncategorised)} • ${_fallback(item['tagNumber'] ?? item['barcode'], l10n.reportsNoDesignNumber)}',
+      statusLabel: l10n.reportsLowStock,
       statusColor: AppColors.warning,
       metrics: [
-        _ReportCell('Available Qty', _asInt(item['quantity']).toString()),
-        _ReportCell('Purity', _fallback(item['karat'] ?? item['purity'], '-')),
-        _ReportCell('Branch', _fallback(item['location'], 'Main')),
+        _ReportCell(
+          l10n.reportsAvailableQty,
+          _asInt(item['quantity']).toString(),
+        ),
+        _ReportCell(
+          l10n.reportsPurity,
+          _fallback(item['karat'] ?? item['purity'], '-'),
+        ),
+        _ReportCell(
+          l10n.reportsBranch,
+          _fallback(item['location'], l10n.reportsMain),
+        ),
       ],
     );
   }
@@ -633,82 +864,96 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   _ReportRow _invoiceSalesRow(Map<String, dynamic> invoice, String label) {
+    final l10n = AppLocalizations.of(context)!;
     final items = _mapList(invoice['items']);
     return _ReportRow(
       leadingIcon: Icons.receipt_long_outlined,
-      title: _fallback(invoice['invoiceNumber'], 'Invoice'),
-      subtitle: _fallback(invoice['customerName'], 'Walk-in Customer'),
+      title: _fallback(invoice['invoiceNumber'], l10n.reportsInvoice),
+      subtitle: _fallback(invoice['customerName'], l10n.customerWalkIn),
       statusLabel: label,
       metrics: [
-        _ReportCell('Date', _formatDate(invoice['invoiceDate'])),
-        _ReportCell('Total', _money(invoice['grandTotal'])),
-        _ReportCell('Payment', _fallback(invoice['paymentMode'], '-')),
-        _ReportCell('Items', items.length.toString()),
+        _ReportCell(l10n.reportsDate, _formatDate(invoice['invoiceDate'])),
+        _ReportCell(l10n.reportsTotal, _money(invoice['grandTotal'])),
+        _ReportCell(
+          l10n.reportsPayment,
+          _fallback(invoice['paymentMode'], '-'),
+        ),
+        _ReportCell(l10n.reportsItems, items.length.toString()),
       ],
     );
   }
 
   _ReportRow _gstRow(Map<String, dynamic> invoice) {
+    final l10n = AppLocalizations.of(context)!;
     return _ReportRow(
       leadingIcon: Icons.percent_rounded,
-      title: _fallback(invoice['invoiceNumber'], 'Invoice'),
-      subtitle: _fallback(invoice['customerName'], 'Walk-in Customer'),
-      statusLabel: 'GST',
+      title: _fallback(invoice['invoiceNumber'], l10n.reportsInvoice),
+      subtitle: _fallback(invoice['customerName'], l10n.customerWalkIn),
+      statusLabel: l10n.reportsGst,
       statusColor: AppColors.warning,
       metrics: [
-        _ReportCell('Taxable', _money(invoice['taxableAmount'])),
-        _ReportCell('CGST', _money(invoice['cgstAmount'])),
-        _ReportCell('SGST', _money(invoice['sgstAmount'])),
-        _ReportCell('Total GST', _money(invoice['totalTax'])),
+        _ReportCell(l10n.reportsTaxable, _money(invoice['taxableAmount'])),
+        _ReportCell(l10n.reportsCgst, _money(invoice['cgstAmount'])),
+        _ReportCell(l10n.reportsSgst, _money(invoice['sgstAmount'])),
+        _ReportCell(l10n.reportsTotalGst, _money(invoice['totalTax'])),
       ],
     );
   }
 
   _ReportRow _activeLoanRow(Map<String, dynamic> loan) {
+    final l10n = AppLocalizations.of(context)!;
     return _ReportRow(
       leadingIcon: Icons.account_balance_outlined,
-      title: _fallback(loan['customerName'], 'Customer'),
-      subtitle: _fallback(loan['loanNumber'], 'Mortgage Loan'),
-      statusLabel: 'Active',
+      title: _fallback(loan['customerName'], l10n.reportsCustomer),
+      subtitle: _fallback(loan['loanNumber'], l10n.reportsMortgageLoan),
+      statusLabel: l10n.mortgageStatusActive,
       statusColor: AppColors.info,
       metrics: [
-        _ReportCell('Loan Amount', _money(loan['principalAmount'])),
-        _ReportCell('Pending Interest', _money(loan['pendingInterestAmount'])),
-        _ReportCell('Payable', _money(loan['totalPayableAmount'])),
-        _ReportCell('Next Due', _formatDate(loan['nextDueDate'])),
+        _ReportCell(l10n.reportsLoanAmount, _money(loan['principalAmount'])),
+        _ReportCell(
+          l10n.reportsPendingInterest,
+          _money(loan['pendingInterestAmount']),
+        ),
+        _ReportCell(l10n.reportsPayable, _money(loan['totalPayableAmount'])),
+        _ReportCell(l10n.reportsNextDue, _formatDate(loan['nextDueDate'])),
       ],
     );
   }
 
   _ReportRow _interestCollectionRow(Map<String, dynamic> row) {
+    final l10n = AppLocalizations.of(context)!;
     return _ReportRow(
       leadingIcon: Icons.payments_outlined,
-      title: _fallback(row['receiptNumber'], 'Receipt'),
+      title: _fallback(row['receiptNumber'], l10n.reportsReceipt),
       subtitle:
-          '${_fallback(row['customerName'], 'Customer')} • ${_fallback(row['loanNumber'], 'Loan')}',
+          '${_fallback(row['customerName'], l10n.reportsCustomer)} • ${_fallback(row['loanNumber'], l10n.reportsMortgageLoan)}',
       statusLabel: _readableStatus(row['paymentType']),
       statusColor: AppColors.success,
       metrics: [
-        _ReportCell('Date', _formatDate(row['paymentDate'])),
-        _ReportCell('Amount', _money(row['amount'])),
-        _ReportCell('Mode', _fallback(row['paymentMode'], '-')),
-        _ReportCell('Mobile', _fallback(row['customerPhone'], '-')),
+        _ReportCell(l10n.reportsDate, _formatDate(row['paymentDate'])),
+        _ReportCell(l10n.reportsAmount, _money(row['amount'])),
+        _ReportCell(l10n.reportsMode, _fallback(row['paymentMode'], '-')),
+        _ReportCell(l10n.reportsMobile, _fallback(row['customerPhone'], '-')),
       ],
     );
   }
 
   _ReportRow _closedLoanRow(Map<String, dynamic> loan) {
+    final l10n = AppLocalizations.of(context)!;
     return _ReportRow(
       leadingIcon: Icons.check_circle_outline_rounded,
-      title: _fallback(loan['customerName'], 'Customer'),
-      subtitle: _fallback(loan['loanNumber'], 'Mortgage Loan'),
+      title: _fallback(loan['customerName'], l10n.reportsCustomer),
+      subtitle: _fallback(loan['loanNumber'], l10n.reportsMortgageLoan),
       statusLabel: _readableStatus(loan['status']),
       statusColor: AppColors.success,
       metrics: [
-        _ReportCell('Loan Amount', _money(loan['principalAmount'])),
-        _ReportCell('Interest Paid', _money(loan['totalInterestPaid'])),
-        _ReportCell('Closing Date', _formatDate(loan['closedAt'])),
-        _ReportCell('Loan Status', _readableStatus(loan['status'])),
+        _ReportCell(l10n.reportsLoanAmount, _money(loan['principalAmount'])),
+        _ReportCell(
+          l10n.reportsInterestPaid,
+          _money(loan['totalInterestPaid']),
+        ),
+        _ReportCell(l10n.reportsClosingDate, _formatDate(loan['closedAt'])),
+        _ReportCell(l10n.reportsLoanStatus, _readableStatus(loan['status'])),
       ],
     );
   }
@@ -734,13 +979,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
   );
 
   String get _dailySalesSubtitle {
+    final l10n = AppLocalizations.of(context)!;
     final date = _parseDate(_dateFromController.text) ?? DateTime.now();
-    return 'Sales generated on ${DateFormat('dd MMM yyyy').format(date)}.';
+    return l10n.reportsSalesGeneratedOn(DateFormat('dd MMM yyyy').format(date));
   }
 
   String get _monthlySalesSubtitle {
+    final l10n = AppLocalizations.of(context)!;
     final date = _parseDate(_dateFromController.text) ?? DateTime.now();
-    return 'Sales generated in ${DateFormat('MMMM yyyy').format(date)}.';
+    return l10n.reportsSalesGeneratedIn(DateFormat('MMMM yyyy').format(date));
   }
 
   DateTime? _parseDate(dynamic value) {
@@ -850,6 +1097,7 @@ class _ReportSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -883,7 +1131,7 @@ class _ReportSection extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               IconButton.filledTonal(
-                tooltip: 'Export report PDF',
+                tooltip: l10n.reportsExportPdf,
                 onPressed: onExport,
                 icon: const Icon(Icons.download_outlined),
               ),
@@ -927,7 +1175,7 @@ class _ReportRowTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.surfL(context),
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -937,72 +1185,82 @@ class _ReportRowTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-                child: Icon(row.leadingIcon, color: AppColors.primary),
+                child: Icon(
+                  row.leadingIcon,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       row.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: AppColors.text1(context),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
                     Text(
                       row.subtitle,
-                      style: TextStyle(color: AppColors.text3(context)),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.text3(context),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               StatusBadge(label: row.statusLabel, color: row.statusColor),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.md,
-            runSpacing: AppSpacing.sm,
-            children: [
-              for (final metric in row.metrics)
-                SizedBox(
-                  width: 150,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          if (row.metrics.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              children: [
+                for (final metric in row.metrics)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        metric.label,
+                        '${metric.label}: ',
                         style: TextStyle(
                           color: AppColors.text3(context),
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
-                      const SizedBox(height: 4),
                       Text(
                         metric.value,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: AppColors.text1(context),
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
                         ),
                       ),
                     ],
                   ),
-                ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );

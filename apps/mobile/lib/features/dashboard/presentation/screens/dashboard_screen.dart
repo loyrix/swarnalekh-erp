@@ -9,6 +9,7 @@ import 'package:swarnbook/shared/widgets/shimmer_loading.dart';
 import 'package:swarnbook/shared/widgets/quick_action_card.dart';
 import 'package:swarnbook/shared/widgets/staggered_animation.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/compact_stat_strip.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -73,13 +74,14 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 768;
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: _loadDashboard,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppSpacing.lg),
-        child: _isLoading ? _buildShimmerState() : _buildLoadedState(),
+        child: _isLoading ? _buildShimmerState() : _buildLoadedState(isWide),
       ),
     );
   }
@@ -173,22 +175,22 @@ class _DashboardScreenState extends State<DashboardScreen>
   // LOADED STATE
   // ========================================
 
-  Widget _buildLoadedState() {
+  Widget _buildLoadedState(bool isWide) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        StaggeredSection(index: 0, child: _buildWelcomeBanner()),
+        StaggeredSection(index: 0, child: _buildWelcomeBanner(isWide)),
         const SizedBox(height: AppSpacing.lg),
-        StaggeredSection(index: 1, child: _buildQuickActions()),
+        StaggeredSection(index: 1, child: _buildQuickActions(isWide)),
         const SizedBox(height: AppSpacing.lg),
         StaggeredSection(index: 2, child: _buildCharts()),
         const SizedBox(height: AppSpacing.lg),
-        StaggeredSection(index: 3, child: _buildStatsGrid()),
+        StaggeredSection(index: 3, child: _buildStatsGrid(isWide)),
       ],
     );
   }
 
-  Widget _buildWelcomeBanner() {
+  Widget _buildWelcomeBanner(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
     final displayName = _userName.isNotEmpty
         ? _userName
@@ -199,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(isWide ? AppSpacing.lg : AppSpacing.md),
       decoration: BoxDecoration(
         gradient: AppColors.isDark(context)
             ? const LinearGradient(
@@ -227,41 +229,48 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: [
                 Text(
                   '${_greeting(l10n)}, $displayName',
-                  style: Theme.of(context).textTheme.displaySmall,
+                  style: isWide
+                      ? Theme.of(context).textTheme.displaySmall
+                      : Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  shopDisplay,
-                  style: TextStyle(
-                    color: AppColors.primary.withValues(alpha: 0.8),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                if (isWide) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    shopDisplay,
+                    style: TextStyle(
+                      color: AppColors.primary.withValues(alpha: 0.8),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: AppSpacing.sm),
-                // Date display
                 Text(
                   _formattedDate(),
                   style: TextStyle(
                     color: AppColors.text3(context),
-                    fontSize: 12,
+                    fontSize: isWide ? 12 : 11,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            width: 80,
-            height: 80,
+            width: isWide ? 80 : 48,
+            height: isWide ? 80 : 48,
             decoration: BoxDecoration(
               gradient: AppColors.goldShimmer,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+              borderRadius: BorderRadius.circular(
+                isWide ? AppRadius.lg : AppRadius.md,
+              ),
               boxShadow: AppShadows.goldGlow,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.diamond_rounded,
               color: AppColors.textOnPrimary,
-              size: 36,
+              size: isWide ? 36 : 24,
             ),
           ),
         ],
@@ -297,27 +306,99 @@ class _DashboardScreenState extends State<DashboardScreen>
     return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]} ${now.year}';
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
     final canManage = isAdminRole(_role);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 900
-            ? 5
-            : constraints.maxWidth > 600
-            ? 3
-            : 2;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.dashboardQuickActions,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.text2(context),
-              ),
+
+    if (!isWide) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.dashboardQuickActions,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: AppColors.text2(context)),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            height: 36,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: 5,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final items = <Widget>[];
+                items.add(
+                  _quickActionChip(
+                    Icons.receipt_long_rounded,
+                    l10n.dashboardNewBill,
+                    AppColors.success,
+                    () => context.go('/billing'),
+                  ),
+                );
+                if (canManage) {
+                  items.add(
+                    _quickActionChip(
+                      Icons.add_box_rounded,
+                      l10n.inventoryAddItem,
+                      AppColors.info,
+                      () => context.go('/inventory'),
+                    ),
+                  );
+                  items.add(
+                    _quickActionChip(
+                      Icons.account_balance_rounded,
+                      l10n.dashboardAddMortgage,
+                      AppColors.warning,
+                      () => context.go('/mortgage'),
+                    ),
+                  );
+                }
+                items.add(
+                  _quickActionChip(
+                    Icons.search_rounded,
+                    l10n.dashboardSearchProduct,
+                    AppColors.primary,
+                    () => context.go('/inventory'),
+                  ),
+                );
+                items.add(
+                  _quickActionChip(
+                    Icons.person_search_rounded,
+                    l10n.dashboardSearchCustomer,
+                    AppColors.info,
+                    () => context.go('/customers'),
+                  ),
+                );
+                return index < items.length
+                    ? items[index]
+                    : const SizedBox.shrink();
+              },
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.dashboardQuickActions,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: AppColors.text2(context)),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final crossAxisCount = constraints.maxWidth > 900
+                ? 5
+                : constraints.maxWidth > 600
+                ? 3
+                : 2;
+            return Wrap(
               spacing: AppSpacing.md,
               runSpacing: AppSpacing.md,
               children: [
@@ -389,14 +470,49 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
               ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _quickActionChip(
+    IconData icon,
+    String label,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.text1(context),
+              ),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildCharts() {
+    final l10n = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth > 800;
@@ -411,7 +527,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Revenue Trend (Mock)',
+                l10n.dashboardRevenueTrend,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: AppColors.text1(context),
                   fontWeight: FontWeight.w600,
@@ -445,12 +561,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                           reservedSize: 30,
                           interval: 1,
                           getTitlesWidget: (value, meta) {
-                            final days = ['W1', 'W2', 'W3', 'W4'];
-                            if (value >= 0 && value < days.length) {
+                            if (value >= 0 && value < 4) {
                               return Padding(
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
-                                  days[value.toInt()],
+                                  'W${value.toInt() + 1}',
                                   style: TextStyle(
                                     color: AppColors.text3(context),
                                     fontSize: 12,
@@ -515,63 +630,63 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
-    final metrics = [
+    final metrics = <_DashboardMetric>[
       _DashboardMetric(
         icon: Icons.scale_rounded,
-        label: 'Total Gold Stock',
+        label: l10n.dashboardTotalGoldStock,
         value: _formatWeight(_stats['totalGoldStock']),
-        subtitle: 'Available net weight',
+        subtitle: l10n.dashboardAvailableNetWeight,
         accentColor: AppColors.gold,
       ),
       _DashboardMetric(
         icon: Icons.scale_outlined,
-        label: 'Total Silver Stock',
+        label: l10n.dashboardTotalSilverStock,
         value: _formatWeight(_stats['totalSilverStock']),
-        subtitle: 'Available net weight',
+        subtitle: l10n.dashboardAvailableNetWeight,
         accentColor: AppColors.silver,
       ),
       _DashboardMetric(
         icon: Icons.inventory_2_rounded,
-        label: 'Inventory Value',
+        label: l10n.dashboardInventoryValue,
         value: _formatMoney(_stats['totalInventoryValue']),
-        subtitle: 'Available stock value',
+        subtitle: l10n.dashboardAvailableStockValue,
         accentColor: AppColors.primary,
       ),
       _DashboardMetric(
         icon: Icons.trending_up_rounded,
-        label: 'Monthly Revenue',
+        label: l10n.dashboardMonthlyRevenue,
         value: _formatMoney(_stats['monthlyRevenue']),
-        subtitle: 'This month',
+        subtitle: l10n.dashboardThisMonth,
         accentColor: AppColors.success,
       ),
       _DashboardMetric(
         icon: Icons.account_balance_wallet_rounded,
-        label: 'Pending Interest',
+        label: l10n.dashboardPendingInterest,
         value: _formatMoney(_stats['pendingMortgageInterest']),
-        subtitle: 'Mortgage dues',
+        subtitle: l10n.dashboardMortgageDues,
         accentColor: AppColors.warning,
       ),
       _DashboardMetric(
         icon: Icons.account_balance_rounded,
-        label: 'Active Loans',
+        label: l10n.dashboardActiveLoans,
         value: _formatCount(_stats['activeLoans']),
-        subtitle: 'Mortgage accounts',
+        subtitle: l10n.dashboardMortgageAccounts,
         accentColor: AppColors.info,
       ),
       _DashboardMetric(
         icon: Icons.point_of_sale_rounded,
-        label: "Today's Sales",
+        label: l10n.dashboardTodaysSales,
         value: _formatMoney(_stats['todaysSales']),
-        subtitle: 'Billed today',
+        subtitle: l10n.dashboardBilledToday,
         accentColor: AppColors.success,
       ),
       _DashboardMetric(
         icon: Icons.receipt_long_rounded,
-        label: 'Total Bills',
+        label: l10n.dashboardTotalBills,
         value: _formatCount(_stats['totalBillsGenerated']),
-        subtitle: 'Generated invoices',
+        subtitle: l10n.dashboardGeneratedInvoices,
         accentColor: AppColors.primary,
       ),
       _DashboardMetric(
@@ -582,6 +697,71 @@ class _DashboardScreenState extends State<DashboardScreen>
         accentColor: AppColors.info,
       ),
     ];
+
+    if (!isWide) {
+      final top4 = <({IconData icon, String label, String value, Color color})>[
+        (
+          icon: Icons.scale_rounded,
+          label: l10n.dashboardGold,
+          value: _formatWeight(_stats['totalGoldStock']),
+          color: AppColors.gold,
+        ),
+        (
+          icon: Icons.scale_outlined,
+          label: l10n.dashboardSilver,
+          value: _formatWeight(_stats['totalSilverStock']),
+          color: AppColors.silver,
+        ),
+        (
+          icon: Icons.trending_up_rounded,
+          label: l10n.dashboardRevenue,
+          value: _formatMoney(_stats['monthlyRevenue']),
+          color: AppColors.success,
+        ),
+        (
+          icon: Icons.account_balance_rounded,
+          label: l10n.dashboardLoans,
+          value: _formatCount(_stats['activeLoans']),
+          color: AppColors.info,
+        ),
+      ];
+      return Column(
+        children: [
+          CompactStatStrip(stats: top4),
+          const SizedBox(height: AppSpacing.sm),
+          ExpansionTile(
+            title: Text(
+              l10n.dashboardViewAllStats(metrics.length),
+              style: TextStyle(fontSize: 13, color: AppColors.text2(context)),
+            ),
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: EdgeInsets.zero,
+            children: [
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = constraints.maxWidth > 900 ? 4 : 2;
+                  return Wrap(
+                    spacing: AppSpacing.md,
+                    runSpacing: AppSpacing.md,
+                    children: metrics
+                        .map(
+                          (metric) => SizedBox(
+                            width:
+                                (constraints.maxWidth -
+                                    (crossAxisCount - 1) * AppSpacing.md) /
+                                crossAxisCount,
+                            child: _DashboardStatCard(metric: metric),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      );
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {

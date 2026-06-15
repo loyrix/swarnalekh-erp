@@ -297,3 +297,31 @@ class SectionHeader extends StatelessWidget {
     );
   }
 }
+
+Future<T?> showResponsiveDialog<T>({
+  required BuildContext context,
+  required Widget Function(BuildContext) builder,
+  bool useSafeArea = true,
+}) async {
+  final isMobile = MediaQuery.of(context).size.width < 768;
+  if (isMobile) {
+    return Navigator.of(context).push<T>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: true,
+            leading: IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: useSafeArea
+              ? SafeArea(child: builder(context))
+              : builder(context),
+        ),
+      ),
+    );
+  }
+  return showDialog<T>(context: context, builder: builder);
+}

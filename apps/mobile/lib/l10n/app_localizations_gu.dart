@@ -941,9 +941,827 @@ class AppLocalizationsGu extends AppLocalizations {
   String get otpBackToLogin => 'લોગિન પર પાછા જાઓ';
 
   @override
-  String get userOnboardingTipTitle => 'Staff Onboarding';
+  String get userOnboardingTipTitle => 'સ્ટાફ ઓનબોર્ડિંગ';
 
   @override
   String get userOnboardingTipDesc =>
-      'Newly added staff must download the app and use the Sign Up option with the exact email address provided here to set their password and link their account.';
+      'નવા ઉમેરાયેલા સ્ટાફે એપ ડાઉનલોડ કરવી જોઈએ અને અહીં આપેલા ચોક્કસ ઇમેઇલ સરનામા સાથે સાઇન અપ વિકલ્પનો ઉપયોગ કરીને તેમનો પાસવર્ડ સેટ કરવો જોઈએ અને તેમનું એકાઉન્ટ લિંક કરવું જોઈએ.';
+
+  @override
+  String get appShellToggleTheme => 'થીમ ટૉગલ કરો';
+
+  @override
+  String get appShellSecurity => 'સુરક્ષા';
+
+  @override
+  String get appShellUserManagement => 'યુઝર મેનેજમેન્ટ';
+
+  @override
+  String get dashboardTotalGoldStock => 'કુલ ગોલ્ડ સ્ટોક';
+
+  @override
+  String get dashboardAvailableNetWeight => 'ઉપલબ્ધ નેટ વજન';
+
+  @override
+  String get dashboardTotalSilverStock => 'કુલ સિલ્વર સ્ટોક';
+
+  @override
+  String get dashboardInventoryValue => 'ઇન્વેન્ટરી વેલ્યૂ';
+
+  @override
+  String get dashboardAvailableStockValue => 'ઉપલબ્ધ સ્ટોક વેલ્યૂ';
+
+  @override
+  String get dashboardThisMonth => 'આ મહિને';
+
+  @override
+  String get dashboardMortgageDues => 'ગોલ્ડ લોન બાકી';
+
+  @override
+  String get dashboardMortgageAccounts => 'ગોલ્ડ લોન ખાતાં';
+
+  @override
+  String get dashboardBilledToday => 'આજે બિલ થયું';
+
+  @override
+  String get dashboardGeneratedInvoices => 'જનરેટેડ ઇન્વોઇસ';
+
+  @override
+  String get dashboardGold => 'સોનું';
+
+  @override
+  String get dashboardSilver => 'ચાંદી';
+
+  @override
+  String get dashboardRevenue => 'રેવન્યૂ';
+
+  @override
+  String get dashboardLoans => 'લોન';
+
+  @override
+  String dashboardViewAllStats(int count) {
+    return 'બધા સ્ટેટ્સ જુઓ ($count)';
+  }
+
+  @override
+  String get dashboardRevenueTrend => 'રેવન્યૂ ટ્રેન્ડ';
+
+  @override
+  String get dashboardMonthlyRevenue => 'માસિક રેવન્યૂ';
+
+  @override
+  String get dashboardPendingInterest => 'બાકી વ્યાજ';
+
+  @override
+  String get dashboardActiveLoans => 'સક્રિય લોન';
+
+  @override
+  String get dashboardTodaysSales => 'આજનું વેચાણ';
+
+  @override
+  String get dashboardTotalBills => 'કુલ બિલ';
+
+  @override
+  String get reportsTitle => 'અહેવાલો';
+
+  @override
+  String get reportsSubtitle =>
+      'જ્વેલરી ERP ફ્લોમાંથી ઇન્વેન્ટરી, બિલિંગ, GST અને મોર્ગેજ અહેવાલો.';
+
+  @override
+  String get reportsSearchHint =>
+      'પ્રોડક્ટ, ડિઝાઇન, ગ્રાહક, ઇન્વોઇસ અથવા મોબાઇલ શોધો';
+
+  @override
+  String get reportsFromDate => 'શરૂ તારીખ';
+
+  @override
+  String get reportsToDate => 'અંતિમ તારીખ';
+
+  @override
+  String get reportsDateHint => 'YYYY-MM-DD';
+
+  @override
+  String get reportsCategory => 'શ્રેણી';
+
+  @override
+  String get reportsBranch => 'શાખા';
+
+  @override
+  String get reportsStatus => 'સ્થિતિ';
+
+  @override
+  String get reportsAllStatus => 'બધી સ્થિતિઓ';
+
+  @override
+  String get reportsInStock => 'સ્ટોકમાં';
+
+  @override
+  String get reportsReserved => 'આરક્ષિત';
+
+  @override
+  String get reportsSold => 'વેચાયેલ';
+
+  @override
+  String get reportsActiveLoan => 'સક્રિય લોન';
+
+  @override
+  String get reportsClosedLoan => 'બંધ લોન';
+
+  @override
+  String get reportsRefresh => 'અહેવાલ તાજા કરો';
+
+  @override
+  String get reportsFilters => 'ફિલ્ટર';
+
+  @override
+  String get reportsReset => 'રીસેટ';
+
+  @override
+  String get reportsApply => 'લાગુ કરો';
+
+  @override
+  String get reportsInventoryReports => 'ઇન્વેન્ટરી અહેવાલો';
+
+  @override
+  String get reportsBillingReports => 'બિલિંગ અહેવાલો';
+
+  @override
+  String get reportsMortgageReports => 'મોર્ગેજ અહેવાલો';
+
+  @override
+  String get reportsDailySales => 'દૈનિક વેચાણ અહેવાલ';
+
+  @override
+  String get reportsMonthlySales => 'માસિક વેચાણ અહેવાલ';
+
+  @override
+  String get reportsGst => 'GST અહેવાલ';
+
+  @override
+  String get reportsActiveLoans => 'સક્રિય લોન અહેવાલ';
+
+  @override
+  String get reportsInterestCollection => 'વ્યાજ સંગ્રહ અહેવાલ';
+
+  @override
+  String get reportsClosedLoans => 'બંધ લોન અહેવાલ';
+
+  @override
+  String get reportsCurrentStock => 'વર્તમાન સ્ટોક અહેવાલ';
+
+  @override
+  String get reportsSoldProducts => 'વેચાયેલા પ્રોડક્ટ અહેવાલ';
+
+  @override
+  String get reportsLowStock => 'ઓછો સ્ટોક અહેવાલ';
+
+  @override
+  String get reportsNoSalesDay => 'આ દિવસ માટે કોઈ વેચાણ મળ્યું નથી.';
+
+  @override
+  String get reportsNoSalesMonth => 'આ મહિના માટે કોઈ વેચાણ મળ્યું નથી.';
+
+  @override
+  String get reportsNoGstData => 'કોઈ GST ડેટા મળ્યો નથી.';
+
+  @override
+  String get reportsNoActiveLoans => 'કોઈ સક્રિય લોન મળ્યા નથી.';
+
+  @override
+  String get reportsNoInterestCollections => 'કોઈ વ્યાજ સંગ્રહ મળ્યો નથી.';
+
+  @override
+  String get reportsNoClosedLoans => 'કોઈ બંધ લોન મળ્યા નથી.';
+
+  @override
+  String get reportsNoCurrentStock => 'કોઈ વર્તમાન સ્ટોક મળ્યો નથી.';
+
+  @override
+  String get reportsNoSoldProducts => 'કોઈ વેચાયેલ પ્રોડક્ટ મળ્યો નથી.';
+
+  @override
+  String get reportsNoLowStock => 'કોઈ ઓછા સ્ટોક પ્રોડક્ટ મળ્યા નથી.';
+
+  @override
+  String get reportsGstSubtitle =>
+      'ફિલ્ટર કરેલા ઇન્વોઇસ ઇતિહાસમાંથી કર એકત્રિત થયો.';
+
+  @override
+  String get reportsActiveLoansSubtitle =>
+      'બાકી રકમ અને નિયત તારીખો સાથે ખુલ્લી ગોલ્ડ લોન.';
+
+  @override
+  String get reportsInterestCollectionSubtitle =>
+      'વ્યાજ અને સેટલમેન્ટ ચુકવણી માટે રસીદો જનરેટ થઈ.';
+
+  @override
+  String get reportsClosedLoansSubtitle =>
+      'સેટલ લોન સક્રિય મોર્ગેજ ટ્રેકિંગમાંથી બહાર ખસેડાયા.';
+
+  @override
+  String reportsCurrentStockSubtitle(String goldWeight, String silverWeight) {
+    return '$goldWeight સોનું, $silverWeight ચાંદી સ્ટોકમાં.';
+  }
+
+  @override
+  String get reportsSoldProductsSubtitle =>
+      'વેચાયેલા પ્રોડક્ટ ઇન્વોઇસ ઇતિહાસ સાથે જોડાયેલા.';
+
+  @override
+  String get reportsLowStockSubtitle =>
+      'બલ્ક પ્રોડક્ટ જેની બે કે તેથી ઓછી એકમો ઉપલબ્ધ છે.';
+
+  @override
+  String get reportsProduct => 'પ્રોડક્ટ';
+
+  @override
+  String get reportsUncategorised => 'અવર્ગીકૃત';
+
+  @override
+  String get reportsNoDesignNumber => 'કોઈ ડિઝાઇન નંબર નથી';
+
+  @override
+  String get reportsPurity => 'શુદ્ધતા';
+
+  @override
+  String get reportsGross => 'ગ્રોસ';
+
+  @override
+  String get reportsNet => 'નેટ';
+
+  @override
+  String get reportsSellingPrice => 'વેચાણ કિંમત';
+
+  @override
+  String get reportsMain => 'મુખ્ય';
+
+  @override
+  String get reportsInvoice => 'ઇન્વોઇસ';
+
+  @override
+  String get reportsCustomer => 'ગ્રાહક';
+
+  @override
+  String get reportsPayment => 'ચુકવણી';
+
+  @override
+  String get reportsSoldDate => 'વેચાણ તારીખ';
+
+  @override
+  String get reportsMobile => 'મોબાઇલ';
+
+  @override
+  String get reportsAvailableQty => 'ઉપલબ્ધ જથ્થો';
+
+  @override
+  String get reportsDate => 'તારીખ';
+
+  @override
+  String get reportsTotal => 'કુલ';
+
+  @override
+  String get reportsItems => 'આઇટમ';
+
+  @override
+  String get reportsTaxable => 'કરપાત્ર';
+
+  @override
+  String get reportsCgst => 'CGST';
+
+  @override
+  String get reportsSgst => 'SGST';
+
+  @override
+  String get reportsTotalGst => 'કુલ GST';
+
+  @override
+  String get reportsMortgageLoan => 'ગોલ્ડ લોન';
+
+  @override
+  String get reportsLoanAmount => 'લોન રકમ';
+
+  @override
+  String get reportsPendingInterest => 'બાકી વ્યાજ';
+
+  @override
+  String get reportsPayable => 'ચૂકવવાપાત્ર';
+
+  @override
+  String get reportsNextDue => 'આગામી નિયત તારીખ';
+
+  @override
+  String get reportsReceipt => 'રસીદ';
+
+  @override
+  String get reportsAmount => 'રકમ';
+
+  @override
+  String get reportsMode => 'મોડ';
+
+  @override
+  String get reportsInterestPaid => 'ચૂકવેલ વ્યાજ';
+
+  @override
+  String get reportsClosingDate => 'બંધ તારીખ';
+
+  @override
+  String get reportsLoanStatus => 'લોન સ્થિતિ';
+
+  @override
+  String get reportsExportPdf => 'અહેવાલ PDF એક્સપોર્ટ કરો';
+
+  @override
+  String get reportsAdminOnly => 'અહેવાલો ફક્ત એડમિન વપરાશકર્તાઓ માટે છે';
+
+  @override
+  String get reportsStaffSubtitle =>
+      'સ્ટાફ બિલિંગ, ઇન્વેન્ટરી વ્યૂ અને મોર્ગેજ કલેક્શન ચાલુ રાખી શકે છે.';
+
+  @override
+  String get reportsRestricted => 'પ્રતિબંધિત';
+
+  @override
+  String reportsSalesGeneratedOn(String date) {
+    return '$date પર વેચાણ ઉત્પન્ન થયું.';
+  }
+
+  @override
+  String reportsSalesGeneratedIn(String date) {
+    return '$date માં વેચાણ ઉત્પન્ન થયું.';
+  }
+
+  @override
+  String get mortgageTitle => 'મોર્ગેજ / ગોલ્ડ લોન';
+
+  @override
+  String get mortgageAddMortgage => 'ગોલ્ડ લોન ઉમેરો';
+
+  @override
+  String get mortgageActive => 'સક્રિય લોન';
+
+  @override
+  String get mortgageClosed => 'બંધ લોન';
+
+  @override
+  String get mortgagePendingInterest => 'બાકી વ્યાજ';
+
+  @override
+  String get mortgageTotalLoanAmount => 'કુલ લોન રકમ';
+
+  @override
+  String get mortgageTodaysCollections => 'આજનો સંગ્રહ';
+
+  @override
+  String get mortgageOverdueLoans => 'વિલંબિત લોન';
+
+  @override
+  String get mortgageSearchHint => 'ગ્રાહક, મોબાઇલ અથવા લોન નંબર શોધો';
+
+  @override
+  String get mortgageStatusActive => 'સક્રિય';
+
+  @override
+  String get mortgageStatusClosed => 'બંધ';
+
+  @override
+  String get mortgageStatusAll => 'બધા';
+
+  @override
+  String get mortgageNoLoansFound => 'કોઈ લોન મળ્યાં નથી';
+
+  @override
+  String get mortgageNoLoansSubtitle =>
+      'ગોલ્ડ લોન બનાવો અથવા શોધ અને ફિલ્ટર સમાયોજિત કરો.';
+
+  @override
+  String get mortgageLoanFallback => 'ગોલ્ડ લોન';
+
+  @override
+  String get mortgageCustomerFallback => 'ગ્રાહક';
+
+  @override
+  String get mortgageCollect => 'એકત્રિત કરો';
+
+  @override
+  String get mortgageClose => 'બંધ કરો';
+
+  @override
+  String get mortgageOutstanding => 'બાકી';
+
+  @override
+  String get mortgageTotalPayable => 'કુલ ચૂકવવાપાત્ર';
+
+  @override
+  String get mortgageInterestPaid => 'ચૂકવેલ વ્યાજ';
+
+  @override
+  String get mortgageClosingDate => 'બંધ તારીખ';
+
+  @override
+  String get mortgageLoanStatus => 'લોન સ્થિતિ';
+
+  @override
+  String get mortgageInterestRate => 'વ્યાજ દર';
+
+  @override
+  String get mortgageNextDue => 'આગામી નિયત તારીખ';
+
+  @override
+  String get mortgageOrnaments => 'ઘરેણાં';
+
+  @override
+  String get mortgageReceipt => 'રસીદ';
+
+  @override
+  String get mortgageCreated => 'ગોલ્ડ લોન બનાવાઈ';
+
+  @override
+  String get mortgagePaymentSaved => 'ચુકવણી સાચવાઈ';
+
+  @override
+  String get mortgageLoanClosed => 'લોન બંધ થઈ';
+
+  @override
+  String get mortgagePaymentReceiptMissing => 'ચુકવણી રસીદ ખૂટે છે';
+
+  @override
+  String get mortgageFailedGenerateReceipt => 'ચુકવણી રસીદ જનરેટ થઈ શકી નહીં';
+
+  @override
+  String get mortgageAddTitle => 'ગોલ્ડ લોન ઉમેરો';
+
+  @override
+  String get mortgageCustomerDetails => 'ગ્રાહક વિગતો';
+
+  @override
+  String get mortgageCustomerName => 'ગ્રાહકનું નામ *';
+
+  @override
+  String get mortgageMobileNumber => 'મોબાઇલ નંબર';
+
+  @override
+  String get mortgageAddress => 'સરનામું';
+
+  @override
+  String get mortgageAadhaarNumber => 'આધાર નંબર';
+
+  @override
+  String get mortgagePanNumber => 'પાન નંબર';
+
+  @override
+  String get mortgageCustomerVerification => 'ગ્રાહક ચકાસણી';
+
+  @override
+  String get mortgagePhotoId => 'ફોટો આઈડી';
+
+  @override
+  String get mortgageCustomerPhoto => 'ગ્રાહક ફોટો';
+
+  @override
+  String get mortgageGoldDetails => 'સોનાની વિગતો';
+
+  @override
+  String get mortgageOrnamentType => 'ઘરેણાંનો પ્રકાર *';
+
+  @override
+  String get mortgageGrossWeight => 'ગ્રોસ વજન *';
+
+  @override
+  String get mortgageNetWeight => 'નેટ વજન *';
+
+  @override
+  String get mortgageLoanDetails => 'લોન વિગતો';
+
+  @override
+  String get mortgageLoanAmount => 'લોન રકમ *';
+
+  @override
+  String get mortgageMonthlyInterestRate => 'માસિક વ્યાજ દર % *';
+
+  @override
+  String get mortgageLoanDate => 'લોન તારીખ *';
+
+  @override
+  String get mortgageSaveLoan => 'લોન સાચવો';
+
+  @override
+  String get mortgageCollectPayment => 'ચુકવણી એકત્રિત કરો';
+
+  @override
+  String get mortgageAmount => 'રકમ *';
+
+  @override
+  String get mortgagePaymentType => 'ચુકવણી પ્રકાર';
+
+  @override
+  String get mortgageInterest => 'વ્યાજ';
+
+  @override
+  String get mortgagePrincipal => 'મૂળધન';
+
+  @override
+  String get mortgagePaymentMode => 'ચુકવણી મોડ';
+
+  @override
+  String get mortgageReferenceNumber => 'સંદર્ભ નંબર';
+
+  @override
+  String get mortgageSavePayment => 'ચુકવણી સાચવો';
+
+  @override
+  String get mortgageCloseLoan => 'લોન બંધ કરો';
+
+  @override
+  String get mortgageSettlementAmount => 'સેટલમેન્ટ રકમ *';
+
+  @override
+  String get mortgageSelected => 'પસંદ કરેલ';
+
+  @override
+  String get mortgageChooseImage => 'છબી પસંદ કરો';
+
+  @override
+  String get mortgageEnterValidLoanDate => 'માન્ય લોન તારીખ દાખલ કરો';
+
+  @override
+  String get mortgageNetWeightExceedsGross =>
+      'નેટ વજન ગ્રોસ વજનથી વધુ ન હોઈ શકે';
+
+  @override
+  String get mortgageFailedCreate => 'મોર્ગેજ બનાવવામાં નિષ્ફળ';
+
+  @override
+  String get mortgageFailedSavePayment => 'ચુકવણી સાચવવામાં નિષ્ફળ';
+
+  @override
+  String get mortgageFailedCloseLoan => 'લોન બંધ કરવામાં નિષ્ફળ';
+
+  @override
+  String get mortgageSelectLoanDate => 'લોન તારીખ પસંદ કરો';
+
+  @override
+  String get mortgagePurity => 'શુદ્ધતા';
+
+  @override
+  String get mortgageRequired => 'આવશ્યક';
+
+  @override
+  String get mortgageEnterValidAmount => 'માન્ય રકમ દાખલ કરો';
+
+  @override
+  String get inventoryManagement => 'ઇન્વેન્ટરી મેનેજમેન્ટ';
+
+  @override
+  String get inventoryViewInventory => 'ઇન્વેન્ટરી જુઓ';
+
+  @override
+  String get inventoryAddStock => 'સ્ટોક ઉમેરો';
+
+  @override
+  String get inventorySoldProducts => 'વેચાયેલા પ્રોડક્ટ';
+
+  @override
+  String get inventoryTotalGoldWeight => 'કુલ સોનાનું વજન';
+
+  @override
+  String get inventoryTotalSilverWeight => 'કુલ ચાંદીનું વજન';
+
+  @override
+  String get inventoryTotalProducts => 'કુલ પ્રોડક્ટ';
+
+  @override
+  String get inventoryAlertLowStock => 'ઓછો સ્ટોક';
+
+  @override
+  String get inventoryAlertOutOfStock => 'સ્ટોક ખતમ';
+
+  @override
+  String get inventoryAlertHighValue => 'ઉચ્ચ મૂલ્ય';
+
+  @override
+  String get inventoryAlertUnsold => 'ન વેચાયેલ';
+
+  @override
+  String get inventoryScanHuidReceipt => 'HUID રસીદ સ્કેન કરો';
+
+  @override
+  String get inventoryScanHuidSubtitle =>
+      'રસીદ કેપ્ચર કરો અને સેવ કરતા પહેલા AI-ભરેલી ઇન્વેન્ટરી પંક્તિઓની સમીક્ષા કરો.';
+
+  @override
+  String get inventoryAddManually => 'મેન્યુઅલી ઉમેરો';
+
+  @override
+  String get inventoryAddManuallySubtitle =>
+      'સામાન્ય ઇન્વેન્ટરી ફોર્મનો ઉપયોગ કરીને એક આઇટમ દાખલ કરો.';
+
+  @override
+  String get inventoryReadingHuid => 'HUID રસીદ વાંચી રહ્યું છે...';
+
+  @override
+  String get inventoryTakePhoto => 'ફોટો લો';
+
+  @override
+  String get inventoryChooseFromGallery => 'ગેલેરીમાંથી પસંદ કરો';
+
+  @override
+  String get inventoryNoRowsFound => 'આ રસીદમાં કોઈ ઇન્વેન્ટરી પંક્તિઓ મળી નથી';
+
+  @override
+  String get inventoryImported => 'ઇન્વેન્ટરી આયાત થઈ';
+
+  @override
+  String get inventoryFailedScanHuid => 'HUID રસીદ સ્કેન કરવામાં નિષ્ફળ';
+
+  @override
+  String get inventoryFailedImportRows =>
+      'ઇન્વેન્ટરી પંક્તિઓ આયાત કરવામાં નિષ્ફળ';
+
+  @override
+  String get inventoryClearSearch => 'શોધ સાફ કરો';
+
+  @override
+  String get inventorySearchHintSold =>
+      'ઇન્વોઇસ, ગ્રાહક, પ્રોડક્ટ, મોબાઇલ, ચુકવણી પદ્ધતિ શોધો';
+
+  @override
+  String get inventorySearchHintStock =>
+      'પ્રોડક્ટ, ડિઝાઇન નંબર, ટેગ, HUID શોધો';
+
+  @override
+  String inventoryCountSold(int count) {
+    return '$count વેચાયેલા પ્રોડક્ટ';
+  }
+
+  @override
+  String get inventoryNoSoldFound => 'કોઈ વેચાયેલ પ્રોડક્ટ મળ્યો નથી';
+
+  @override
+  String get inventoryNoSoldSubtitle =>
+      'બિલિંગ પૂર્ણ થયા પછી વેચાયેલા પ્રોડક્ટ અહીં દેખાશે.';
+
+  @override
+  String get inventoryView => 'જુઓ';
+
+  @override
+  String get inventoryViewDetails => 'વિગતો જુઓ';
+
+  @override
+  String get inventoryFilters => 'ફિલ્ટર';
+
+  @override
+  String get inventoryFilterReset => 'રીસેટ';
+
+  @override
+  String get inventoryFilterApply => 'લાગુ કરો';
+
+  @override
+  String get inventoryFilterStatus => 'સ્થિતિ';
+
+  @override
+  String get inventoryFilterCategory => 'શ્રેણી';
+
+  @override
+  String get inventoryFilterBranch => 'શાખા';
+
+  @override
+  String get inventoryProductDetails => 'પ્રોડક્ટ વિગતો';
+
+  @override
+  String get inventoryWeightDetails => 'વજન વિગતો';
+
+  @override
+  String get inventoryPriceDetails => 'કિંમત વિગતો';
+
+  @override
+  String get inventoryUploadImage => 'છબી અપલોડ કરો';
+
+  @override
+  String get inventoryFormStatus => 'સ્થિતિ';
+
+  @override
+  String get inventoryFieldDesignNumber => 'ડિઝાઇન નંબર';
+
+  @override
+  String get inventoryFieldCategory => 'શ્રેણી';
+
+  @override
+  String get inventoryFieldStoneWeight => 'પથ્થરનું વજન (ગ્રામ)';
+
+  @override
+  String get inventoryFieldPurchasePrice => 'ખરીદ કિંમત / ગ્રામ';
+
+  @override
+  String get inventoryFieldBranch => 'શાખા';
+
+  @override
+  String get inventoryFieldSellingPrice => 'વેચાણ કિંમત';
+
+  @override
+  String get inventoryChooseProductImage => 'પ્રોડક્ટ છબી પસંદ કરો';
+
+  @override
+  String get inventoryRemoveImage => 'પ્રોડક્ટ છબી દૂર કરો';
+
+  @override
+  String get inventoryImageReady =>
+      'પસંદ કરેલ પ્રોડક્ટ છબી સેવ કરવા માટે તૈયાર છે.';
+
+  @override
+  String get inventoryFieldImageUrl => 'પ્રોડક્ટ છબી URL';
+
+  @override
+  String get inventoryAutoCalculations => 'ઓટો ગણતરીઓ';
+
+  @override
+  String get inventoryCalcNetWeight => 'નેટ વજન';
+
+  @override
+  String get inventoryCalcMakingCharges => 'મેકિંગ ચાર્જિસ';
+
+  @override
+  String get inventoryCalcFinalSellingPrice => 'અંતિમ વેચાણ કિંમત';
+
+  @override
+  String get inventoryProductInfo => 'પ્રોડક્ટ માહિતી';
+
+  @override
+  String get inventoryProductName => 'પ્રોડક્ટનું નામ';
+
+  @override
+  String get inventoryProductCode => 'પ્રોડક્ટ કોડ';
+
+  @override
+  String get inventoryGrossWeight => 'ગ્રોસ વજન';
+
+  @override
+  String get inventoryStoneWeight => 'પથ્થરનું વજન';
+
+  @override
+  String get inventoryPurchasePrice => 'ખરીદ કિંમત';
+
+  @override
+  String get inventoryMakingCharges => 'મેકિંગ ચાર્જિસ';
+
+  @override
+  String get inventoryGstInfo => 'બિલિંગ દરમિયાન 3% ગણતરી';
+
+  @override
+  String get inventoryStatusInfo => 'સ્થિતિ માહિતી';
+
+  @override
+  String get inventoryQuantity => 'જથ્થો';
+
+  @override
+  String get inventoryClose => 'બંધ કરો';
+
+  @override
+  String get inventoryReviewHuidTitle => 'HUID રસીદ આઇટમની સમીક્ષા કરો';
+
+  @override
+  String get inventoryReviewHuidSubtitle =>
+      'ઇન્વેન્ટરીમાં ઉમેરતા પહેલા AI-ભરેલી પંક્તિઓ તપાસો.';
+
+  @override
+  String get inventoryImportItems => 'આઇટમ આયાત કરો';
+
+  @override
+  String get inventoryColumnCategory => 'શ્રેણી';
+
+  @override
+  String get inventoryColumnDesignNumber => 'ડિઝાઇન નંબર';
+
+  @override
+  String get inventoryColumnPurity => 'શુદ્ધતા';
+
+  @override
+  String get inventoryColumnNetWeight => 'નેટ વજન';
+
+  @override
+  String get inventoryColumnSellingPrice => 'વેચાણ કિંમત';
+
+  @override
+  String get inventoryColumnInvoiceNumber => 'ઇન્વોઇસ નંબર';
+
+  @override
+  String get inventoryColumnCustomerName => 'ગ્રાહકનું નામ';
+
+  @override
+  String get inventoryColumnProductName => 'પ્રોડક્ટનું નામ';
+
+  @override
+  String get inventoryColumnSoldDate => 'વેચાણ તારીખ';
+
+  @override
+  String get inventoryColumnPaymentMethod => 'ચુકવણી પદ્ધતિ';
+
+  @override
+  String get inventoryCompactNet => 'નેટ';
+
+  @override
+  String get inventoryCompactPrice => 'કિંમત';
+
+  @override
+  String get inventoryCompactPayment => 'ચુકવણી';
 }

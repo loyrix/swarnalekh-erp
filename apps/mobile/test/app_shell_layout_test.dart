@@ -34,6 +34,7 @@ void main() {
             home: AppShell(
               currentIndex: 0,
               currentTitle: 'Dashboard',
+              currentLocation: '/dashboard',
               loadRole: () async => 'owner',
               signOut: () async {},
               onNavigate: (_) {},
@@ -80,6 +81,7 @@ void main() {
           home: AppShell(
             currentIndex: 0,
             currentTitle: 'Dashboard',
+            currentLocation: '/dashboard',
             loadUserContext: () async => const CurrentUserContext(
               role: 'owner',
               userName: 'Owner',
@@ -125,6 +127,7 @@ void main() {
             home: AppShell(
               currentIndex: 0,
               currentTitle: 'Dashboard',
+              currentLocation: '/dashboard',
               loadUserContext: () async => const CurrentUserContext(
                 role: 'owner',
                 userName: 'Owner',

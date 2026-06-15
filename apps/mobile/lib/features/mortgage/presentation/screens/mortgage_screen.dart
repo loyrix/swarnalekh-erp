@@ -11,6 +11,8 @@ import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/empty_state.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
+import 'package:swarnbook/shared/widgets/compact_stat_strip.dart';
+import 'package:swarnbook/l10n/app_localizations.dart';
 
 class MortgageScreen extends StatefulWidget {
   const MortgageScreen({super.key});
@@ -75,20 +77,25 @@ class _MortgageScreenState extends State<MortgageScreen> {
       });
     } catch (error) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() => _isLoading = false);
-      AppToast.error(context, _errorMessage(error, 'Failed to load mortgages'));
+      AppToast.error(
+        context,
+        _errorMessage(error, l10n.errorFailedLoadDashboard),
+      );
     }
   }
 
   Future<void> _openCreateLoan() async {
     if (!_canManageMortgage) return;
-    final created = await showDialog<bool>(
+    final created = await showResponsiveDialog<bool>(
       context: context,
       builder: (context) => _MortgageLoanDialog(api: _api),
     );
 
     if (created == true && mounted) {
-      AppToast.success(context, 'Mortgage loan created');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.success(context, l10n.mortgageCreated);
       _loadData();
     }
   }
@@ -100,7 +107,8 @@ class _MortgageScreenState extends State<MortgageScreen> {
     );
 
     if (updated == true && mounted) {
-      AppToast.success(context, 'Payment saved');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.success(context, l10n.mortgagePaymentSaved);
       _loadData();
     }
   }
@@ -113,7 +121,8 @@ class _MortgageScreenState extends State<MortgageScreen> {
     );
 
     if (updated == true && mounted) {
-      AppToast.success(context, 'Loan closed');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.success(context, l10n.mortgageLoanClosed);
       _loadData();
     }
   }
@@ -122,10 +131,11 @@ class _MortgageScreenState extends State<MortgageScreen> {
     Map<String, dynamic> loan,
     Map<String, dynamic> payment,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final loanId = loan['id']?.toString() ?? '';
     final paymentId = payment['id']?.toString() ?? '';
     if (loanId.isEmpty || paymentId.isEmpty) {
-      AppToast.error(context, 'Payment receipt is missing');
+      AppToast.error(context, l10n.mortgagePaymentReceiptMissing);
       return;
     }
 
@@ -140,7 +150,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
       await Printing.sharePdf(bytes: payload.bytes, filename: payload.fileName);
     } catch (_) {
       if (mounted) {
-        AppToast.error(context, 'Failed to generate payment receipt');
+        AppToast.error(context, l10n.mortgageFailedGenerateReceipt);
       }
     }
   }
@@ -168,53 +178,58 @@ class _MortgageScreenState extends State<MortgageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 768;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return RefreshIndicator(
-      color: AppColors.primary,
-      onRefresh: _loadData,
-      child: KeyboardAwareScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildDashboardCards(),
-            const SizedBox(height: AppSpacing.lg),
-            _buildFilters(),
-            const SizedBox(height: AppSpacing.md),
-            _buildLoanList(),
-          ],
+    return Scaffold(
+      floatingActionButton: !isWide && _canManageMortgage
+          ? FloatingActionButton.small(
+              heroTag: 'addMortgage',
+              onPressed: _openCreateLoan,
+              child: const Icon(Icons.add_rounded),
+            )
+          : null,
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: _loadData,
+        child: KeyboardAwareScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(isWide),
+              const SizedBox(height: AppSpacing.lg),
+              _buildDashboardCards(isWide),
+              const SizedBox(height: AppSpacing.lg),
+              _buildFilters(),
+              const SizedBox(height: AppSpacing.md),
+              _buildLoanList(isWide),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Mortgage / Gold Loan',
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Track pledged ornaments, interest, receipts, and loan closure.',
-                style: TextStyle(color: AppColors.text3(context)),
-              ),
-            ],
+          child: Text(
+            l10n.mortgageTitle,
+            style: isWide
+                ? Theme.of(context).textTheme.displaySmall
+                : Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
         ),
-        if (_canManageMortgage)
+        if (isWide && _canManageMortgage)
           GoldButton(
-            label: 'Add Mortgage',
+            label: l10n.mortgageAddMortgage,
             icon: Icons.add_rounded,
             onPressed: _openCreateLoan,
           ),
@@ -222,45 +237,50 @@ class _MortgageScreenState extends State<MortgageScreen> {
     );
   }
 
-  Widget _buildDashboardCards() {
-    final cards = [
-      StatCard(
+  Widget _buildDashboardCards(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
+    final stats = <({IconData icon, String label, String value, Color color})>[
+      (
         icon: Icons.account_balance_rounded,
-        label: 'Active Loans',
+        label: l10n.mortgageActive,
         value: _asInt(_dashboard['activeLoans']).toString(),
-        accentColor: AppColors.info,
+        color: AppColors.info,
       ),
-      StatCard(
+      (
         icon: Icons.check_circle_outline_rounded,
-        label: 'Closed Loans',
+        label: l10n.mortgageClosed,
         value: _asInt(_dashboard['closedLoans']).toString(),
-        accentColor: AppColors.success,
+        color: AppColors.success,
       ),
-      StatCard(
+      (
         icon: Icons.lock_clock_rounded,
-        label: 'Pending Interest',
+        label: l10n.mortgagePendingInterest,
         value: _money(_dashboard['pendingInterest']),
-        accentColor: AppColors.warning,
+        color: AppColors.warning,
       ),
-      StatCard(
+      (
         icon: Icons.payments_rounded,
-        label: 'Total Loan Amount',
+        label: l10n.mortgageTotalLoanAmount,
         value: _money(_dashboard['totalLoanAmount']),
-        accentColor: AppColors.primary,
+        color: AppColors.primary,
       ),
-      StatCard(
+      (
         icon: Icons.currency_rupee_rounded,
-        label: "Today's Collections",
+        label: l10n.mortgageTodaysCollections,
         value: _money(_dashboard['todaysCollections']),
-        accentColor: AppColors.success,
+        color: AppColors.success,
       ),
-      StatCard(
+      (
         icon: Icons.event_busy_rounded,
-        label: 'Overdue Loans',
+        label: l10n.mortgageOverdueLoans,
         value: _asInt(_dashboard['overdueLoans']).toString(),
-        accentColor: AppColors.error,
+        color: AppColors.error,
       ),
     ];
+
+    if (!isWide) {
+      return CompactStatStrip(stats: stats);
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -272,8 +292,18 @@ class _MortgageScreenState extends State<MortgageScreen> {
         return Wrap(
           spacing: AppSpacing.md,
           runSpacing: AppSpacing.md,
-          children: cards
-              .map((card) => SizedBox(width: width, child: card))
+          children: stats
+              .map(
+                (s) => SizedBox(
+                  width: width,
+                  child: StatCard(
+                    icon: s.icon,
+                    label: s.label,
+                    value: s.value,
+                    accentColor: s.color,
+                  ),
+                ),
+              )
               .toList(),
         );
       },
@@ -281,6 +311,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
   }
 
   Widget _buildFilters() {
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Wrap(
@@ -294,7 +325,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
               controller: _searchController,
               onSubmitted: (_) => _loadData(),
               decoration: InputDecoration(
-                hintText: 'Search customer, mobile, or loan number',
+                hintText: l10n.mortgageSearchHint,
                 prefixIcon: Icon(
                   Icons.search_rounded,
                   color: AppColors.text3(context),
@@ -309,9 +340,9 @@ class _MortgageScreenState extends State<MortgageScreen> {
               ),
             ),
           ),
-          _statusChip('active', 'Active'),
-          _statusChip('closed', 'Closed'),
-          _statusChip('all', 'All'),
+          _statusChip('active', l10n.mortgageStatusActive),
+          _statusChip('closed', l10n.mortgageStatusClosed),
+          _statusChip('all', l10n.mortgageStatusAll),
         ],
       ),
     );
@@ -338,15 +369,16 @@ class _MortgageScreenState extends State<MortgageScreen> {
     );
   }
 
-  Widget _buildLoanList() {
+  Widget _buildLoanList(bool isWide) {
+    final l10n = AppLocalizations.of(context)!;
     if (_loans.isEmpty) {
       return SizedBox(
         height: 360,
         child: EmptyState(
           icon: Icons.account_balance_outlined,
-          title: 'No mortgage loans found',
-          subtitle: 'Create a gold loan or adjust the search and filters.',
-          actionLabel: _canManageMortgage ? 'Add Mortgage' : null,
+          title: l10n.mortgageNoLoansFound,
+          subtitle: l10n.mortgageNoLoansSubtitle,
+          actionLabel: _canManageMortgage ? l10n.mortgageAddMortgage : null,
           onAction: _canManageMortgage ? _openCreateLoan : null,
           iconColor: AppColors.primary,
         ),
@@ -363,6 +395,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
         return _MortgageLoanCard(
           loan: loan,
           money: _money,
+          compact: !isWide,
           onCollect: () => _openCollectPayment(loan),
           onClose: _canManageMortgage ? () => _openCloseLoan(loan) : null,
           onReceipt: (payment) => _openPaymentReceipt(loan, payment),
@@ -375,6 +408,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
 class _MortgageLoanCard extends StatelessWidget {
   final Map<String, dynamic> loan;
   final String Function(dynamic value) money;
+  final bool compact;
   final VoidCallback onCollect;
   final VoidCallback? onClose;
   final ValueChanged<Map<String, dynamic>> onReceipt;
@@ -382,6 +416,7 @@ class _MortgageLoanCard extends StatelessWidget {
   const _MortgageLoanCard({
     required this.loan,
     required this.money,
+    this.compact = false,
     required this.onCollect,
     required this.onClose,
     required this.onReceipt,
@@ -389,6 +424,7 @@ class _MortgageLoanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final status = loan['status']?.toString() ?? 'active';
     final isActive = status == 'active';
     final ornaments = loan['ornaments'] as List<dynamic>? ?? const [];
@@ -406,7 +442,7 @@ class _MortgageLoanCard extends StatelessWidget {
     ];
 
     return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -421,8 +457,12 @@ class _MortgageLoanCard extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            loan['loanNumber']?.toString() ?? 'Mortgage Loan',
-                            style: Theme.of(context).textTheme.headlineSmall,
+                            loan['loanNumber']?.toString() ??
+                                l10n.mortgageLoanFallback,
+                            style: compact
+                                ? Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w700)
+                                : Theme.of(context).textTheme.headlineSmall,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -433,29 +473,49 @@ class _MortgageLoanCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       [
-                            loan['customerName']?.toString() ?? 'Customer',
+                            loan['customerName']?.toString() ??
+                                l10n.mortgageCustomerFallback,
                             loan['customerPhone']?.toString(),
                           ]
                           .where((part) => part != null && part.isNotEmpty)
                           .join(' • '),
-                      style: TextStyle(color: AppColors.text3(context)),
+                      style: TextStyle(
+                        color: AppColors.text3(context),
+                        fontSize: compact ? 12 : null,
+                      ),
                     ),
                   ],
                 ),
               ),
               if (isActive) ...[
-                TextButton.icon(
-                  onPressed: onCollect,
-                  icon: const Icon(Icons.payments_outlined),
-                  label: const Text('Collect'),
-                ),
-                if (onClose != null) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  TextButton.icon(
-                    onPressed: onClose,
-                    icon: const Icon(Icons.task_alt_rounded),
-                    label: const Text('Close'),
+                if (compact) ...[
+                  IconButton(
+                    icon: const Icon(Icons.payments_outlined, size: 20),
+                    onPressed: onCollect,
+                    tooltip: l10n.mortgageCollect,
+                    visualDensity: VisualDensity.compact,
                   ),
+                  if (onClose != null)
+                    IconButton(
+                      icon: const Icon(Icons.task_alt_rounded, size: 20),
+                      onPressed: onClose,
+                      tooltip: l10n.mortgageClose,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ] else ...[
+                  TextButton.icon(
+                    onPressed: onCollect,
+                    icon: const Icon(Icons.payments_outlined),
+                    label: Text(l10n.mortgageCollect),
+                  ),
+                  if (onClose != null) ...[
+                    const SizedBox(width: AppSpacing.sm),
+                    TextButton.icon(
+                      onPressed: onClose,
+                      icon: const Icon(Icons.task_alt_rounded),
+                      label: Text(l10n.mortgageClose),
+                    ),
+                  ],
                 ],
               ],
             ],
@@ -479,45 +539,75 @@ class _MortgageLoanCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.md,
-            runSpacing: AppSpacing.md,
-            children: [
-              _metric(context, 'Loan Amount', money(loan['principalAmount'])),
-              if (isActive) ...[
-                _metric(
-                  context,
-                  'Outstanding',
-                  money(loan['outstandingPrincipal']),
-                ),
-                _metric(
-                  context,
-                  'Pending Interest',
-                  money(loan['pendingInterestAmount']),
-                ),
-                _metric(
-                  context,
-                  'Total Payable',
-                  money(loan['totalPayableAmount']),
-                ),
-              ] else ...[
-                _metric(
-                  context,
-                  'Interest Paid',
-                  money(loan['totalInterestPaid']),
-                ),
-                _metric(context, 'Closing Date', closedAt),
-                _metric(context, 'Loan Status', status),
-              ],
-              _metric(
-                context,
-                'Interest Rate',
-                '${loan['interestRateMonthly']}%',
+          if (compact) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'Loan: ${money(loan['principalAmount'])} | Outstanding: ${money(loan['outstandingPrincipal'])} | Interest: ${money(loan['pendingInterestAmount'])}',
+                style: TextStyle(fontSize: 12, color: AppColors.text2(context)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              if (isActive) _metric(context, 'Next Due', nextDueDate),
-              _metric(context, 'Ornaments', ornaments.length.toString()),
-            ],
-          ),
+            ),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'Rate: ${loan['interestRateMonthly']}% | Next Due: $nextDueDate | Ornaments: ${ornaments.length}',
+                style: TextStyle(fontSize: 11, color: AppColors.text3(context)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ] else
+            Wrap(
+              spacing: AppSpacing.md,
+              runSpacing: AppSpacing.md,
+              children: [
+                _metric(
+                  context,
+                  l10n.reportsLoanAmount,
+                  money(loan['principalAmount']),
+                ),
+                if (isActive) ...[
+                  _metric(
+                    context,
+                    l10n.mortgageOutstanding,
+                    money(loan['outstandingPrincipal']),
+                  ),
+                  _metric(
+                    context,
+                    l10n.mortgagePendingInterest,
+                    money(loan['pendingInterestAmount']),
+                  ),
+                  _metric(
+                    context,
+                    l10n.mortgageTotalPayable,
+                    money(loan['totalPayableAmount']),
+                  ),
+                ] else ...[
+                  _metric(
+                    context,
+                    l10n.mortgageInterestPaid,
+                    money(loan['totalInterestPaid']),
+                  ),
+                  _metric(context, l10n.mortgageClosingDate, closedAt),
+                  _metric(context, l10n.mortgageLoanStatus, status),
+                ],
+                _metric(
+                  context,
+                  l10n.mortgageInterestRate,
+                  '${loan['interestRateMonthly']}%',
+                ),
+                if (isActive)
+                  _metric(context, l10n.mortgageNextDue, nextDueDate),
+                _metric(
+                  context,
+                  l10n.mortgageOrnaments,
+                  ornaments.length.toString(),
+                ),
+              ],
+            ),
           if (payments.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
             Wrap(
@@ -532,7 +622,7 @@ class _MortgageLoanCard extends StatelessWidget {
                   icon: const Icon(Icons.receipt_long_outlined),
                   label: Text(
                     receiptNumber == null || receiptNumber.isEmpty
-                        ? 'Receipt'
+                        ? l10n.mortgageReceipt
                         : receiptNumber,
                   ),
                 );
@@ -680,12 +770,13 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
     final grossWeight = _number(_grossWeight.text);
     final netWeight = _number(_netWeight.text);
     final loanDate = _parseLoanDate(_loanDate.text);
+    final l10n = AppLocalizations.of(context)!;
     if (loanDate == null) {
-      AppToast.error(context, 'Enter a valid loan date');
+      AppToast.error(context, l10n.mortgageEnterValidLoanDate);
       return;
     }
     if (netWeight > grossWeight) {
-      AppToast.error(context, 'Net weight cannot exceed gross weight');
+      AppToast.error(context, l10n.mortgageNetWeightExceedsGross);
       return;
     }
 
@@ -718,10 +809,7 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      AppToast.error(
-        context,
-        _errorMessage(error, 'Failed to create mortgage'),
-      );
+      AppToast.error(context, _errorMessage(error, l10n.mortgageFailedCreate));
     }
   }
 
@@ -732,6 +820,7 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
     required VoidCallback onClear,
   }) {
     final hasImage = value != null && value.trim().isNotEmpty;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -771,7 +860,7 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  hasImage ? 'Selected' : 'Choose image',
+                  hasImage ? l10n.mortgageSelected : l10n.mortgageChooseImage,
                   style: TextStyle(color: AppColors.text3(context)),
                 ),
               ],
@@ -794,19 +883,20 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
   }
 
   Widget _loanDateField() {
+    final l10n = AppLocalizations.of(context)!;
     return TextFormField(
       controller: _loanDate,
       readOnly: true,
       decoration: InputDecoration(
-        labelText: 'Loan Date *',
+        labelText: l10n.mortgageLoanDate,
         suffixIcon: IconButton(
-          tooltip: 'Select loan date',
+          tooltip: l10n.mortgageSelectLoanDate,
           onPressed: _pickLoanDate,
           icon: const Icon(Icons.calendar_today_outlined),
         ),
       ),
       validator: (value) =>
-          _parseLoanDate(value ?? '') == null ? 'Required' : null,
+          _parseLoanDate(value ?? '') == null ? l10n.mortgageRequired : null,
     );
   }
 
@@ -829,8 +919,9 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Add Mortgage'),
+      title: Text(l10n.mortgageAddTitle),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -839,37 +930,47 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _sectionTitle(context, 'Customer Details'),
+                _sectionTitle(context, l10n.mortgageCustomerDetails),
                 _responsiveFields([
-                  _field(_customerName, 'Customer Name *', required: true),
-                  _field(_customerPhone, 'Mobile Number'),
-                  _field(_customerAddress, 'Address'),
-                  _field(_aadhaar, 'Aadhaar Number'),
-                  _field(_pan, 'PAN Number'),
+                  _field(
+                    context,
+                    _customerName,
+                    l10n.mortgageCustomerName,
+                    required: true,
+                  ),
+                  _field(context, _customerPhone, l10n.mortgageMobileNumber),
+                  _field(context, _customerAddress, l10n.mortgageAddress),
+                  _field(context, _aadhaar, l10n.mortgageAadhaarNumber),
+                  _field(context, _pan, l10n.mortgagePanNumber),
                 ]),
                 const SizedBox(height: AppSpacing.lg),
-                _sectionTitle(context, 'Customer Verification'),
+                _sectionTitle(context, l10n.mortgageCustomerVerification),
                 _responsiveFields([
                   _verificationImageField(
-                    label: 'Photo ID',
+                    label: l10n.mortgagePhotoId,
                     value: _photoIdUrl,
                     onChoose: () => _chooseVerificationImage('photoId'),
                     onClear: () => _clearVerificationImage('photoId'),
                   ),
                   _verificationImageField(
-                    label: 'Customer Photo',
+                    label: l10n.mortgageCustomerPhoto,
                     value: _customerPhotoUrl,
                     onChoose: () => _chooseVerificationImage('customerPhoto'),
                     onClear: () => _clearVerificationImage('customerPhoto'),
                   ),
                 ]),
                 const SizedBox(height: AppSpacing.lg),
-                _sectionTitle(context, 'Gold Details'),
+                _sectionTitle(context, l10n.mortgageGoldDetails),
                 _responsiveFields([
-                  _field(_ornamentType, 'Ornament Type *', required: true),
+                  _field(
+                    context,
+                    _ornamentType,
+                    l10n.mortgageOrnamentType,
+                    required: true,
+                  ),
                   DropdownButtonFormField<String>(
                     initialValue: _purity,
-                    decoration: const InputDecoration(labelText: 'Purity'),
+                    decoration: InputDecoration(labelText: l10n.mortgagePurity),
                     items: const ['18K', '22K', '24K', 'Silver 925']
                         .map(
                           (value) => DropdownMenuItem(
@@ -882,35 +983,39 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
                         setState(() => _purity = value ?? '22K'),
                   ),
                   _field(
+                    context,
                     _grossWeight,
-                    'Gross Weight *',
+                    l10n.mortgageGrossWeight,
                     required: true,
                     numeric: true,
                   ),
                   _field(
+                    context,
                     _netWeight,
-                    'Net Weight *',
+                    l10n.mortgageNetWeight,
                     required: true,
                     numeric: true,
                   ),
                 ]),
                 const SizedBox(height: AppSpacing.lg),
-                _sectionTitle(context, 'Loan Details'),
+                _sectionTitle(context, l10n.mortgageLoanDetails),
                 _responsiveFields([
                   _field(
+                    context,
                     _loanAmount,
-                    'Loan Amount *',
+                    l10n.mortgageLoanAmount,
                     required: true,
                     numeric: true,
                   ),
                   _field(
+                    context,
                     _interestRate,
-                    'Monthly Interest Rate % *',
+                    l10n.mortgageMonthlyInterestRate,
                     required: true,
                     numeric: true,
                   ),
                   _loanDateField(),
-                  _field(_notes, 'Notes'),
+                  _field(context, _notes, l10n.commonNotes),
                 ]),
               ],
             ),
@@ -920,9 +1025,13 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.commonCancel),
         ),
-        GoldButton(label: 'Save Loan', isLoading: _isSaving, onPressed: _save),
+        GoldButton(
+          label: l10n.mortgageSaveLoan,
+          isLoading: _isSaving,
+          onPressed: _save,
+        ),
       ],
     );
   }
@@ -973,15 +1082,20 @@ class _CollectPaymentDialogState extends State<_CollectPaymentDialog> {
       if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() => _isSaving = false);
-      AppToast.error(context, _errorMessage(error, 'Failed to save payment'));
+      AppToast.error(
+        context,
+        _errorMessage(error, l10n.mortgageFailedSavePayment),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Collect Payment'),
+      title: Text(l10n.mortgageCollectPayment),
       content: SizedBox(
         width: 520,
         child: Form(
@@ -990,19 +1104,27 @@ class _CollectPaymentDialogState extends State<_CollectPaymentDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _field(_amount, 'Amount *', required: true, numeric: true),
+                _field(
+                  context,
+                  _amount,
+                  l10n.mortgageAmount,
+                  required: true,
+                  numeric: true,
+                ),
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
                   initialValue: _paymentType,
-                  decoration: const InputDecoration(labelText: 'Payment Type'),
-                  items: const [
+                  decoration: InputDecoration(
+                    labelText: l10n.mortgagePaymentType,
+                  ),
+                  items: [
                     DropdownMenuItem(
                       value: 'interest',
-                      child: Text('Interest'),
+                      child: Text(l10n.mortgageInterest),
                     ),
                     DropdownMenuItem(
                       value: 'principal',
-                      child: Text('Principal'),
+                      child: Text(l10n.mortgagePrincipal),
                     ),
                   ],
                   onChanged: (value) =>
@@ -1011,23 +1133,34 @@ class _CollectPaymentDialogState extends State<_CollectPaymentDialog> {
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
                   initialValue: _paymentMode,
-                  decoration: const InputDecoration(labelText: 'Payment Mode'),
-                  items: const [
-                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                    DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                    DropdownMenuItem(value: 'card', child: Text('Card')),
+                  decoration: InputDecoration(
+                    labelText: l10n.mortgagePaymentMode,
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'cash',
+                      child: Text(l10n.billingPaymentCash),
+                    ),
+                    DropdownMenuItem(
+                      value: 'upi',
+                      child: Text(l10n.billingPaymentUpi),
+                    ),
+                    DropdownMenuItem(
+                      value: 'card',
+                      child: Text(l10n.billingPaymentCard),
+                    ),
                     DropdownMenuItem(
                       value: 'bank_transfer',
-                      child: Text('Bank Transfer'),
+                      child: Text(l10n.billingPaymentBankTransfer),
                     ),
                   ],
                   onChanged: (value) =>
                       setState(() => _paymentMode = value ?? 'cash'),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _field(_reference, 'Reference Number'),
+                _field(context, _reference, l10n.mortgageReferenceNumber),
                 const SizedBox(height: AppSpacing.md),
-                _field(_notes, 'Notes'),
+                _field(context, _notes, l10n.commonNotes),
               ],
             ),
           ),
@@ -1036,10 +1169,10 @@ class _CollectPaymentDialogState extends State<_CollectPaymentDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.commonCancel),
         ),
         GoldButton(
-          label: 'Save Payment',
+          label: l10n.mortgageSavePayment,
           isLoading: _isSaving,
           onPressed: _save,
         ),
@@ -1096,15 +1229,20 @@ class _CloseLoanDialogState extends State<_CloseLoanDialog> {
       if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() => _isSaving = false);
-      AppToast.error(context, _errorMessage(error, 'Failed to close loan'));
+      AppToast.error(
+        context,
+        _errorMessage(error, l10n.mortgageFailedCloseLoan),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Close Loan'),
+      title: Text(l10n.mortgageCloseLoan),
       content: SizedBox(
         width: 520,
         child: Form(
@@ -1114,29 +1252,41 @@ class _CloseLoanDialogState extends State<_CloseLoanDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _field(
+                  context,
                   _amount,
-                  'Settlement Amount *',
+                  l10n.mortgageSettlementAmount,
                   required: true,
                   numeric: true,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
                   initialValue: _paymentMode,
-                  decoration: const InputDecoration(labelText: 'Payment Mode'),
-                  items: const [
-                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                    DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                    DropdownMenuItem(value: 'card', child: Text('Card')),
+                  decoration: InputDecoration(
+                    labelText: l10n.mortgagePaymentMode,
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'cash',
+                      child: Text(l10n.billingPaymentCash),
+                    ),
+                    DropdownMenuItem(
+                      value: 'upi',
+                      child: Text(l10n.billingPaymentUpi),
+                    ),
+                    DropdownMenuItem(
+                      value: 'card',
+                      child: Text(l10n.billingPaymentCard),
+                    ),
                     DropdownMenuItem(
                       value: 'bank_transfer',
-                      child: Text('Bank Transfer'),
+                      child: Text(l10n.billingPaymentBankTransfer),
                     ),
                   ],
                   onChanged: (value) =>
                       setState(() => _paymentMode = value ?? 'cash'),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _field(_notes, 'Notes'),
+                _field(context, _notes, l10n.commonNotes),
               ],
             ),
           ),
@@ -1145,9 +1295,13 @@ class _CloseLoanDialogState extends State<_CloseLoanDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.commonCancel),
         ),
-        GoldButton(label: 'Close Loan', isLoading: _isSaving, onPressed: _save),
+        GoldButton(
+          label: l10n.mortgageCloseLoan,
+          isLoading: _isSaving,
+          onPressed: _save,
+        ),
       ],
     );
   }
@@ -1178,11 +1332,13 @@ Widget _responsiveFields(List<Widget> children) {
 }
 
 Widget _field(
+  BuildContext context,
   TextEditingController controller,
   String label, {
   bool required = false,
   bool numeric = false,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   return TextFormField(
     controller: controller,
     keyboardType: numeric
@@ -1191,9 +1347,9 @@ Widget _field(
     decoration: InputDecoration(labelText: label),
     validator: (value) {
       final text = value?.trim() ?? '';
-      if (required && text.isEmpty) return 'Required';
+      if (required && text.isEmpty) return l10n.mortgageRequired;
       if (numeric && text.isNotEmpty && _number(text) <= 0) {
-        return 'Enter a valid amount';
+        return l10n.mortgageEnterValidAmount;
       }
       return null;
     },
