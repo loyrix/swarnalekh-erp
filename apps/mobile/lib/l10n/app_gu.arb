@@ -627,6 +627,103 @@
   "inventoryCompactNet": "નેટ",
   "inventoryCompactPrice": "કિંમત",
   "inventoryCompactPayment": "ચુકવણી",
+  "commonClearSearch": "શોધ સાફ કરો",
+  "commonSave": "સાચવો",
+  "commonActive": "સક્રિય",
+  "commonClose": "બંધ કરો",
+  "pageSecurity": "સુરક્ષા",
+  "pageUserManagement": "યુઝર મેનેજમેન્ટ",
+  "errorFailedLoadActivityLogs": "પ્રવૃત્તિ લોગ લોડ ન થઈ શક્યા",
+  "errorFailedGenerateBackup": "બેકઅપ જનરેટ થઈ શક્યું નહીં",
+  "errorFailedLoadUsers": "વપરાશકર્તાઓ લોડ ન થઈ શક્યા",
+  "errorFailedDeactivateUser": "વપરાશકર્તા નિષ્ક્રિય કરી શકાયો નહીં",
+  "errorFailedSaveUser": "વપરાશકર્તા સાચવી શકાયો નહીં",
+  "securityDataBackup": "ડેટા બેકઅપ",
+  "securityExportSubtitle": "ગ્રાહકો, ઇન્વેન્ટરી, બિલિંગ, મોર્ગેજ, રિપોર્ટ્સ સ્રોત ડેટા અને પ્રવૃત્તિ લોગ માટે ટેનન્ટ ડેટા નિકાસ કરો.",
+  "securityNoBackupYet": "હજુ સુધી કોઈ બેકઅપ નિકાસ રેકોર્ડ થયો નથી.",
+  "securityLastExport": "છેલ્લી નિકાસ: {date}",
+  "@securityLastExport": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "securitySearchLogs": "પ્રવૃત્તિ લોગ શોધો",
+  "securityFilterArea": "ક્ષેત્ર",
+  "securityFilterAllAreas": "બધા ક્ષેત્રો",
+  "securityFilterInventory": "ઇન્વેન્ટરી",
+  "securityFilterCustomers": "ગ્રાહકો",
+  "securityFilterBilling": "બિલિંગ",
+  "securityFilterMortgage": "મોર્ગેજ",
+  "securityFilterRates": "દર",
+  "securityFilterBackup": "બેકઅપ",
+  "securityFilterAction": "ક્રિયા",
+  "securityFilterAllActions": "બધી ક્રિયાઓ",
+  "securityActionCreate": "બનાવો",
+  "securityActionUpdate": "અપડેટ",
+  "securityActionDelete": "ડિલીટ કરો",
+  "securityActionPayment": "ચુકવણી",
+  "securityActionClose": "બંધ કરો",
+  "securityActionBackupExport": "બેકઅપ નિકાસ",
+  "securityRefreshLogs": "લોગ તાજા કરો",
+  "securityActivityLogs": "પ્રવૃત્તિ લોગ",
+  "securityLogCount": "{count} દર્શાવ્યા",
+  "@securityLogCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "securityNoLogsFound": "કોઈ પ્રવૃત્તિ લોગ મળ્યો નથી.",
+  "securityFeatures": "સુરક્ષા સુવિધાઓ",
+  "securitySubtitle": "દુકાન માટે પ્રવૃત્તિ લોગ અને ડેટા બેકઅપ.",
+  "securityExportBackup": "બેકઅપ નિકાસ કરો",
+  "userDeactivateTitle": "વપરાશકર્તા નિષ્ક્રિય કરો",
+  "userDeactivateConfirm": "{userName} ને નિષ્ક્રિય કરશો?",
+  "@userDeactivateConfirm": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "userDeactivateAction": "નિષ્ક્રિય કરો",
+  "userDeactivated": "વપરાશકર્તા નિષ્ક્રિય થયો",
+  "userManagementSubtitle": "દુકાનના એડમિન અને સ્ટાફ વપરાશકર્તાઓનું સંચાલન કરો.",
+  "userAddUser": "વપરાશકર્તા ઉમેરો",
+  "userSearchHint": "વપરાશકર્તાઓ શોધો",
+  "userTeamHeader": "ટીમ",
+  "userCount": "{count} વપરાશકર્તાઓ",
+  "@userCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "userNoResults": "કોઈ વપરાશકર્તા મળ્યો નથી.",
+  "userNoContactInfo": "સંપર્ક માહિતી નથી",
+  "userStatusActive": "સક્રિય",
+  "userStatusInactive": "નિષ્ક્રિય",
+  "userStatusLoginLinked": "લોગિન લિંક્ડ",
+  "userStatusPendingLogin": "બાકી લોગિન",
+  "userEditTooltip": "વપરાશકર્તા સંપાદિત કરો",
+  "userDeactivateTooltip": "વપરાશકર્તા નિષ્ક્રિય કરો",
+  "userEditTitle": "વપરાશકર્તા સંપાદિત કરો",
+  "userAddTitle": "વપરાશકર્તા ઉમેરો",
+  "userFieldName": "નામ",
+  "validationUserName": "માન્ય નામ દાખલ કરો",
+  "userFieldEmail": "ઇમેઇલ",
+  "validationUserEmail": "માન્ય ઇમેઇલ દાખલ કરો",
+  "userFieldPhone": "ફોન",
+  "userRoleOwner": "માલિક",
+  "userFieldRole": "ભૂમિકા",
+  "userRoleStaff": "સ્ટાફ",
+  "userRoleAdmin": "એડમિન",
+  "userRestrictedTitle": "યુઝર મેનેજમેન્ટ ફક્ત એડમિન માટે છે",
+  "userRestrictedSubtitle": "સ્ટાફ વપરાશકર્તાઓ તેમના સોંપાયેલ કાર્ય ક્ષેત્રોમાં કામ ચાલુ રાખી શકે છે.",
   "userOnboardingTipTitle": "સ્ટાફ ઓનબોર્ડિંગ",
   "userOnboardingTipDesc": "નવા ઉમેરાયેલા સ્ટાફે એપ ડાઉનલોડ કરવી જોઈએ અને અહીં આપેલા ચોક્કસ ઇમેઇલ સરનામા સાથે સાઇન અપ વિકલ્પનો ઉપયોગ કરીને તેમનો પાસવર્ડ સેટ કરવો જોઈએ અને તેમનું એકાઉન્ટ લિંક કરવું જોઈએ."
 }

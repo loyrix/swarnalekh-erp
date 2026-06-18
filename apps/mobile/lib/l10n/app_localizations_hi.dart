@@ -945,6 +945,227 @@ class AppLocalizationsHi extends AppLocalizations {
   String get otpBackToLogin => 'लॉगिन पर वापस जाएं';
 
   @override
+  String get commonClearSearch => 'खोज साफ़ करें';
+
+  @override
+  String get commonSave => 'सहेजें';
+
+  @override
+  String get commonActive => 'सक्रिय';
+
+  @override
+  String get commonClose => 'बंद करें';
+
+  @override
+  String get pageSecurity => 'सुरक्षा';
+
+  @override
+  String get pageUserManagement => 'यूज़र मैनेजमेंट';
+
+  @override
+  String get errorFailedLoadActivityLogs => 'गतिविधि लॉग लोड नहीं हो सके';
+
+  @override
+  String get errorFailedGenerateBackup => 'बैकअप जनरेट नहीं हो सका';
+
+  @override
+  String get errorFailedLoadUsers => 'उपयोगकर्ता लोड नहीं हो सके';
+
+  @override
+  String get errorFailedDeactivateUser =>
+      'उपयोगकर्ता निष्क्रिय नहीं किया जा सका';
+
+  @override
+  String get errorFailedSaveUser => 'उपयोगकर्ता सहेजा नहीं जा सका';
+
+  @override
+  String get securityDataBackup => 'डेटा बैकअप';
+
+  @override
+  String get securityExportSubtitle =>
+      'ग्राहकों, इन्वेंटरी, बिलिंग, मॉर्गेज, रिपोर्ट्स स्रोत डेटा और गतिविधि लॉग के लिए टेनेंट डेटा निर्यात करें।';
+
+  @override
+  String get securityNoBackupYet =>
+      'अभी तक कोई बैकअप निर्यात रिकॉर्ड नहीं हुआ।';
+
+  @override
+  String securityLastExport(String date) {
+    return 'अंतिम निर्यात: $date';
+  }
+
+  @override
+  String get securitySearchLogs => 'गतिविधि लॉग खोजें';
+
+  @override
+  String get securityFilterArea => 'क्षेत्र';
+
+  @override
+  String get securityFilterAllAreas => 'सभी क्षेत्र';
+
+  @override
+  String get securityFilterInventory => 'इन्वेंटरी';
+
+  @override
+  String get securityFilterCustomers => 'ग्राहक';
+
+  @override
+  String get securityFilterBilling => 'बिलिंग';
+
+  @override
+  String get securityFilterMortgage => 'मॉर्गेज';
+
+  @override
+  String get securityFilterRates => 'दरें';
+
+  @override
+  String get securityFilterBackup => 'बैकअप';
+
+  @override
+  String get securityFilterAction => 'क्रिया';
+
+  @override
+  String get securityFilterAllActions => 'सभी क्रियाएं';
+
+  @override
+  String get securityActionCreate => 'बनाएं';
+
+  @override
+  String get securityActionUpdate => 'अपडेट';
+
+  @override
+  String get securityActionDelete => 'हटाएं';
+
+  @override
+  String get securityActionPayment => 'भुगतान';
+
+  @override
+  String get securityActionClose => 'बंद करें';
+
+  @override
+  String get securityActionBackupExport => 'बैकअप निर्यात';
+
+  @override
+  String get securityRefreshLogs => 'लॉग रिफ्रेश करें';
+
+  @override
+  String get securityActivityLogs => 'गतिविधि लॉग';
+
+  @override
+  String securityLogCount(int count) {
+    return '$count दिखाए गए';
+  }
+
+  @override
+  String get securityNoLogsFound => 'कोई गतिविधि लॉग नहीं मिला।';
+
+  @override
+  String get securityFeatures => 'सुरक्षा सुविधाएं';
+
+  @override
+  String get securitySubtitle => 'दुकान के लिए गतिविधि लॉग और डेटा बैकअप।';
+
+  @override
+  String get securityExportBackup => 'बैकअप निर्यात करें';
+
+  @override
+  String get userDeactivateTitle => 'उपयोगकर्ता निष्क्रिय करें';
+
+  @override
+  String userDeactivateConfirm(String userName) {
+    return '$userName को निष्क्रिय करें?';
+  }
+
+  @override
+  String get userDeactivateAction => 'निष्क्रिय करें';
+
+  @override
+  String get userDeactivated => 'उपयोगकर्ता निष्क्रिय हो गया';
+
+  @override
+  String get userManagementSubtitle =>
+      'दुकान के व्यवस्थापक और स्टाफ उपयोगकर्ताओं का प्रबंधन करें।';
+
+  @override
+  String get userAddUser => 'उपयोगकर्ता जोड़ें';
+
+  @override
+  String get userSearchHint => 'उपयोगकर्ता खोजें';
+
+  @override
+  String get userTeamHeader => 'टीम';
+
+  @override
+  String userCount(int count) {
+    return '$count उपयोगकर्ता';
+  }
+
+  @override
+  String get userNoResults => 'कोई उपयोगकर्ता नहीं मिला।';
+
+  @override
+  String get userNoContactInfo => 'कोई संपर्क जानकारी नहीं';
+
+  @override
+  String get userStatusActive => 'सक्रिय';
+
+  @override
+  String get userStatusInactive => 'निष्क्रिय';
+
+  @override
+  String get userStatusLoginLinked => 'लॉगिन लिंक्ड';
+
+  @override
+  String get userStatusPendingLogin => 'लंबित लॉगिन';
+
+  @override
+  String get userEditTooltip => 'उपयोगकर्ता संपादित करें';
+
+  @override
+  String get userDeactivateTooltip => 'उपयोगकर्ता निष्क्रिय करें';
+
+  @override
+  String get userEditTitle => 'उपयोगकर्ता संपादित करें';
+
+  @override
+  String get userAddTitle => 'उपयोगकर्ता जोड़ें';
+
+  @override
+  String get userFieldName => 'नाम';
+
+  @override
+  String get validationUserName => 'मान्य नाम दर्ज करें';
+
+  @override
+  String get userFieldEmail => 'ईमेल';
+
+  @override
+  String get validationUserEmail => 'मान्य ईमेल दर्ज करें';
+
+  @override
+  String get userFieldPhone => 'फ़ोन';
+
+  @override
+  String get userRoleOwner => 'मालिक';
+
+  @override
+  String get userFieldRole => 'भूमिका';
+
+  @override
+  String get userRoleStaff => 'स्टाफ';
+
+  @override
+  String get userRoleAdmin => 'व्यवस्थापक';
+
+  @override
+  String get userRestrictedTitle =>
+      'उपयोगकर्ता प्रबंधन केवल व्यवस्थापक के लिए है';
+
+  @override
+  String get userRestrictedSubtitle =>
+      'स्टाफ उपयोगकर्ता अपने निर्धारित कार्य क्षेत्रों में काम करना जारी रख सकते हैं।';
+
+  @override
   String get userOnboardingTipTitle => 'स्टाफ ऑनबोर्डिंग';
 
   @override

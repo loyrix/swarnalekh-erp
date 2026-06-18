@@ -941,6 +941,224 @@ class AppLocalizationsGu extends AppLocalizations {
   String get otpBackToLogin => 'લોગિન પર પાછા જાઓ';
 
   @override
+  String get commonClearSearch => 'શોધ સાફ કરો';
+
+  @override
+  String get commonSave => 'સાચવો';
+
+  @override
+  String get commonActive => 'સક્રિય';
+
+  @override
+  String get commonClose => 'બંધ કરો';
+
+  @override
+  String get pageSecurity => 'સુરક્ષા';
+
+  @override
+  String get pageUserManagement => 'યુઝર મેનેજમેન્ટ';
+
+  @override
+  String get errorFailedLoadActivityLogs => 'પ્રવૃત્તિ લોગ લોડ ન થઈ શક્યા';
+
+  @override
+  String get errorFailedGenerateBackup => 'બેકઅપ જનરેટ થઈ શક્યું નહીં';
+
+  @override
+  String get errorFailedLoadUsers => 'વપરાશકર્તાઓ લોડ ન થઈ શક્યા';
+
+  @override
+  String get errorFailedDeactivateUser => 'વપરાશકર્તા નિષ્ક્રિય કરી શકાયો નહીં';
+
+  @override
+  String get errorFailedSaveUser => 'વપરાશકર્તા સાચવી શકાયો નહીં';
+
+  @override
+  String get securityDataBackup => 'ડેટા બેકઅપ';
+
+  @override
+  String get securityExportSubtitle =>
+      'ગ્રાહકો, ઇન્વેન્ટરી, બિલિંગ, મોર્ગેજ, રિપોર્ટ્સ સ્રોત ડેટા અને પ્રવૃત્તિ લોગ માટે ટેનન્ટ ડેટા નિકાસ કરો.';
+
+  @override
+  String get securityNoBackupYet => 'હજુ સુધી કોઈ બેકઅપ નિકાસ રેકોર્ડ થયો નથી.';
+
+  @override
+  String securityLastExport(String date) {
+    return 'છેલ્લી નિકાસ: $date';
+  }
+
+  @override
+  String get securitySearchLogs => 'પ્રવૃત્તિ લોગ શોધો';
+
+  @override
+  String get securityFilterArea => 'ક્ષેત્ર';
+
+  @override
+  String get securityFilterAllAreas => 'બધા ક્ષેત્રો';
+
+  @override
+  String get securityFilterInventory => 'ઇન્વેન્ટરી';
+
+  @override
+  String get securityFilterCustomers => 'ગ્રાહકો';
+
+  @override
+  String get securityFilterBilling => 'બિલિંગ';
+
+  @override
+  String get securityFilterMortgage => 'મોર્ગેજ';
+
+  @override
+  String get securityFilterRates => 'દર';
+
+  @override
+  String get securityFilterBackup => 'બેકઅપ';
+
+  @override
+  String get securityFilterAction => 'ક્રિયા';
+
+  @override
+  String get securityFilterAllActions => 'બધી ક્રિયાઓ';
+
+  @override
+  String get securityActionCreate => 'બનાવો';
+
+  @override
+  String get securityActionUpdate => 'અપડેટ';
+
+  @override
+  String get securityActionDelete => 'ડિલીટ કરો';
+
+  @override
+  String get securityActionPayment => 'ચુકવણી';
+
+  @override
+  String get securityActionClose => 'બંધ કરો';
+
+  @override
+  String get securityActionBackupExport => 'બેકઅપ નિકાસ';
+
+  @override
+  String get securityRefreshLogs => 'લોગ તાજા કરો';
+
+  @override
+  String get securityActivityLogs => 'પ્રવૃત્તિ લોગ';
+
+  @override
+  String securityLogCount(int count) {
+    return '$count દર્શાવ્યા';
+  }
+
+  @override
+  String get securityNoLogsFound => 'કોઈ પ્રવૃત્તિ લોગ મળ્યો નથી.';
+
+  @override
+  String get securityFeatures => 'સુરક્ષા સુવિધાઓ';
+
+  @override
+  String get securitySubtitle => 'દુકાન માટે પ્રવૃત્તિ લોગ અને ડેટા બેકઅપ.';
+
+  @override
+  String get securityExportBackup => 'બેકઅપ નિકાસ કરો';
+
+  @override
+  String get userDeactivateTitle => 'વપરાશકર્તા નિષ્ક્રિય કરો';
+
+  @override
+  String userDeactivateConfirm(String userName) {
+    return '$userName ને નિષ્ક્રિય કરશો?';
+  }
+
+  @override
+  String get userDeactivateAction => 'નિષ્ક્રિય કરો';
+
+  @override
+  String get userDeactivated => 'વપરાશકર્તા નિષ્ક્રિય થયો';
+
+  @override
+  String get userManagementSubtitle =>
+      'દુકાનના એડમિન અને સ્ટાફ વપરાશકર્તાઓનું સંચાલન કરો.';
+
+  @override
+  String get userAddUser => 'વપરાશકર્તા ઉમેરો';
+
+  @override
+  String get userSearchHint => 'વપરાશકર્તાઓ શોધો';
+
+  @override
+  String get userTeamHeader => 'ટીમ';
+
+  @override
+  String userCount(int count) {
+    return '$count વપરાશકર્તાઓ';
+  }
+
+  @override
+  String get userNoResults => 'કોઈ વપરાશકર્તા મળ્યો નથી.';
+
+  @override
+  String get userNoContactInfo => 'સંપર્ક માહિતી નથી';
+
+  @override
+  String get userStatusActive => 'સક્રિય';
+
+  @override
+  String get userStatusInactive => 'નિષ્ક્રિય';
+
+  @override
+  String get userStatusLoginLinked => 'લોગિન લિંક્ડ';
+
+  @override
+  String get userStatusPendingLogin => 'બાકી લોગિન';
+
+  @override
+  String get userEditTooltip => 'વપરાશકર્તા સંપાદિત કરો';
+
+  @override
+  String get userDeactivateTooltip => 'વપરાશકર્તા નિષ્ક્રિય કરો';
+
+  @override
+  String get userEditTitle => 'વપરાશકર્તા સંપાદિત કરો';
+
+  @override
+  String get userAddTitle => 'વપરાશકર્તા ઉમેરો';
+
+  @override
+  String get userFieldName => 'નામ';
+
+  @override
+  String get validationUserName => 'માન્ય નામ દાખલ કરો';
+
+  @override
+  String get userFieldEmail => 'ઇમેઇલ';
+
+  @override
+  String get validationUserEmail => 'માન્ય ઇમેઇલ દાખલ કરો';
+
+  @override
+  String get userFieldPhone => 'ફોન';
+
+  @override
+  String get userRoleOwner => 'માલિક';
+
+  @override
+  String get userFieldRole => 'ભૂમિકા';
+
+  @override
+  String get userRoleStaff => 'સ્ટાફ';
+
+  @override
+  String get userRoleAdmin => 'એડમિન';
+
+  @override
+  String get userRestrictedTitle => 'યુઝર મેનેજમેન્ટ ફક્ત એડમિન માટે છે';
+
+  @override
+  String get userRestrictedSubtitle =>
+      'સ્ટાફ વપરાશકર્તાઓ તેમના સોંપાયેલ કાર્ય ક્ષેત્રોમાં કામ ચાલુ રાખી શકે છે.';
+
+  @override
   String get userOnboardingTipTitle => 'સ્ટાફ ઓનબોર્ડિંગ';
 
   @override

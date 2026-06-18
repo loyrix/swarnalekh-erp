@@ -49,7 +49,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error(context, 'Failed to load users');
+      AppToast.error(
+        context,
+        AppLocalizations.of(context)!.errorFailedLoadUsers,
+      );
     }
   }
 
@@ -71,12 +74,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error(context, 'Failed to load users');
+      AppToast.error(
+        context,
+        AppLocalizations.of(context)!.errorFailedLoadUsers,
+      );
     }
   }
 
   Future<void> _openUserDialog({ManagedUser? user}) async {
-    final changed = await showDialog<bool>(
+    final changed = await showResponsiveDialog<bool>(
       context: context,
       builder: (context) => _UserFormDialog(api: _api, user: user),
     );
@@ -88,19 +94,20 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Future<void> _deactivateUser(ManagedUser user) async {
     if (user.isOwner) return;
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Deactivate User'),
-        content: Text('Deactivate ${user.name}?'),
+        title: Text(l10n.userDeactivateTitle),
+        content: Text(l10n.userDeactivateConfirm(user.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Deactivate'),
+            child: Text(l10n.userDeactivateAction),
           ),
         ],
       ),
@@ -111,11 +118,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     try {
       await _api.dio.delete('/users/${user.id}');
       if (!mounted) return;
-      AppToast.success(context, 'User deactivated');
+      AppToast.success(context, l10n.userDeactivated);
       await _loadUsers();
     } catch (_) {
       if (!mounted) return;
-      AppToast.error(context, 'Failed to deactivate user');
+      AppToast.error(context, l10n.errorFailedDeactivateUser);
     }
   }
 
@@ -126,10 +133,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
 
     if (!_canManageUsers) {
-      return const EmptyState(
+      final l10n = AppLocalizations.of(context)!;
+      return EmptyState(
         icon: Icons.lock_outline_rounded,
-        title: 'User Management is for Admin users',
-        subtitle: 'Staff users can continue with their assigned work areas.',
+        title: l10n.userRestrictedTitle,
+        subtitle: l10n.userRestrictedSubtitle,
         iconColor: AppColors.warning,
       );
     }
@@ -155,6 +163,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
@@ -162,19 +171,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'User Management',
+                l10n.pageUserManagement,
                 style: Theme.of(context).textTheme.displaySmall,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Manage shop admins and staff users.',
+                l10n.userManagementSubtitle,
                 style: TextStyle(color: AppColors.text3(context)),
               ),
             ],
           ),
         ),
         GoldButton(
-          label: 'Add User',
+          label: l10n.userAddUser,
           icon: Icons.person_add_alt_1_rounded,
           onPressed: () => _openUserDialog(),
         ),
@@ -229,17 +238,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   Widget _buildSearch() {
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.search_rounded),
-          hintText: 'Search users',
+          hintText: l10n.userSearchHint,
           suffixIcon: _searchController.text.trim().isEmpty
               ? null
               : IconButton(
-                  tooltip: 'Clear search',
+                  tooltip: l10n.commonClearSearch,
                   onPressed: () {
                     _searchController.clear();
                     _loadUsers();
@@ -253,16 +263,20 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   Widget _buildUserList() {
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
           Row(
             children: [
-              Text('Team', style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                l10n.userTeamHeader,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const Spacer(),
               Text(
-                '${_users.length} users',
+                l10n.userCount(_users.length),
                 style: TextStyle(color: AppColors.text3(context)),
               ),
             ],
@@ -272,7 +286,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
               child: Text(
-                'No users found.',
+                l10n.userNoResults,
                 style: TextStyle(color: AppColors.text3(context)),
               ),
             )
@@ -284,6 +298,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   Widget _buildUserRow(ManagedUser user) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       decoration: BoxDecoration(
@@ -317,7 +332,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  user.email ?? user.phone ?? 'No contact info',
+                  user.email ?? user.phone ?? l10n.userNoContactInfo,
                   style: TextStyle(color: AppColors.text3(context)),
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -327,13 +342,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   children: [
                     StatusBadge(label: _titleCase(user.role)),
                     StatusBadge(
-                      label: user.isActive ? 'Active' : 'Inactive',
+                      label: user.isActive
+                          ? l10n.userStatusActive
+                          : l10n.userStatusInactive,
                       color: user.isActive
                           ? AppColors.success
                           : AppColors.error,
                     ),
                     StatusBadge(
-                      label: user.authLinked ? 'Login Linked' : 'Pending Login',
+                      label: user.authLinked
+                          ? l10n.userStatusLoginLinked
+                          : l10n.userStatusPendingLogin,
                       color: user.authLinked
                           ? AppColors.info
                           : AppColors.warning,
@@ -344,12 +363,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
           ),
           IconButton(
-            tooltip: 'Edit user',
+            tooltip: l10n.userEditTooltip,
             onPressed: () => _openUserDialog(user: user),
             icon: const Icon(Icons.edit_rounded),
           ),
           IconButton(
-            tooltip: 'Deactivate user',
+            tooltip: l10n.userDeactivateTooltip,
             onPressed: user.isOwner || !user.isActive
                 ? null
                 : () => _deactivateUser(user),
@@ -438,14 +457,18 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      AppToast.error(context, 'Failed to save user');
+      AppToast.error(
+        context,
+        AppLocalizations.of(context)!.errorFailedSaveUser,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(_isEditing ? 'Edit User' : 'Add User'),
+      title: Text(_isEditing ? l10n.userEditTitle : l10n.userAddTitle),
       content: SizedBox(
         width: 460,
         child: Form(
@@ -456,20 +479,20 @@ class _UserFormDialogState extends State<_UserFormDialog> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: InputDecoration(labelText: l10n.userFieldName),
                   validator: (value) => value == null || value.trim().length < 2
-                      ? 'Enter a valid name'
+                      ? l10n.validationUserName
                       : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(labelText: l10n.userFieldEmail),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     final email = value?.trim() ?? '';
                     if (email.isEmpty || !email.contains('@')) {
-                      return 'Enter a valid email';
+                      return l10n.validationUserEmail;
                     }
                     return null;
                   },
@@ -477,7 +500,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 const SizedBox(height: AppSpacing.md),
                 TextFormField(
                   controller: _phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone'),
+                  decoration: InputDecoration(labelText: l10n.userFieldPhone),
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -485,15 +508,21 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                   TextFormField(
                     initialValue: 'Owner',
                     enabled: false,
-                    decoration: const InputDecoration(labelText: 'Role'),
+                    decoration: InputDecoration(labelText: l10n.userFieldRole),
                   )
                 else
                   DropdownButtonFormField<String>(
                     initialValue: _role,
-                    decoration: const InputDecoration(labelText: 'Role'),
-                    items: const [
-                      DropdownMenuItem(value: 'staff', child: Text('Staff')),
-                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                    decoration: InputDecoration(labelText: l10n.userFieldRole),
+                    items: [
+                      DropdownMenuItem(
+                        value: 'staff',
+                        child: Text(l10n.userRoleStaff),
+                      ),
+                      DropdownMenuItem(
+                        value: 'admin',
+                        child: Text(l10n.userRoleAdmin),
+                      ),
                     ],
                     onChanged: (value) =>
                         setState(() => _role = value ?? 'staff'),
@@ -502,7 +531,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                   const SizedBox(height: AppSpacing.md),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Active'),
+                    title: Text(l10n.commonActive),
                     value: _isActive,
                     onChanged: (value) => setState(() => _isActive = value),
                   ),
@@ -515,9 +544,13 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.commonCancel),
         ),
-        GoldButton(label: 'Save', isLoading: _isSaving, onPressed: _save),
+        GoldButton(
+          label: l10n.commonSave,
+          isLoading: _isSaving,
+          onPressed: _save,
+        ),
       ],
     );
   }

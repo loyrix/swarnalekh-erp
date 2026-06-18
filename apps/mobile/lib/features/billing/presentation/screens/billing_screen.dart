@@ -289,65 +289,68 @@ class _BillingScreenState extends State<BillingScreen> {
       ),
     ];
 
-    return KeyboardAwareScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (isWide)
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final crossAxisCount = constraints.maxWidth > 920 ? 4 : 2;
-                final width =
-                    (constraints.maxWidth -
-                        (crossAxisCount - 1) * AppSpacing.md) /
-                    crossAxisCount;
-                return Wrap(
-                  spacing: AppSpacing.md,
-                  runSpacing: AppSpacing.md,
-                  children: [
-                    for (final card in stats)
-                      SizedBox(
-                        width: width,
-                        child: StatCard(
-                          icon: card.icon,
-                          label: card.label,
-                          value: card.value,
-                          accentColor: card.color,
+    return RefreshIndicator(
+      onRefresh: _loadBillingData,
+      child: KeyboardAwareScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (isWide)
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = constraints.maxWidth > 920 ? 4 : 2;
+                  final width =
+                      (constraints.maxWidth -
+                          (crossAxisCount - 1) * AppSpacing.md) /
+                      crossAxisCount;
+                  return Wrap(
+                    spacing: AppSpacing.md,
+                    runSpacing: AppSpacing.md,
+                    children: [
+                      for (final card in stats)
+                        SizedBox(
+                          width: width,
+                          child: StatCard(
+                            icon: card.icon,
+                            label: card.label,
+                            value: card.value,
+                            accentColor: card.color,
+                          ),
                         ),
-                      ),
-                  ],
-                );
-              },
-            )
-          else
-            CompactStatStrip(stats: stats),
-          const SizedBox(height: AppSpacing.lg),
-          GlassCard(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SectionHeader(title: l10n.billingTopSellingProducts),
-                const SizedBox(height: AppSpacing.md),
-                if (topSelling.isEmpty)
-                  Text('—', style: TextStyle(color: AppColors.text3(context)))
-                else
-                  ...topSelling.map((entry) {
-                    final item = entry as Map<String, dynamic>;
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.diamond_outlined),
-                      title: Text(
-                        item['itemName']?.toString() ??
-                            l10n.billingItemFallback,
-                      ),
-                      trailing: Text('${item['quantity'] ?? 0}'),
-                    );
-                  }),
-              ],
+                    ],
+                  );
+                },
+              )
+            else
+              CompactStatStrip(stats: stats),
+            const SizedBox(height: AppSpacing.lg),
+            GlassCard(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionHeader(title: l10n.billingTopSellingProducts),
+                  const SizedBox(height: AppSpacing.md),
+                  if (topSelling.isEmpty)
+                    Text('—', style: TextStyle(color: AppColors.text3(context)))
+                  else
+                    ...topSelling.map((entry) {
+                      final item = entry as Map<String, dynamic>;
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.diamond_outlined),
+                        title: Text(
+                          item['itemName']?.toString() ??
+                              l10n.billingItemFallback,
+                        ),
+                        trailing: Text('${item['quantity'] ?? 0}'),
+                      );
+                    }),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

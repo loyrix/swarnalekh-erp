@@ -262,8 +262,8 @@ int _getSelectedIndex(String location) {
 String _getPageTitle(BuildContext context, String location) {
   final l10n = AppLocalizations.of(context)!;
   if (location.startsWith('/shop-profile')) return l10n.pageShopProfile;
-  if (location.startsWith('/security')) return 'Security';
-  if (location.startsWith('/user-management')) return 'User Management';
+  if (location.startsWith('/security')) return l10n.pageSecurity;
+  if (location.startsWith('/user-management')) return l10n.pageUserManagement;
   if (location.startsWith('/dashboard')) return l10n.navDashboard;
   if (location.startsWith('/customers')) return l10n.navCustomers;
   if (location.startsWith('/inventory')) return l10n.navInventory;

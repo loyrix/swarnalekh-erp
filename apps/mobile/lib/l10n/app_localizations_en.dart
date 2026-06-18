@@ -942,6 +942,223 @@ class AppLocalizationsEn extends AppLocalizations {
   String get otpBackToLogin => 'Back to Login';
 
   @override
+  String get commonClearSearch => 'Clear search';
+
+  @override
+  String get commonSave => 'Save';
+
+  @override
+  String get commonActive => 'Active';
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String get pageSecurity => 'Security';
+
+  @override
+  String get pageUserManagement => 'User Management';
+
+  @override
+  String get errorFailedLoadActivityLogs => 'Failed to load activity logs';
+
+  @override
+  String get errorFailedGenerateBackup => 'Failed to generate backup';
+
+  @override
+  String get errorFailedLoadUsers => 'Failed to load users';
+
+  @override
+  String get errorFailedDeactivateUser => 'Failed to deactivate user';
+
+  @override
+  String get errorFailedSaveUser => 'Failed to save user';
+
+  @override
+  String get securityDataBackup => 'Data Backup';
+
+  @override
+  String get securityExportSubtitle =>
+      'Export tenant data for customers, inventory, billing, mortgage, reports source data, and activity logs.';
+
+  @override
+  String get securityNoBackupYet => 'No backup export recorded yet.';
+
+  @override
+  String securityLastExport(String date) {
+    return 'Last export: $date';
+  }
+
+  @override
+  String get securitySearchLogs => 'Search activity logs';
+
+  @override
+  String get securityFilterArea => 'Area';
+
+  @override
+  String get securityFilterAllAreas => 'All Areas';
+
+  @override
+  String get securityFilterInventory => 'Inventory';
+
+  @override
+  String get securityFilterCustomers => 'Customers';
+
+  @override
+  String get securityFilterBilling => 'Billing';
+
+  @override
+  String get securityFilterMortgage => 'Mortgage';
+
+  @override
+  String get securityFilterRates => 'Rates';
+
+  @override
+  String get securityFilterBackup => 'Backup';
+
+  @override
+  String get securityFilterAction => 'Action';
+
+  @override
+  String get securityFilterAllActions => 'All Actions';
+
+  @override
+  String get securityActionCreate => 'Create';
+
+  @override
+  String get securityActionUpdate => 'Update';
+
+  @override
+  String get securityActionDelete => 'Delete';
+
+  @override
+  String get securityActionPayment => 'Payment';
+
+  @override
+  String get securityActionClose => 'Close';
+
+  @override
+  String get securityActionBackupExport => 'Backup Export';
+
+  @override
+  String get securityRefreshLogs => 'Refresh logs';
+
+  @override
+  String get securityActivityLogs => 'Activity Logs';
+
+  @override
+  String securityLogCount(int count) {
+    return '$count shown';
+  }
+
+  @override
+  String get securityNoLogsFound => 'No activity logs found.';
+
+  @override
+  String get securityFeatures => 'Security Features';
+
+  @override
+  String get securitySubtitle => 'Activity logs and data backup for the shop.';
+
+  @override
+  String get securityExportBackup => 'Export Backup';
+
+  @override
+  String get userDeactivateTitle => 'Deactivate User';
+
+  @override
+  String userDeactivateConfirm(String userName) {
+    return 'Deactivate $userName?';
+  }
+
+  @override
+  String get userDeactivateAction => 'Deactivate';
+
+  @override
+  String get userDeactivated => 'User deactivated';
+
+  @override
+  String get userManagementSubtitle => 'Manage shop admins and staff users.';
+
+  @override
+  String get userAddUser => 'Add User';
+
+  @override
+  String get userSearchHint => 'Search users';
+
+  @override
+  String get userTeamHeader => 'Team';
+
+  @override
+  String userCount(int count) {
+    return '$count users';
+  }
+
+  @override
+  String get userNoResults => 'No users found.';
+
+  @override
+  String get userNoContactInfo => 'No contact info';
+
+  @override
+  String get userStatusActive => 'Active';
+
+  @override
+  String get userStatusInactive => 'Inactive';
+
+  @override
+  String get userStatusLoginLinked => 'Login Linked';
+
+  @override
+  String get userStatusPendingLogin => 'Pending Login';
+
+  @override
+  String get userEditTooltip => 'Edit user';
+
+  @override
+  String get userDeactivateTooltip => 'Deactivate user';
+
+  @override
+  String get userEditTitle => 'Edit User';
+
+  @override
+  String get userAddTitle => 'Add User';
+
+  @override
+  String get userFieldName => 'Name';
+
+  @override
+  String get validationUserName => 'Enter a valid name';
+
+  @override
+  String get userFieldEmail => 'Email';
+
+  @override
+  String get validationUserEmail => 'Enter a valid email';
+
+  @override
+  String get userFieldPhone => 'Phone';
+
+  @override
+  String get userRoleOwner => 'Owner';
+
+  @override
+  String get userFieldRole => 'Role';
+
+  @override
+  String get userRoleStaff => 'Staff';
+
+  @override
+  String get userRoleAdmin => 'Admin';
+
+  @override
+  String get userRestrictedTitle => 'User Management is for Admin users';
+
+  @override
+  String get userRestrictedSubtitle =>
+      'Staff users can continue with their assigned work areas.';
+
+  @override
   String get userOnboardingTipTitle => 'Staff Onboarding';
 
   @override

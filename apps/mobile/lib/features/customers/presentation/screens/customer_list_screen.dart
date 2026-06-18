@@ -58,7 +58,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
 
   Future<void> _openCustomerForm({Map<String, dynamic>? customer}) async {
     if (!_canManageCustomers) return;
-    final changed = await showDialog<bool>(
+    final changed = await showResponsiveDialog<bool>(
       context: context,
       builder: (context) => _CustomerFormDialog(api: _api, customer: customer),
     );
@@ -84,17 +84,20 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       return _buildShimmerState();
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(),
-          const SizedBox(height: AppSpacing.md),
-          _buildSearchBar(),
-          const SizedBox(height: AppSpacing.md),
-          Expanded(child: _buildCustomerList()),
-        ],
+    return RefreshIndicator(
+      onRefresh: _loadCustomers,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: AppSpacing.md),
+            _buildSearchBar(),
+            const SizedBox(height: AppSpacing.md),
+            Expanded(child: _buildCustomerList()),
+          ],
+        ),
       ),
     );
   }

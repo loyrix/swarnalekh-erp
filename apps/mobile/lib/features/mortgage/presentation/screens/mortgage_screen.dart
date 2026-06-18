@@ -101,7 +101,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
   }
 
   Future<void> _openCollectPayment(Map<String, dynamic> loan) async {
-    final updated = await showDialog<bool>(
+    final updated = await showResponsiveDialog<bool>(
       context: context,
       builder: (context) => _CollectPaymentDialog(api: _api, loan: loan),
     );
@@ -115,7 +115,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
 
   Future<void> _openCloseLoan(Map<String, dynamic> loan) async {
     if (!_canManageMortgage) return;
-    final updated = await showDialog<bool>(
+    final updated = await showResponsiveDialog<bool>(
       context: context,
       builder: (context) => _CloseLoanDialog(api: _api, loan: loan),
     );
@@ -183,31 +183,22 @@ class _MortgageScreenState extends State<MortgageScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Scaffold(
-      floatingActionButton: !isWide && _canManageMortgage
-          ? FloatingActionButton.small(
-              heroTag: 'addMortgage',
-              onPressed: _openCreateLoan,
-              child: const Icon(Icons.add_rounded),
-            )
-          : null,
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: _loadData,
-        child: KeyboardAwareScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(isWide),
-              const SizedBox(height: AppSpacing.lg),
-              _buildDashboardCards(isWide),
-              const SizedBox(height: AppSpacing.lg),
-              _buildFilters(),
-              const SizedBox(height: AppSpacing.md),
-              _buildLoanList(isWide),
-            ],
-          ),
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: _loadData,
+      child: KeyboardAwareScrollView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(isWide),
+            const SizedBox(height: AppSpacing.lg),
+            _buildDashboardCards(isWide),
+            const SizedBox(height: AppSpacing.lg),
+            _buildFilters(),
+            const SizedBox(height: AppSpacing.md),
+            _buildLoanList(isWide),
+          ],
         ),
       ),
     );
@@ -227,12 +218,18 @@ class _MortgageScreenState extends State<MortgageScreen> {
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
         ),
-        if (isWide && _canManageMortgage)
-          GoldButton(
-            label: l10n.mortgageAddMortgage,
-            icon: Icons.add_rounded,
-            onPressed: _openCreateLoan,
-          ),
+        if (_canManageMortgage)
+          !isWide
+              ? FloatingActionButton.small(
+                  heroTag: 'addMortgage',
+                  onPressed: _openCreateLoan,
+                  child: const Icon(Icons.add_rounded),
+                )
+              : GoldButton(
+                  label: l10n.mortgageAddMortgage,
+                  icon: Icons.add_rounded,
+                  onPressed: _openCreateLoan,
+                ),
       ],
     );
   }

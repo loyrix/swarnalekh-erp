@@ -149,10 +149,6 @@ pnpm mobile:env:sync
 pnpm mobile:apk
 ```
 
-## Current Highest-Priority Gap
-
-Inventory `sellingPrice` is stored and shown, but billing currently prices invoices from daily metal rates. The PDF Add Stock -> Billing flow requires the product selling price to flow correctly into billing. Fix this before lower-priority polish.
-
 ## Final Reminder
 
 Read the PDF first. Read the README tracker second. Then implement the smallest complete vertical slice. If tempted to add anything outside the PDF, do not.

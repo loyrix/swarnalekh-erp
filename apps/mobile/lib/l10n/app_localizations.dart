@@ -1930,6 +1930,420 @@ abstract class AppLocalizations {
   /// **'Back to Login'**
   String get otpBackToLogin;
 
+  /// No description provided for @commonClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get commonClearSearch;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get commonSave;
+
+  /// No description provided for @commonActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get commonActive;
+
+  /// No description provided for @commonClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get commonClose;
+
+  /// No description provided for @pageSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get pageSecurity;
+
+  /// No description provided for @pageUserManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'User Management'**
+  String get pageUserManagement;
+
+  /// No description provided for @errorFailedLoadActivityLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load activity logs'**
+  String get errorFailedLoadActivityLogs;
+
+  /// No description provided for @errorFailedGenerateBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate backup'**
+  String get errorFailedGenerateBackup;
+
+  /// No description provided for @errorFailedLoadUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load users'**
+  String get errorFailedLoadUsers;
+
+  /// No description provided for @errorFailedDeactivateUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to deactivate user'**
+  String get errorFailedDeactivateUser;
+
+  /// No description provided for @errorFailedSaveUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save user'**
+  String get errorFailedSaveUser;
+
+  /// No description provided for @securityDataBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Backup'**
+  String get securityDataBackup;
+
+  /// No description provided for @securityExportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export tenant data for customers, inventory, billing, mortgage, reports source data, and activity logs.'**
+  String get securityExportSubtitle;
+
+  /// No description provided for @securityNoBackupYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No backup export recorded yet.'**
+  String get securityNoBackupYet;
+
+  /// No description provided for @securityLastExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Last export: {date}'**
+  String securityLastExport(String date);
+
+  /// No description provided for @securitySearchLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Search activity logs'**
+  String get securitySearchLogs;
+
+  /// No description provided for @securityFilterArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get securityFilterArea;
+
+  /// No description provided for @securityFilterAllAreas.
+  ///
+  /// In en, this message translates to:
+  /// **'All Areas'**
+  String get securityFilterAllAreas;
+
+  /// No description provided for @securityFilterInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get securityFilterInventory;
+
+  /// No description provided for @securityFilterCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers'**
+  String get securityFilterCustomers;
+
+  /// No description provided for @securityFilterBilling.
+  ///
+  /// In en, this message translates to:
+  /// **'Billing'**
+  String get securityFilterBilling;
+
+  /// No description provided for @securityFilterMortgage.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage'**
+  String get securityFilterMortgage;
+
+  /// No description provided for @securityFilterRates.
+  ///
+  /// In en, this message translates to:
+  /// **'Rates'**
+  String get securityFilterRates;
+
+  /// No description provided for @securityFilterBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get securityFilterBackup;
+
+  /// No description provided for @securityFilterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Action'**
+  String get securityFilterAction;
+
+  /// No description provided for @securityFilterAllActions.
+  ///
+  /// In en, this message translates to:
+  /// **'All Actions'**
+  String get securityFilterAllActions;
+
+  /// No description provided for @securityActionCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get securityActionCreate;
+
+  /// No description provided for @securityActionUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get securityActionUpdate;
+
+  /// No description provided for @securityActionDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get securityActionDelete;
+
+  /// No description provided for @securityActionPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get securityActionPayment;
+
+  /// No description provided for @securityActionClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get securityActionClose;
+
+  /// No description provided for @securityActionBackupExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup Export'**
+  String get securityActionBackupExport;
+
+  /// No description provided for @securityRefreshLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh logs'**
+  String get securityRefreshLogs;
+
+  /// No description provided for @securityActivityLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Logs'**
+  String get securityActivityLogs;
+
+  /// No description provided for @securityLogCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} shown'**
+  String securityLogCount(int count);
+
+  /// No description provided for @securityNoLogsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity logs found.'**
+  String get securityNoLogsFound;
+
+  /// No description provided for @securityFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Security Features'**
+  String get securityFeatures;
+
+  /// No description provided for @securitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity logs and data backup for the shop.'**
+  String get securitySubtitle;
+
+  /// No description provided for @securityExportBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Backup'**
+  String get securityExportBackup;
+
+  /// No description provided for @userDeactivateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate User'**
+  String get userDeactivateTitle;
+
+  /// No description provided for @userDeactivateConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate {userName}?'**
+  String userDeactivateConfirm(String userName);
+
+  /// No description provided for @userDeactivateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get userDeactivateAction;
+
+  /// No description provided for @userDeactivated.
+  ///
+  /// In en, this message translates to:
+  /// **'User deactivated'**
+  String get userDeactivated;
+
+  /// No description provided for @userManagementSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage shop admins and staff users.'**
+  String get userManagementSubtitle;
+
+  /// No description provided for @userAddUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Add User'**
+  String get userAddUser;
+
+  /// No description provided for @userSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search users'**
+  String get userSearchHint;
+
+  /// No description provided for @userTeamHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Team'**
+  String get userTeamHeader;
+
+  /// No description provided for @userCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} users'**
+  String userCount(int count);
+
+  /// No description provided for @userNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No users found.'**
+  String get userNoResults;
+
+  /// No description provided for @userNoContactInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'No contact info'**
+  String get userNoContactInfo;
+
+  /// No description provided for @userStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get userStatusActive;
+
+  /// No description provided for @userStatusInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get userStatusInactive;
+
+  /// No description provided for @userStatusLoginLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Login Linked'**
+  String get userStatusLoginLinked;
+
+  /// No description provided for @userStatusPendingLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Login'**
+  String get userStatusPendingLogin;
+
+  /// No description provided for @userEditTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit user'**
+  String get userEditTooltip;
+
+  /// No description provided for @userDeactivateTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate user'**
+  String get userDeactivateTooltip;
+
+  /// No description provided for @userEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit User'**
+  String get userEditTitle;
+
+  /// No description provided for @userAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add User'**
+  String get userAddTitle;
+
+  /// No description provided for @userFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get userFieldName;
+
+  /// No description provided for @validationUserName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid name'**
+  String get validationUserName;
+
+  /// No description provided for @userFieldEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get userFieldEmail;
+
+  /// No description provided for @validationUserEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email'**
+  String get validationUserEmail;
+
+  /// No description provided for @userFieldPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get userFieldPhone;
+
+  /// No description provided for @userRoleOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get userRoleOwner;
+
+  /// No description provided for @userFieldRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get userFieldRole;
+
+  /// No description provided for @userRoleStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff'**
+  String get userRoleStaff;
+
+  /// No description provided for @userRoleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get userRoleAdmin;
+
+  /// No description provided for @userRestrictedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User Management is for Admin users'**
+  String get userRestrictedTitle;
+
+  /// No description provided for @userRestrictedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff users can continue with their assigned work areas.'**
+  String get userRestrictedSubtitle;
+
   /// No description provided for @userOnboardingTipTitle.
   ///
   /// In en, this message translates to:

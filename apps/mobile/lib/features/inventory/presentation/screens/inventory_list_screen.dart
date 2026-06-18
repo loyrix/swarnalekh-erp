@@ -206,7 +206,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
         return;
       }
 
-      final imported = await showDialog<bool>(
+      final imported = await showResponsiveDialog<bool>(
         context: context,
         builder: (context) => _OcrReviewDialog(api: _api, rows: rows),
       );
@@ -302,31 +302,33 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
 
     final isWide = MediaQuery.of(context).size.width > 768;
 
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(),
-          const SizedBox(height: AppSpacing.lg),
-          _buildSectionSwitch(),
-          const SizedBox(height: AppSpacing.lg),
-          if (_activeSection == 'add')
-            Expanded(child: _buildAddInventorySection())
-          else ...[
-            _buildStatsRow(isWide),
-            const SizedBox(height: AppSpacing.md),
-            _buildInventoryAlerts(isWide),
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
             const SizedBox(height: AppSpacing.lg),
-            _buildFilters(isWide),
-            const SizedBox(height: AppSpacing.md),
-            Expanded(
-              child: _activeSection == 'sold'
+            _buildSectionSwitch(),
+            const SizedBox(height: AppSpacing.lg),
+            if (_activeSection == 'add')
+              _buildAddInventorySection()
+            else ...[
+              _buildStatsRow(isWide),
+              const SizedBox(height: AppSpacing.md),
+              _buildInventoryAlerts(isWide),
+              const SizedBox(height: AppSpacing.lg),
+              _buildFilters(isWide),
+              const SizedBox(height: AppSpacing.md),
+              _activeSection == 'sold'
                   ? _buildSoldProductsView(isWide)
                   : _buildListView(isWide),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -1083,6 +1085,8 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
 
     if (!isWide) {
       return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: list.length,
         itemBuilder: (context, index) {
           final item = list[index] as Map<String, dynamic>;
@@ -1283,6 +1287,8 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
 
     if (!isWide) {
       return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: _soldProducts.length,
         itemBuilder: (context, index) {
           final row = Map<String, dynamic>.from(_soldProducts[index] as Map);

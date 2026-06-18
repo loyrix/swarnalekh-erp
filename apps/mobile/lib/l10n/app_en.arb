@@ -326,6 +326,103 @@
     }
   },
   "otpBackToLogin": "Back to Login",
+  "commonClearSearch": "Clear search",
+  "commonSave": "Save",
+  "commonActive": "Active",
+  "commonClose": "Close",
+  "pageSecurity": "Security",
+  "pageUserManagement": "User Management",
+  "errorFailedLoadActivityLogs": "Failed to load activity logs",
+  "errorFailedGenerateBackup": "Failed to generate backup",
+  "errorFailedLoadUsers": "Failed to load users",
+  "errorFailedDeactivateUser": "Failed to deactivate user",
+  "errorFailedSaveUser": "Failed to save user",
+  "securityDataBackup": "Data Backup",
+  "securityExportSubtitle": "Export tenant data for customers, inventory, billing, mortgage, reports source data, and activity logs.",
+  "securityNoBackupYet": "No backup export recorded yet.",
+  "securityLastExport": "Last export: {date}",
+  "@securityLastExport": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "securitySearchLogs": "Search activity logs",
+  "securityFilterArea": "Area",
+  "securityFilterAllAreas": "All Areas",
+  "securityFilterInventory": "Inventory",
+  "securityFilterCustomers": "Customers",
+  "securityFilterBilling": "Billing",
+  "securityFilterMortgage": "Mortgage",
+  "securityFilterRates": "Rates",
+  "securityFilterBackup": "Backup",
+  "securityFilterAction": "Action",
+  "securityFilterAllActions": "All Actions",
+  "securityActionCreate": "Create",
+  "securityActionUpdate": "Update",
+  "securityActionDelete": "Delete",
+  "securityActionPayment": "Payment",
+  "securityActionClose": "Close",
+  "securityActionBackupExport": "Backup Export",
+  "securityRefreshLogs": "Refresh logs",
+  "securityActivityLogs": "Activity Logs",
+  "securityLogCount": "{count} shown",
+  "@securityLogCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "securityNoLogsFound": "No activity logs found.",
+  "securityFeatures": "Security Features",
+  "securitySubtitle": "Activity logs and data backup for the shop.",
+  "securityExportBackup": "Export Backup",
+  "userDeactivateTitle": "Deactivate User",
+  "userDeactivateConfirm": "Deactivate {userName}?",
+  "@userDeactivateConfirm": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "userDeactivateAction": "Deactivate",
+  "userDeactivated": "User deactivated",
+  "userManagementSubtitle": "Manage shop admins and staff users.",
+  "userAddUser": "Add User",
+  "userSearchHint": "Search users",
+  "userTeamHeader": "Team",
+  "userCount": "{count} users",
+  "@userCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "userNoResults": "No users found.",
+  "userNoContactInfo": "No contact info",
+  "userStatusActive": "Active",
+  "userStatusInactive": "Inactive",
+  "userStatusLoginLinked": "Login Linked",
+  "userStatusPendingLogin": "Pending Login",
+  "userEditTooltip": "Edit user",
+  "userDeactivateTooltip": "Deactivate user",
+  "userEditTitle": "Edit User",
+  "userAddTitle": "Add User",
+  "userFieldName": "Name",
+  "validationUserName": "Enter a valid name",
+  "userFieldEmail": "Email",
+  "validationUserEmail": "Enter a valid email",
+  "userFieldPhone": "Phone",
+  "userRoleOwner": "Owner",
+  "userFieldRole": "Role",
+  "userRoleStaff": "Staff",
+  "userRoleAdmin": "Admin",
+  "userRestrictedTitle": "User Management is for Admin users",
+  "userRestrictedSubtitle": "Staff users can continue with their assigned work areas.",
   "userOnboardingTipTitle": "Staff Onboarding",
   "userOnboardingTipDesc": "Newly added staff must download the app and use the Sign Up option with the exact email address provided here to set their password and link their account.",
   "appShellToggleTheme": "Toggle theme",

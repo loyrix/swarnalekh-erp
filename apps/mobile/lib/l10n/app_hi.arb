@@ -627,6 +627,103 @@
   "inventoryCompactNet": "नेट",
   "inventoryCompactPrice": "कीमत",
   "inventoryCompactPayment": "भुगतान",
+  "commonClearSearch": "खोज साफ़ करें",
+  "commonSave": "सहेजें",
+  "commonActive": "सक्रिय",
+  "commonClose": "बंद करें",
+  "pageSecurity": "सुरक्षा",
+  "pageUserManagement": "यूज़र मैनेजमेंट",
+  "errorFailedLoadActivityLogs": "गतिविधि लॉग लोड नहीं हो सके",
+  "errorFailedGenerateBackup": "बैकअप जनरेट नहीं हो सका",
+  "errorFailedLoadUsers": "उपयोगकर्ता लोड नहीं हो सके",
+  "errorFailedDeactivateUser": "उपयोगकर्ता निष्क्रिय नहीं किया जा सका",
+  "errorFailedSaveUser": "उपयोगकर्ता सहेजा नहीं जा सका",
+  "securityDataBackup": "डेटा बैकअप",
+  "securityExportSubtitle": "ग्राहकों, इन्वेंटरी, बिलिंग, मॉर्गेज, रिपोर्ट्स स्रोत डेटा और गतिविधि लॉग के लिए टेनेंट डेटा निर्यात करें।",
+  "securityNoBackupYet": "अभी तक कोई बैकअप निर्यात रिकॉर्ड नहीं हुआ।",
+  "securityLastExport": "अंतिम निर्यात: {date}",
+  "@securityLastExport": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "securitySearchLogs": "गतिविधि लॉग खोजें",
+  "securityFilterArea": "क्षेत्र",
+  "securityFilterAllAreas": "सभी क्षेत्र",
+  "securityFilterInventory": "इन्वेंटरी",
+  "securityFilterCustomers": "ग्राहक",
+  "securityFilterBilling": "बिलिंग",
+  "securityFilterMortgage": "मॉर्गेज",
+  "securityFilterRates": "दरें",
+  "securityFilterBackup": "बैकअप",
+  "securityFilterAction": "क्रिया",
+  "securityFilterAllActions": "सभी क्रियाएं",
+  "securityActionCreate": "बनाएं",
+  "securityActionUpdate": "अपडेट",
+  "securityActionDelete": "हटाएं",
+  "securityActionPayment": "भुगतान",
+  "securityActionClose": "बंद करें",
+  "securityActionBackupExport": "बैकअप निर्यात",
+  "securityRefreshLogs": "लॉग रिफ्रेश करें",
+  "securityActivityLogs": "गतिविधि लॉग",
+  "securityLogCount": "{count} दिखाए गए",
+  "@securityLogCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "securityNoLogsFound": "कोई गतिविधि लॉग नहीं मिला।",
+  "securityFeatures": "सुरक्षा सुविधाएं",
+  "securitySubtitle": "दुकान के लिए गतिविधि लॉग और डेटा बैकअप।",
+  "securityExportBackup": "बैकअप निर्यात करें",
+  "userDeactivateTitle": "उपयोगकर्ता निष्क्रिय करें",
+  "userDeactivateConfirm": "{userName} को निष्क्रिय करें?",
+  "@userDeactivateConfirm": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "userDeactivateAction": "निष्क्रिय करें",
+  "userDeactivated": "उपयोगकर्ता निष्क्रिय हो गया",
+  "userManagementSubtitle": "दुकान के व्यवस्थापक और स्टाफ उपयोगकर्ताओं का प्रबंधन करें।",
+  "userAddUser": "उपयोगकर्ता जोड़ें",
+  "userSearchHint": "उपयोगकर्ता खोजें",
+  "userTeamHeader": "टीम",
+  "userCount": "{count} उपयोगकर्ता",
+  "@userCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "userNoResults": "कोई उपयोगकर्ता नहीं मिला।",
+  "userNoContactInfo": "कोई संपर्क जानकारी नहीं",
+  "userStatusActive": "सक्रिय",
+  "userStatusInactive": "निष्क्रिय",
+  "userStatusLoginLinked": "लॉगिन लिंक्ड",
+  "userStatusPendingLogin": "लंबित लॉगिन",
+  "userEditTooltip": "उपयोगकर्ता संपादित करें",
+  "userDeactivateTooltip": "उपयोगकर्ता निष्क्रिय करें",
+  "userEditTitle": "उपयोगकर्ता संपादित करें",
+  "userAddTitle": "उपयोगकर्ता जोड़ें",
+  "userFieldName": "नाम",
+  "validationUserName": "मान्य नाम दर्ज करें",
+  "userFieldEmail": "ईमेल",
+  "validationUserEmail": "मान्य ईमेल दर्ज करें",
+  "userFieldPhone": "फ़ोन",
+  "userRoleOwner": "मालिक",
+  "userFieldRole": "भूमिका",
+  "userRoleStaff": "स्टाफ",
+  "userRoleAdmin": "व्यवस्थापक",
+  "userRestrictedTitle": "उपयोगकर्ता प्रबंधन केवल व्यवस्थापक के लिए है",
+  "userRestrictedSubtitle": "स्टाफ उपयोगकर्ता अपने निर्धारित कार्य क्षेत्रों में काम करना जारी रख सकते हैं।",
   "userOnboardingTipTitle": "स्टाफ ऑनबोर्डिंग",
   "userOnboardingTipDesc": "नए जोड़े गए स्टाफ को ऐप डाउनलोड करना होगा और यहां दिए गए ईमेल पते से साइन अप विकल्प का उपयोग करके अपना पासवर्ड सेट करना होगा और अपना खाता लिंक करना होगा।"
 }

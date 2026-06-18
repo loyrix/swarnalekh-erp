@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/security/application/security_payloads.dart';
+import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -57,7 +58,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error(context, 'Failed to load activity logs');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(context, l10n.errorFailedLoadActivityLogs);
     }
   }
 
@@ -85,7 +87,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isExportingBackup = false);
-      AppToast.error(context, 'Failed to generate backup');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(context, l10n.errorFailedGenerateBackup);
     }
   }
 
@@ -106,7 +109,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context)!.commonClose),
           ),
         ],
       ),
@@ -137,6 +140,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   Widget _buildBackupPanel() {
+    final l10n = AppLocalizations.of(context)!;
     final latest = _latestBackupLog();
 
     return GlassCard(
@@ -162,19 +166,21 @@ class _SecurityScreenState extends State<SecurityScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Data Backup',
+                  l10n.securityDataBackup,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Export tenant data for customers, inventory, billing, mortgage, reports source data, and activity logs.',
+                  l10n.securityExportSubtitle,
                   style: TextStyle(color: AppColors.text3(context)),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   latest == null
-                      ? 'No backup export recorded yet.'
-                      : 'Last export: ${_formatDateTime(latest['createdAt'])}',
+                      ? l10n.securityNoBackupYet
+                      : l10n.securityLastExport(
+                          _formatDateTime(latest['createdAt']),
+                        ),
                   style: TextStyle(
                     color: AppColors.text2(context),
                     fontWeight: FontWeight.w600,
@@ -198,6 +204,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   Widget _buildFilters() {
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: LayoutBuilder(
@@ -210,11 +217,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.search_rounded),
-                  hintText: 'Search activity logs',
+                  hintText: l10n.securitySearchLogs,
                   suffixIcon: _searchController.text.isEmpty
                       ? null
                       : IconButton(
-                          tooltip: 'Clear search',
+                          tooltip: l10n.commonClearSearch,
                           onPressed: () {
                             _searchController.clear();
                             _loadLogs();
@@ -229,21 +236,36 @@ class _SecurityScreenState extends State<SecurityScreen> {
               width: isWide ? 180 : constraints.maxWidth,
               child: DropdownButtonFormField<String>(
                 initialValue: _entityFilter,
-                decoration: const InputDecoration(labelText: 'Area'),
-                items: const [
-                  DropdownMenuItem(value: 'all', child: Text('All Areas')),
+                decoration: InputDecoration(labelText: l10n.securityFilterArea),
+                items: [
+                  DropdownMenuItem(
+                    value: 'all',
+                    child: Text(l10n.securityFilterAllAreas),
+                  ),
                   DropdownMenuItem(
                     value: 'inventory',
-                    child: Text('Inventory'),
+                    child: Text(l10n.securityFilterInventory),
                   ),
                   DropdownMenuItem(
                     value: 'customers',
-                    child: Text('Customers'),
+                    child: Text(l10n.securityFilterCustomers),
                   ),
-                  DropdownMenuItem(value: 'invoices', child: Text('Billing')),
-                  DropdownMenuItem(value: 'mortgage', child: Text('Mortgage')),
-                  DropdownMenuItem(value: 'daily_rate', child: Text('Rates')),
-                  DropdownMenuItem(value: 'backup', child: Text('Backup')),
+                  DropdownMenuItem(
+                    value: 'invoices',
+                    child: Text(l10n.securityFilterBilling),
+                  ),
+                  DropdownMenuItem(
+                    value: 'mortgage',
+                    child: Text(l10n.securityFilterMortgage),
+                  ),
+                  DropdownMenuItem(
+                    value: 'daily_rate',
+                    child: Text(l10n.securityFilterRates),
+                  ),
+                  DropdownMenuItem(
+                    value: 'backup',
+                    child: Text(l10n.securityFilterBackup),
+                  ),
                 ],
                 onChanged: (value) {
                   setState(() => _entityFilter = value ?? 'all');
@@ -255,17 +277,37 @@ class _SecurityScreenState extends State<SecurityScreen> {
               width: isWide ? 180 : constraints.maxWidth,
               child: DropdownButtonFormField<String>(
                 initialValue: _actionFilter,
-                decoration: const InputDecoration(labelText: 'Action'),
-                items: const [
-                  DropdownMenuItem(value: 'all', child: Text('All Actions')),
-                  DropdownMenuItem(value: 'create', child: Text('Create')),
-                  DropdownMenuItem(value: 'update', child: Text('Update')),
-                  DropdownMenuItem(value: 'delete', child: Text('Delete')),
-                  DropdownMenuItem(value: 'payment', child: Text('Payment')),
-                  DropdownMenuItem(value: 'close', child: Text('Close')),
+                decoration: InputDecoration(
+                  labelText: l10n.securityFilterAction,
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 'all',
+                    child: Text(l10n.securityFilterAllActions),
+                  ),
+                  DropdownMenuItem(
+                    value: 'create',
+                    child: Text(l10n.securityActionCreate),
+                  ),
+                  DropdownMenuItem(
+                    value: 'update',
+                    child: Text(l10n.securityActionUpdate),
+                  ),
+                  DropdownMenuItem(
+                    value: 'delete',
+                    child: Text(l10n.securityActionDelete),
+                  ),
+                  DropdownMenuItem(
+                    value: 'payment',
+                    child: Text(l10n.securityActionPayment),
+                  ),
+                  DropdownMenuItem(
+                    value: 'close',
+                    child: Text(l10n.securityActionClose),
+                  ),
                   DropdownMenuItem(
                     value: 'backup_export',
-                    child: Text('Backup Export'),
+                    child: Text(l10n.securityActionBackupExport),
                   ),
                 ],
                 onChanged: (value) {
@@ -275,7 +317,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               ),
             ),
             IconButton.filledTonal(
-              tooltip: 'Refresh logs',
+              tooltip: l10n.securityRefreshLogs,
               onPressed: _loadLogs,
               icon: const Icon(Icons.refresh_rounded),
             ),
@@ -293,6 +335,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   Widget _buildActivityLogs() {
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -301,12 +344,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
           Row(
             children: [
               Text(
-                'Activity Logs',
+                l10n.securityActivityLogs,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const Spacer(),
               Text(
-                '${_logs.length} shown',
+                l10n.securityLogCount(_logs.length),
                 style: TextStyle(color: AppColors.text3(context)),
               ),
             ],
@@ -324,7 +367,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
               child: Center(
                 child: Text(
-                  'No activity logs found.',
+                  l10n.securityNoLogsFound,
                   style: TextStyle(color: AppColors.text3(context)),
                 ),
               ),
@@ -450,6 +493,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
@@ -457,19 +501,19 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Security Features',
+                l10n.securityFeatures,
                 style: Theme.of(context).textTheme.displaySmall,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Activity logs and data backup for the shop.',
+                l10n.securitySubtitle,
                 style: TextStyle(color: AppColors.text3(context)),
               ),
             ],
           ),
         ),
         GoldButton(
-          label: 'Export Backup',
+          label: l10n.securityExportBackup,
           icon: Icons.cloud_download_rounded,
           isLoading: isBusy,
           onPressed: onExportBackup,

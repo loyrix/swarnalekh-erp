@@ -145,113 +145,116 @@ class _RatesScreenState extends State<RatesScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                l10n.ratesTitle,
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() => _selectedDate = DateTime.now());
-                  _loadRates();
-                },
-                icon: const Icon(Icons.today_rounded, size: 16),
-                label: Text(l10n.commonToday),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _buildDateSelector(),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            l10n.ratesSubtitle,
-            style: TextStyle(color: AppColors.text3(context)),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _buildInsightRow(),
-          const SizedBox(height: AppSpacing.xxl),
+    return RefreshIndicator(
+      onRefresh: _loadRates,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  l10n.ratesTitle,
+                  style: Theme.of(context).textTheme.displaySmall,
+                ),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() => _selectedDate = DateTime.now());
+                    _loadRates();
+                  },
+                  icon: const Icon(Icons.today_rounded, size: 16),
+                  label: Text(l10n.commonToday),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _buildDateSelector(),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              l10n.ratesSubtitle,
+              style: TextStyle(color: AppColors.text3(context)),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _buildInsightRow(),
+            const SizedBox(height: AppSpacing.xxl),
 
-          if (_isLoading)
-            const SizedBox(
-              height: 320,
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else ...[
-            Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: GlassCard(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SectionHeader(title: l10n.ratesGoldPerGram),
-                      _buildRateInput(
-                        l10n.ratesGold22,
-                        _gold22Controller,
-                        AppColors.gold,
-                        '₹',
-                        '6650',
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildRateInput(
-                        l10n.ratesGold18,
-                        _gold18Controller,
-                        AppColors.gold,
-                        '₹',
-                        '5440',
-                      ),
-
-                      const SizedBox(height: AppSpacing.xl),
-                      Divider(color: AppColors.div(context)),
-                      const SizedBox(height: AppSpacing.xl),
-
-                      SectionHeader(title: l10n.ratesSilverPerGram),
-                      _buildRateInput(
-                        l10n.ratesFineSilver,
-                        _silverController,
-                        AppColors.silver,
-                        '₹',
-                        '95',
-                      ),
-
-                      const SizedBox(height: AppSpacing.xxl),
-
-                      ElevatedButton.icon(
-                        icon: _isSaving
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.textOnPrimary,
-                                ),
-                              )
-                            : const Icon(Icons.check_circle_outline),
-                        label: Text(
-                          _isSaving ? l10n.ratesSaving : l10n.ratesSaveRates,
+            if (_isLoading)
+              const SizedBox(
+                height: 320,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else ...[
+              Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: GlassCard(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SectionHeader(title: l10n.ratesGoldPerGram),
+                        _buildRateInput(
+                          l10n.ratesGold22,
+                          _gold22Controller,
+                          AppColors.gold,
+                          '₹',
+                          '6650',
                         ),
-                        onPressed: _isSaving ? null : _saveRates,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        const SizedBox(height: AppSpacing.md),
+                        _buildRateInput(
+                          l10n.ratesGold18,
+                          _gold18Controller,
+                          AppColors.gold,
+                          '₹',
+                          '5440',
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(height: AppSpacing.xl),
+                        Divider(color: AppColors.div(context)),
+                        const SizedBox(height: AppSpacing.xl),
+
+                        SectionHeader(title: l10n.ratesSilverPerGram),
+                        _buildRateInput(
+                          l10n.ratesFineSilver,
+                          _silverController,
+                          AppColors.silver,
+                          '₹',
+                          '95',
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxl),
+
+                        ElevatedButton.icon(
+                          icon: _isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.textOnPrimary,
+                                  ),
+                                )
+                              : const Icon(Icons.check_circle_outline),
+                          label: Text(
+                            _isSaving ? l10n.ratesSaving : l10n.ratesSaveRates,
+                          ),
+                          onPressed: _isSaving ? null : _saveRates,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
