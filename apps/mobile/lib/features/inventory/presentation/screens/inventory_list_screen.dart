@@ -349,37 +349,27 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
 
   Widget _buildSectionSwitch() {
     final l10n = AppLocalizations.of(context)!;
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: [
-        _sectionChip(
-          'view',
-          l10n.inventoryViewInventory,
-          Icons.inventory_2_outlined,
+    return SectionSwitch(
+      activeValue: _activeSection,
+      onChanged: _selectSection,
+      items: [
+        SectionItem(
+          value: 'view',
+          label: l10n.inventoryViewInventory,
+          icon: Icons.inventory_2_outlined,
         ),
         if (_canManageInventory)
-          _sectionChip('add', l10n.inventoryAddStock, Icons.add_box_outlined),
-        _sectionChip(
-          'sold',
-          l10n.inventorySoldProducts,
-          Icons.shopping_bag_outlined,
+          SectionItem(
+            value: 'add',
+            label: l10n.inventoryAddStock,
+            icon: Icons.add_box_outlined,
+          ),
+        SectionItem(
+          value: 'sold',
+          label: l10n.inventorySoldProducts,
+          icon: Icons.shopping_bag_outlined,
         ),
       ],
-    );
-  }
-
-  Widget _sectionChip(String value, String label, IconData icon) {
-    final selected = _activeSection == value;
-    return ChoiceChip(
-      selected: selected,
-      avatar: Icon(
-        icon,
-        size: 18,
-        color: selected ? AppColors.primary : AppColors.text2(context),
-      ),
-      label: Text(label),
-      onSelected: (_) => _selectSection(value),
     );
   }
 
@@ -685,24 +675,10 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
-            controller: _searchController,
-            onChanged: _onSearchChanged,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search_rounded),
-              suffixIcon: _searchController.text.trim().isEmpty
-                  ? null
-                  : IconButton(
-                      tooltip: l10n.inventoryClearSearch,
-                      icon: const Icon(Icons.close_rounded),
-                      onPressed: () {
-                        _searchController.clear();
-                        _loadData();
-                      },
-                    ),
-              hintText: l10n.inventorySearchHintSold,
-              border: const OutlineInputBorder(),
-            ),
+          SearchFilterBar(
+            searchController: _searchController,
+            onSearchChanged: _onSearchChanged,
+            searchHint: l10n.inventorySearchHintSold,
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
@@ -713,364 +689,92 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
       );
     }
 
-    if (!isWide) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: _searchController.text.trim().isEmpty
-                        ? null
-                        : IconButton(
-                            tooltip: l10n.inventoryClearSearch,
-                            icon: const Icon(Icons.close_rounded),
-                            onPressed: () {
-                              _searchController.clear();
-                              _loadData();
-                            },
-                          ),
-                    hintText: l10n.inventorySearchHintStock,
-                    border: const OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              IconButton(
-                icon: Icon(
-                  Icons.filter_list_rounded,
-                  color:
-                      _filterMetal != 'all' ||
-                          _categoryFilterController.text.trim().isNotEmpty ||
-                          _branchFilterController.text.trim().isNotEmpty ||
-                          _filterStatus != 'in_stock'
-                      ? AppColors.primary
-                      : AppColors.text2(context),
-                ),
-                onPressed: () => _showMobileFilterSheet(l10n),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              ..._metalOptions.map((option) {
-                final val = option['value']!;
-                final selected = _filterMetal == val;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() => _filterMetal = val);
-                      _loadData();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? (val == 'gold'
-                                      ? AppColors.gold
-                                      : AppColors.silver)
-                                  .withValues(alpha: 0.15)
-                            : AppColors.surfL(context),
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                        border: Border.all(
-                          color: selected
-                              ? (val == 'gold'
-                                        ? AppColors.gold
-                                        : AppColors.silver)
-                                    .withValues(alpha: 0.4)
-                              : AppColors.brd(context),
-                        ),
-                      ),
-                      child: Text(
-                        _metalLabel(l10n, val),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: selected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: selected
-                              ? (val == 'gold'
-                                    ? AppColors.gold
-                                    : AppColors.silver)
-                              : AppColors.text2(context),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-              const Spacer(),
-              Text(
-                '${_filtered.length} ${l10n.inventoryItemsSuffix}',
-                style: TextStyle(color: AppColors.text3(context), fontSize: 12),
-              ),
-            ],
-          ),
-        ],
-      );
-    }
-
-    final filterOptions = [
-      {'label': l10n.inventoryAll, 'value': 'all', 'color': null},
-      ..._metalOptions.map(
-        (option) => {
-          'label': _metalLabel(l10n, option['value']),
-          'value': option['value'],
-          'color': option['value'] == 'gold'
-              ? AppColors.gold
-              : option['value'] == 'silver'
-              ? AppColors.silver
-              : option['value'] == 'platinum'
-              ? AppColors.platinum
-              : null,
-        },
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          controller: _searchController,
-          onChanged: _onSearchChanged,
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.search_rounded),
-            suffixIcon: _searchController.text.trim().isEmpty
-                ? null
-                : IconButton(
-                    tooltip: l10n.inventoryClearSearch,
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () {
-                      _searchController.clear();
-                      _loadData();
-                    },
-                  ),
-            hintText: l10n.inventorySearchHintStock,
-            border: const OutlineInputBorder(),
+    return SearchFilterBar(
+      searchController: _searchController,
+      onSearchChanged: _onSearchChanged,
+      searchHint: l10n.inventorySearchHintStock,
+      onRefresh: _loadData,
+      isLoading: _isLoading,
+      filterBuilder: (_) => [
+        AppFilterChip(
+          label: l10n.inventoryAll,
+          selected: _filterMetal == 'all',
+          onTap: () {
+            setState(() => _filterMetal = 'all');
+            _loadData();
+          },
+        ),
+        ..._metalOptions.map(
+          (option) => AppFilterChip(
+            label: _metalLabel(l10n, option['value']!),
+            selected: _filterMetal == option['value'],
+            onTap: () {
+              setState(() => _filterMetal = option['value']!);
+              _loadData();
+            },
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            for (final option in filterOptions)
-              _buildMetalFilterChip(
-                option['label']! as String,
-                option['value']! as String,
-                color: option['color'] as Color?,
-              ),
-            SizedBox(
-              width: 160,
-              child: _compactFilterField(
-                controller: _categoryFilterController,
-                label: l10n.inventoryFilterCategory,
-              ),
-            ),
-            SizedBox(
-              width: 160,
-              child: _compactFilterField(
-                controller: _branchFilterController,
-                label: l10n.inventoryFilterBranch,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: AppColors.surfL(context),
+        SizedBox(
+          width: 160,
+          child: TextField(
+            controller: _categoryFilterController,
+            onChanged: _onSearchChanged,
+            style: const TextStyle(fontSize: 13),
+            decoration: InputDecoration(
+              labelText: l10n.inventoryFilterCategory,
+              isDense: true,
+              border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppColors.brd(context)),
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _filterStatus,
-                  dropdownColor: AppColors.surf(context),
-                  style: TextStyle(
-                    color: AppColors.text1(context),
-                    fontSize: 13,
-                  ),
-                  iconEnabledColor: AppColors.text2(context),
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() => _filterStatus = value);
-                    _loadData();
-                  },
-                  items: _statusOptions
-                      .map(
-                        (option) => DropdownMenuItem<String>(
-                          value: option['value'],
-                          child: Text(_statusLabel(l10n, option['value'])),
-                        ),
-                      )
-                      .toList(),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 160,
+          child: TextField(
+            controller: _branchFilterController,
+            onChanged: _onSearchChanged,
+            style: const TextStyle(fontSize: 13),
+            decoration: InputDecoration(
+              labelText: l10n.inventoryFilterBranch,
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+            ),
+          ),
+        ),
+        FilterDropdown<String>(
+          value: _filterStatus,
+          label: l10n.inventoryFilterStatus,
+          width: 160,
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() => _filterStatus = value);
+            _loadData();
+          },
+          items: _statusOptions
+              .map(
+                (option) => DropdownMenuItem<String>(
+                  value: option['value'],
+                  child: Text(_statusLabel(l10n, option['value'])),
                 ),
-              ),
+              )
+              .toList(),
+        ),
+        if ((_stats?['valuationDate'] as String?) != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              '${l10n.inventoryRatesPrefix} ${_shortDate(_stats?['valuationDate'])}',
+              style: TextStyle(color: AppColors.text3(context), fontSize: 12),
             ),
-            if ((_stats?['valuationDate'] as String?) != null)
-              Text(
-                '${l10n.inventoryRatesPrefix} ${_shortDate(_stats?['valuationDate'])}',
-                style: TextStyle(color: AppColors.text3(context), fontSize: 12),
-              ),
-            Text(
-              '${_filtered.length} ${l10n.inventoryItemsSuffix}',
-              style: TextStyle(color: AppColors.text3(context), fontSize: 13),
-            ),
-          ],
+          ),
+        Text(
+          '${_filtered.length} ${l10n.inventoryItemsSuffix}',
+          style: TextStyle(color: AppColors.text3(context), fontSize: 13),
         ),
       ],
-    );
-  }
-
-  void _showMobileFilterSheet(AppLocalizations l10n) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.inventoryFilters,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _compactFilterField(
-                controller: _categoryFilterController,
-                label: l10n.inventoryFilterCategory,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _compactFilterField(
-                controller: _branchFilterController,
-                label: l10n.inventoryFilterBranch,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              DropdownButtonFormField<String>(
-                initialValue: _filterStatus,
-                decoration: InputDecoration(
-                  labelText: l10n.inventoryFilterStatus,
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                items: _statusOptions
-                    .map(
-                      (option) => DropdownMenuItem<String>(
-                        value: option['value'],
-                        child: Text(_statusLabel(l10n, option['value'])),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setSheetState(() => _filterStatus = value);
-                },
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        setSheetState(() {
-                          _filterStatus = 'in_stock';
-                          _filterMetal = 'all';
-                          _categoryFilterController.clear();
-                          _branchFilterController.clear();
-                        });
-                      },
-                      child: Text(l10n.inventoryFilterReset),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                        _loadData();
-                      },
-                      child: Text(l10n.inventoryFilterApply),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _compactFilterField({
-    required TextEditingController controller,
-    required String label,
-  }) {
-    return TextField(
-      controller: controller,
-      onChanged: _onSearchChanged,
-      style: const TextStyle(fontSize: 13),
-      decoration: InputDecoration(
-        labelText: label,
-        isDense: true,
-        border: const OutlineInputBorder(),
-        suffixIcon: controller.text.trim().isEmpty
-            ? null
-            : IconButton(
-                tooltip: 'Clear $label',
-                icon: const Icon(Icons.close_rounded, size: 18),
-                onPressed: () {
-                  controller.clear();
-                  _loadData();
-                },
-              ),
-      ),
-    );
-  }
-
-  Widget _buildMetalFilterChip(String label, String value, {Color? color}) {
-    final isSelected = _filterMetal == value;
-    return GestureDetector(
-      onTap: () {
-        setState(() => _filterMetal = value);
-        _loadData();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (color ?? AppColors.primary).withValues(alpha: 0.15)
-              : AppColors.surfL(context),
-          borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(
-            color: isSelected
-                ? (color ?? AppColors.primary).withValues(alpha: 0.4)
-                : AppColors.brd(context),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? (color ?? AppColors.primary)
-                : AppColors.text2(context),
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            fontSize: 13,
-          ),
-        ),
-      ),
     );
   }
 
@@ -1114,54 +818,25 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
                 StatusBadge(
                   label: _statusLabel(l10n, item['status'] ?? 'in_stock'),
                 ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert_rounded, size: 18),
-                  color: AppColors.surfL(context),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    side: BorderSide(color: AppColors.brd(context)),
-                  ),
-                  onSelected: (value) {
-                    if (value == 'view') _openProductDetails(item);
-                    if (value == 'edit' && _canManageInventory) {
-                      _openInventoryForm(item: item);
-                    }
-                    if (value == 'delete' && _canManageInventory) {
-                      _deleteInventoryItem(item);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'view',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.visibility_outlined, size: 18),
-                          const SizedBox(width: 8),
-                          Text(l10n.inventoryView),
-                        ],
-                      ),
+                ItemActionsMenu(
+                  actions: [
+                    ItemAction(
+                      type: ItemActionType.view,
+                      customLabel: l10n.inventoryView,
+                      onPressed: () => _openProductDetails(item),
                     ),
                     if (_canManageInventory)
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.edit_outlined, size: 18),
-                            const SizedBox(width: 8),
-                            Text(l10n.commonEdit),
-                          ],
-                        ),
+                      ItemAction(
+                        type: ItemActionType.edit,
+                        customLabel: l10n.commonEdit,
+                        onPressed: () => _openInventoryForm(item: item),
                       ),
                     if (_canManageInventory)
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.delete_outline_rounded, size: 18),
-                            const SizedBox(width: 8),
-                            Text(l10n.commonDelete),
-                          ],
-                        ),
+                      ItemAction(
+                        type: ItemActionType.delete,
+                        customLabel: l10n.commonDelete,
+                        onPressed: () => _deleteInventoryItem(item),
+                        isDestructive: true,
                       ),
                   ],
                 ),
@@ -1234,32 +909,26 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
                     ),
                   ),
                   DataCell(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          tooltip: l10n.inventoryViewDetails,
+                    ItemActionsRow(
+                      actions: [
+                        ItemAction(
+                          type: ItemActionType.view,
+                          customLabel: l10n.inventoryViewDetails,
                           onPressed: () => _openProductDetails(inventoryItem),
-                          icon: const Icon(Icons.visibility_outlined, size: 18),
-                          color: AppColors.info,
                         ),
                         if (_canManageInventory) ...[
-                          IconButton(
-                            tooltip: l10n.inventoryEditItem,
+                          ItemAction(
+                            type: ItemActionType.edit,
+                            customLabel: l10n.inventoryEditItem,
                             onPressed: () =>
                                 _openInventoryForm(item: inventoryItem),
-                            icon: const Icon(Icons.edit_outlined, size: 18),
-                            color: AppColors.primary,
                           ),
-                          IconButton(
-                            tooltip: l10n.inventoryDeleteItem,
+                          ItemAction(
+                            type: ItemActionType.delete,
+                            customLabel: l10n.inventoryDeleteItem,
                             onPressed: () =>
                                 _deleteInventoryItem(inventoryItem),
-                            icon: const Icon(
-                              Icons.delete_outline_rounded,
-                              size: 18,
-                            ),
-                            color: AppColors.error,
+                            isDestructive: true,
                           ),
                         ],
                       ],
@@ -1784,7 +1453,7 @@ class _OcrReviewDialogState extends State<_OcrReviewDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.inventoryImportItems,
           isLoading: _isSaving,
           onPressed: _save,
@@ -2440,7 +2109,7 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: _isEdit ? l10n.commonUpdate : l10n.commonCreate,
           isLoading: _isSaving,
           onPressed: _save,
@@ -2489,10 +2158,9 @@ class _InventoryFormDialogState extends State<_InventoryFormDialog> {
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
                   children: [
-                    GoldButton(
+                    PrimaryActionButton.outlined(
                       label: l10n.inventoryChooseProductImage,
                       icon: Icons.photo_library_outlined,
-                      isOutlined: true,
                       onPressed: _chooseProductImage,
                     ),
                     IconButton.filledTonal(

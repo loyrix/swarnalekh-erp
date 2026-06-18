@@ -267,329 +267,126 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _buildFilters(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
-    if (!isWide) {
-      return Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onFilterChanged,
-                  decoration: InputDecoration(
-                    hintText: l10n.reportsSearchHint,
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: AppColors.text3(context),
-                    ),
-                    border: const OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                ),
+    return SearchFilterBar(
+      searchController: _searchController,
+      onSearchChanged: _onFilterChanged,
+      searchHint: l10n.reportsSearchHint,
+      onRefresh: _loadReports,
+      isLoading: _isLoading,
+      filterBuilder: (_) => [
+        SizedBox(
+          width: 170,
+          child: TextField(
+            controller: _dateFromController,
+            onChanged: _onFilterChanged,
+            decoration: InputDecoration(
+              labelText: l10n.reportsFromDate,
+              hintText: l10n.reportsDateHint,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              IconButton(
-                icon: Icon(
-                  Icons.filter_list_rounded,
-                  color:
-                      _dateFromController.text.trim().isNotEmpty ||
-                          _dateToController.text.trim().isNotEmpty ||
-                          _categoryController.text.trim().isNotEmpty ||
-                          _branchController.text.trim().isNotEmpty ||
-                          _statusFilter != 'all'
-                      ? AppColors.primary
-                      : AppColors.text2(context),
-                ),
-                onPressed: () => _showMobileFilterSheet(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded),
-                onPressed: _loadReports,
-              ),
-            ],
-          ),
-        ],
-      );
-    }
-
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Wrap(
-        spacing: AppSpacing.md,
-        runSpacing: AppSpacing.md,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          SizedBox(
-            width: 320,
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onFilterChanged,
-              decoration: InputDecoration(
-                hintText: l10n.reportsSearchHint,
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: AppColors.text3(context),
-                ),
-                border: const OutlineInputBorder(),
-              ),
+              isDense: true,
             ),
-          ),
-          SizedBox(
-            width: 170,
-            child: TextField(
-              controller: _dateFromController,
-              onChanged: _onFilterChanged,
-              decoration: InputDecoration(
-                labelText: l10n.reportsFromDate,
-                hintText: l10n.reportsDateHint,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 170,
-            child: TextField(
-              controller: _dateToController,
-              onChanged: _onFilterChanged,
-              decoration: InputDecoration(
-                labelText: l10n.reportsToDate,
-                hintText: l10n.reportsDateHint,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 190,
-            child: TextField(
-              controller: _categoryController,
-              onChanged: _onFilterChanged,
-              decoration: InputDecoration(
-                labelText: l10n.reportsCategory,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 190,
-            child: TextField(
-              controller: _branchController,
-              onChanged: _onFilterChanged,
-              decoration: InputDecoration(
-                labelText: l10n.reportsBranch,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 180,
-            child: DropdownButtonFormField<String>(
-              initialValue: _statusFilter,
-              decoration: InputDecoration(
-                labelText: l10n.reportsStatus,
-                border: const OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: 'all',
-                  child: Text(l10n.reportsAllStatus),
-                ),
-                DropdownMenuItem(
-                  value: 'in_stock',
-                  child: Text(l10n.reportsInStock),
-                ),
-                DropdownMenuItem(
-                  value: 'reserved',
-                  child: Text(l10n.reportsReserved),
-                ),
-                DropdownMenuItem(value: 'sold', child: Text(l10n.reportsSold)),
-                DropdownMenuItem(
-                  value: 'active',
-                  child: Text(l10n.reportsActiveLoan),
-                ),
-                DropdownMenuItem(
-                  value: 'closed',
-                  child: Text(l10n.reportsClosedLoan),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() => _statusFilter = value ?? 'all');
-                _loadReports();
-              },
-            ),
-          ),
-          IconButton.filledTonal(
-            tooltip: l10n.reportsRefresh,
-            onPressed: _loadReports,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showMobileFilterSheet() {
-    final l10n = AppLocalizations.of(context)!;
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.reportsFilters,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextField(
-                controller: _dateFromController,
-                decoration: InputDecoration(
-                  labelText: l10n.reportsFromDate,
-                  hintText: l10n.reportsDateHint,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextField(
-                controller: _dateToController,
-                decoration: InputDecoration(
-                  labelText: l10n.reportsToDate,
-                  hintText: l10n.reportsDateHint,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextField(
-                controller: _categoryController,
-                decoration: InputDecoration(
-                  labelText: l10n.reportsCategory,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextField(
-                controller: _branchController,
-                decoration: InputDecoration(
-                  labelText: l10n.reportsBranch,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              DropdownButtonFormField<String>(
-                initialValue: _statusFilter,
-                decoration: InputDecoration(
-                  labelText: l10n.reportsStatus,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: 'all',
-                    child: Text(l10n.reportsAllStatus),
-                  ),
-                  DropdownMenuItem(
-                    value: 'in_stock',
-                    child: Text(l10n.reportsInStock),
-                  ),
-                  DropdownMenuItem(
-                    value: 'reserved',
-                    child: Text(l10n.reportsReserved),
-                  ),
-                  DropdownMenuItem(
-                    value: 'sold',
-                    child: Text(l10n.reportsSold),
-                  ),
-                  DropdownMenuItem(
-                    value: 'active',
-                    child: Text(l10n.reportsActiveLoan),
-                  ),
-                  DropdownMenuItem(
-                    value: 'closed',
-                    child: Text(l10n.reportsClosedLoan),
-                  ),
-                ],
-                onChanged: (value) {
-                  setSheetState(() => _statusFilter = value ?? 'all');
-                },
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        setSheetState(() {
-                          _statusFilter = 'all';
-                          _dateFromController.clear();
-                          _dateToController.clear();
-                          _categoryController.clear();
-                          _branchController.clear();
-                        });
-                      },
-                      child: Text(l10n.reportsReset),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                        _loadReports();
-                      },
-                      child: Text(l10n.reportsApply),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildGroupSwitch() {
-    final l10n = AppLocalizations.of(context)!;
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: [
-        _groupChip(
-          'inventory',
-          l10n.reportsInventoryReports,
-          Icons.inventory_2_outlined,
+        SizedBox(
+          width: 170,
+          child: TextField(
+            controller: _dateToController,
+            onChanged: _onFilterChanged,
+            decoration: InputDecoration(
+              labelText: l10n.reportsToDate,
+              hintText: l10n.reportsDateHint,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              isDense: true,
+            ),
+          ),
         ),
-        _groupChip(
-          'billing',
-          l10n.reportsBillingReports,
-          Icons.receipt_long_outlined,
+        SizedBox(
+          width: 170,
+          child: TextField(
+            controller: _categoryController,
+            onChanged: _onFilterChanged,
+            decoration: InputDecoration(
+              labelText: l10n.reportsCategory,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              isDense: true,
+            ),
+          ),
         ),
-        _groupChip(
-          'mortgage',
-          l10n.reportsMortgageReports,
-          Icons.account_balance_outlined,
+        SizedBox(
+          width: 170,
+          child: TextField(
+            controller: _branchController,
+            onChanged: _onFilterChanged,
+            decoration: InputDecoration(
+              labelText: l10n.reportsBranch,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              isDense: true,
+            ),
+          ),
+        ),
+        FilterDropdown<String>(
+          value: _statusFilter,
+          label: l10n.reportsStatus,
+          width: 180,
+          onChanged: (value) {
+            setState(() => _statusFilter = value ?? 'all');
+            _loadReports();
+          },
+          items: [
+            DropdownMenuItem(value: 'all', child: Text(l10n.reportsAllStatus)),
+            DropdownMenuItem(
+              value: 'in_stock',
+              child: Text(l10n.reportsInStock),
+            ),
+            DropdownMenuItem(
+              value: 'reserved',
+              child: Text(l10n.reportsReserved),
+            ),
+            DropdownMenuItem(value: 'sold', child: Text(l10n.reportsSold)),
+            DropdownMenuItem(
+              value: 'active',
+              child: Text(l10n.reportsActiveLoan),
+            ),
+            DropdownMenuItem(
+              value: 'closed',
+              child: Text(l10n.reportsClosedLoan),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _groupChip(String value, String label, IconData icon) {
-    final selected = _activeGroup == value;
-    return ChoiceChip(
-      selected: selected,
-      avatar: Icon(
-        icon,
-        size: 18,
-        color: selected ? AppColors.primary : AppColors.text2(context),
-      ),
-      label: Text(label),
-      onSelected: (_) => setState(() => _activeGroup = value),
+  Widget _buildGroupSwitch() {
+    final l10n = AppLocalizations.of(context)!;
+    return SectionSwitch(
+      activeValue: _activeGroup,
+      onChanged: (value) => setState(() => _activeGroup = value),
+      items: [
+        SectionItem(
+          value: 'inventory',
+          label: l10n.reportsInventoryReports,
+          icon: Icons.inventory_2_outlined,
+        ),
+        SectionItem(
+          value: 'billing',
+          label: l10n.reportsBillingReports,
+          icon: Icons.receipt_long_outlined,
+        ),
+        SectionItem(
+          value: 'mortgage',
+          label: l10n.reportsMortgageReports,
+          icon: Icons.account_balance_outlined,
+        ),
+      ],
     );
   }
 
@@ -1097,7 +894,6 @@ class _ReportSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -1130,11 +926,7 @@ class _ReportSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              IconButton.filledTonal(
-                tooltip: l10n.reportsExportPdf,
-                onPressed: onExport,
-                icon: const Icon(Icons.download_outlined),
-              ),
+              ExportMenu(onExportPdf: onExport),
             ],
           ),
           const SizedBox(height: AppSpacing.md),

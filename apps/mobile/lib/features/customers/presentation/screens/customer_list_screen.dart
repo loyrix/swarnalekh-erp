@@ -155,7 +155,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
           ],
         ),
         if (_canManageCustomers)
-          GoldButton(
+          PrimaryActionButton.goldButton(
             label: l10n.customerAdd,
             icon: Icons.add_rounded,
             onPressed: () => _openCustomerForm(),
@@ -521,7 +521,7 @@ class _CustomerFormDialogState extends State<_CustomerFormDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: _isEdit ? l10n.commonUpdate : l10n.commonCreate,
           isLoading: _isSaving,
           onPressed: _save,

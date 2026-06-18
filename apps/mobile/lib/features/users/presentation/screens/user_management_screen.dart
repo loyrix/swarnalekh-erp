@@ -182,7 +182,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ],
           ),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.userAddUser,
           icon: Icons.person_add_alt_1_rounded,
           onPressed: () => _openUserDialog(),
@@ -546,7 +546,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.commonSave,
           isLoading: _isSaving,
           onPressed: _save,

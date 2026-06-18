@@ -110,6 +110,9 @@ class AuthService {
     _resetRegistrationCache();
   }
 
+  /// Sync getter to avoid await in hot paths (e.g. router redirect).
+  bool? get cachedRegistrationStatus => _registrationCache;
+
   void _resetRegistrationCache() {
     _registrationCache = null;
     _registrationCacheUserId = null;

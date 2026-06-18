@@ -220,15 +220,16 @@ class _MortgageScreenState extends State<MortgageScreen> {
         ),
         if (_canManageMortgage)
           !isWide
-              ? FloatingActionButton.small(
+              ? PrimaryActionButton.fab(
                   heroTag: 'addMortgage',
                   onPressed: _openCreateLoan,
-                  child: const Icon(Icons.add_rounded),
+                  icon: Icons.add_rounded,
+                  label: l10n.mortgageAddMortgage,
                 )
-              : GoldButton(
+              : PrimaryActionButton.goldButton(
+                  onPressed: _openCreateLoan,
                   label: l10n.mortgageAddMortgage,
                   icon: Icons.add_rounded,
-                  onPressed: _openCreateLoan,
                 ),
       ],
     );
@@ -309,60 +310,42 @@ class _MortgageScreenState extends State<MortgageScreen> {
 
   Widget _buildFilters() {
     final l10n = AppLocalizations.of(context)!;
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Wrap(
-        spacing: AppSpacing.md,
-        runSpacing: AppSpacing.md,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          SizedBox(
-            width: 320,
-            child: TextField(
-              controller: _searchController,
-              onSubmitted: (_) => _loadData(),
-              decoration: InputDecoration(
-                hintText: l10n.mortgageSearchHint,
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: AppColors.text3(context),
-                ),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.arrow_forward_rounded),
-                  onPressed: _loadData,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-              ),
-            ),
-          ),
-          _statusChip('active', l10n.mortgageStatusActive),
-          _statusChip('closed', l10n.mortgageStatusClosed),
-          _statusChip('all', l10n.mortgageStatusAll),
-        ],
-      ),
-    );
-  }
-
-  Widget _statusChip(String value, String label) {
-    final selected = _status == value;
-    return ChoiceChip(
-      selected: selected,
-      avatar: Icon(
-        value == 'closed'
-            ? Icons.check_circle_outline_rounded
-            : value == 'active'
-            ? Icons.pending_actions_rounded
-            : Icons.list_alt_rounded,
-        size: 18,
-        color: selected ? AppColors.primary : AppColors.text2(context),
-      ),
-      label: Text(label),
-      onSelected: (_) {
-        setState(() => _status = value);
-        _loadData();
-      },
+    return SearchFilterBar(
+      searchController: _searchController,
+      onSearchChanged: (_) => _loadData(),
+      searchHint: l10n.mortgageSearchHint,
+      onRefresh: _loadData,
+      filterBuilder: (_) => [
+        AppFilterChip(
+          label: l10n.mortgageStatusActive,
+          icon: Icons.pending_actions_rounded,
+          selected: _status == 'active',
+          color: AppColors.info,
+          onTap: () {
+            setState(() => _status = 'active');
+            _loadData();
+          },
+        ),
+        AppFilterChip(
+          label: l10n.mortgageStatusClosed,
+          icon: Icons.check_circle_outline_rounded,
+          selected: _status == 'closed',
+          color: AppColors.success,
+          onTap: () {
+            setState(() => _status = 'closed');
+            _loadData();
+          },
+        ),
+        AppFilterChip(
+          label: l10n.mortgageStatusAll,
+          icon: Icons.list_alt_rounded,
+          selected: _status == 'all',
+          onTap: () {
+            setState(() => _status = 'all');
+            _loadData();
+          },
+        ),
+      ],
     );
   }
 
@@ -1024,7 +1007,7 @@ class _MortgageLoanDialogState extends State<_MortgageLoanDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.mortgageSaveLoan,
           isLoading: _isSaving,
           onPressed: _save,
@@ -1168,7 +1151,7 @@ class _CollectPaymentDialogState extends State<_CollectPaymentDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.mortgageSavePayment,
           isLoading: _isSaving,
           onPressed: _save,
@@ -1294,7 +1277,7 @@ class _CloseLoanDialogState extends State<_CloseLoanDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.mortgageCloseLoan,
           isLoading: _isSaving,
           onPressed: _save,

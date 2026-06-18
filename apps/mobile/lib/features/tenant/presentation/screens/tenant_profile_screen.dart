@@ -197,7 +197,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                   ),
                 ),
                 if (_canManageProfile)
-                  GoldButton(
+                  PrimaryActionButton.goldButton(
                     label: l10n.shopProfileSaveChanges,
                     icon: Icons.save_rounded,
                     isLoading: _isSaving,

@@ -50,9 +50,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final isRegistered = await ref
-          .read(authServiceProvider)
-          .checkRegistration();
+      final authService = ref.read(authServiceProvider);
+
+      final isRegistered =
+          authService.cachedRegistrationStatus ??
+          await authService.checkRegistration();
 
       if (!isRegistered && !isRegistrationRoute) {
         return '/register';

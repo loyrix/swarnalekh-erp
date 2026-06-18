@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -15,6 +16,13 @@ import 'package:swarnbook/shared/widgets/error_toast.dart';
 import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 import 'package:swarnbook/shared/widgets/compact_stat_strip.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+void showDioError(BuildContext context, DioException e, String fallback) {
+  final msg = e.response?.data is Map
+      ? (e.response!.data as Map)['message']?.toString()
+      : null;
+  AppToast.error(context, msg ?? e.message ?? fallback);
+}
 
 class BillingScreen extends StatefulWidget {
   const BillingScreen({super.key});
@@ -63,6 +71,12 @@ class _BillingScreenState extends State<BillingScreen> {
           _isLoading = false;
         });
       }
+    } on DioException catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() => _isLoading = false);
+        showDioError(context, e, l10n.errorFailedLoadInvoices);
+      }
     } catch (_) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
@@ -84,6 +98,12 @@ class _BillingScreenState extends State<BillingScreen> {
           _invoices = response.data as List<dynamic>;
           _isInvoicesLoading = false;
         });
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() => _isInvoicesLoading = false);
+        showDioError(context, e, l10n.errorFailedLoadInvoices);
       }
     } catch (_) {
       if (mounted) {
@@ -110,12 +130,6 @@ class _BillingScreenState extends State<BillingScreen> {
     setState(() {});
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), _loadInvoices);
-  }
-
-  bool get _hasHistoryFilters {
-    return _searchController.text.trim().isNotEmpty ||
-        _dateFromController.text.trim().isNotEmpty ||
-        _dateToController.text.trim().isNotEmpty;
   }
 
   void _clearHistoryFilters() {
@@ -190,16 +204,17 @@ class _BillingScreenState extends State<BillingScreen> {
                 ),
               ),
               if (!isWide)
-                FloatingActionButton.small(
+                PrimaryActionButton.fab(
                   heroTag: 'createInvoice',
                   onPressed: _openCreateInvoice,
-                  child: const Icon(Icons.add_rounded),
+                  icon: Icons.add_rounded,
+                  label: l10n.billingCreateInvoice,
                 )
               else
-                GoldButton(
+                PrimaryActionButton.goldButton(
+                  onPressed: _openCreateInvoice,
                   label: l10n.billingCreateInvoice,
                   icon: Icons.add_rounded,
-                  onPressed: _openCreateInvoice,
                 ),
             ],
           ),
@@ -226,35 +241,21 @@ class _BillingScreenState extends State<BillingScreen> {
 
   Widget _buildSectionSwitch() {
     final l10n = AppLocalizations.of(context)!;
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: [
-        _sectionChip(
-          'dashboard',
-          l10n.billingSectionDashboard,
-          Icons.dashboard_outlined,
+    return SectionSwitch(
+      activeValue: _activeSection,
+      onChanged: (value) => setState(() => _activeSection = value),
+      items: [
+        SectionItem(
+          value: 'dashboard',
+          label: l10n.billingSectionDashboard,
+          icon: Icons.dashboard_outlined,
         ),
-        _sectionChip(
-          'history',
-          l10n.billingSectionHistory,
-          Icons.receipt_long_outlined,
+        SectionItem(
+          value: 'history',
+          label: l10n.billingSectionHistory,
+          icon: Icons.receipt_long_outlined,
         ),
       ],
-    );
-  }
-
-  Widget _sectionChip(String value, String label, IconData icon) {
-    final selected = _activeSection == value;
-    return ChoiceChip(
-      selected: selected,
-      avatar: Icon(
-        icon,
-        size: 18,
-        color: selected ? AppColors.primary : AppColors.text2(context),
-      ),
-      label: Text(label),
-      onSelected: (_) => setState(() => _activeSection = value),
     );
   }
 
@@ -357,114 +358,35 @@ class _BillingScreenState extends State<BillingScreen> {
 
   Widget _buildSearch() {
     final l10n = AppLocalizations.of(context)!;
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 720;
-          final search = TextField(
-            controller: _searchController,
-            onChanged: _onHistoryFilterChanged,
-            textInputAction: TextInputAction.search,
-            decoration: InputDecoration(
-              hintText: l10n.billingSearchHint,
-              prefixIcon: Icon(
-                Icons.search_rounded,
-                color: AppColors.text3(context),
-              ),
-              border: const OutlineInputBorder(),
-            ),
-          );
-          final fromDate = _dateField(
-            l10n: l10n,
-            controller: _dateFromController,
-            label: l10n.billingFromDate,
-          );
-          final toDate = _dateField(
-            l10n: l10n,
-            controller: _dateToController,
-            label: l10n.billingToDate,
-          );
-          final actions = Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              IconButton.filledTonal(
-                tooltip: l10n.billingRefresh,
-                onPressed: _isInvoicesLoading ? null : _loadInvoices,
-                icon: _isInvoicesLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh_rounded),
-              ),
-              IconButton.filledTonal(
-                tooltip: l10n.billingClearFilters,
-                onPressed: _hasHistoryFilters ? _clearHistoryFilters : null,
-                icon: const Icon(Icons.filter_alt_off_outlined),
-              ),
-            ],
-          );
-
-          if (!isWide) {
-            return Column(
-              children: [
-                search,
-                const SizedBox(height: AppSpacing.sm),
-                fromDate,
-                const SizedBox(height: AppSpacing.sm),
-                toDate,
-                const SizedBox(height: AppSpacing.sm),
-                Align(alignment: Alignment.centerRight, child: actions),
-              ],
-            );
-          }
-
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 2, child: search),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(child: fromDate),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(child: toDate),
-              const SizedBox(width: AppSpacing.sm),
-              actions,
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _dateField({
-    required AppLocalizations l10n,
-    required TextEditingController controller,
-    required String label,
-  }) {
-    return TextField(
-      controller: controller,
-      readOnly: true,
-      onTap: () => _pickHistoryDate(controller),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: l10n.billingDateHint,
-        prefixIcon: const Icon(Icons.calendar_month_outlined),
-        suffixIcon: controller.text.trim().isEmpty
-            ? null
-            : IconButton(
-                tooltip: l10n.billingClearFilters,
-                onPressed: () {
-                  controller.clear();
-                  setState(() {});
-                  _loadInvoices();
-                },
-                icon: const Icon(Icons.close_rounded),
-              ),
-        border: const OutlineInputBorder(),
-      ),
+    return SearchFilterBar(
+      searchController: _searchController,
+      onSearchChanged: _onHistoryFilterChanged,
+      searchHint: l10n.billingSearchHint,
+      onClearSearch: _clearHistoryFilters,
+      onRefresh: _loadInvoices,
+      isLoading: _isInvoicesLoading,
+      filterBuilder: (_) => [
+        FilterDateField(
+          controller: _dateFromController,
+          label: l10n.billingFromDate,
+          onTap: () => _pickHistoryDate(_dateFromController),
+          onClear: () {
+            _dateFromController.clear();
+            setState(() {});
+            _loadInvoices();
+          },
+        ),
+        FilterDateField(
+          controller: _dateToController,
+          label: l10n.billingToDate,
+          onTap: () => _pickHistoryDate(_dateToController),
+          onClear: () {
+            _dateToController.clear();
+            setState(() {});
+            _loadInvoices();
+          },
+        ),
+      ],
     );
   }
 
@@ -557,6 +479,11 @@ class _InvoiceCardState extends State<_InvoiceCard> {
     try {
       final response = await widget.api.dio.get('/invoices/$_invoiceId/print');
       return Map<String, dynamic>.from(response.data as Map);
+    } on DioException catch (e) {
+      if (context.mounted) {
+        showDioError(context, e, l10n.errorFailedLoadInvoiceDetails);
+      }
+      return null;
     } catch (_) {
       if (context.mounted) {
         AppToast.error(context, l10n.errorFailedLoadInvoiceDetails);
@@ -579,6 +506,11 @@ class _InvoiceCardState extends State<_InvoiceCard> {
         payload,
         fallbackFileName: 'invoice-$_invoiceId.pdf',
       );
+    } on DioException catch (e) {
+      if (context.mounted) {
+        showDioError(context, e, l10n.errorFailedGenerateInvoicePdf);
+      }
+      return null;
     } catch (_) {
       if (context.mounted) {
         AppToast.error(context, l10n.errorFailedGenerateInvoicePdf);
@@ -649,6 +581,10 @@ class _InvoiceCardState extends State<_InvoiceCard> {
           AppToast.error(context, l10n.errorCouldNotOpenWhatsApp);
         } else if (context.mounted) {
           AppToast.success(context, l10n.billingWhatsAppOpened);
+        }
+      } on DioException catch (e) {
+        if (context.mounted) {
+          showDioError(context, e, l10n.errorFailedPrepareWhatsAppInvoice);
         }
       } catch (_) {
         if (context.mounted) {
@@ -1525,6 +1461,12 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
           _isLoading = false;
         });
       }
+    } on DioException catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        Navigator.of(context).pop(false);
+        showDioError(context, e, l10n.errorFailedLoadBillingData);
+      }
     } catch (_) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
@@ -1576,6 +1518,11 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
     try {
       await widget.api.dio.post('/invoices', data: payload);
       if (mounted) Navigator.of(context).pop(true);
+    } on DioException catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        showDioError(context, e, l10n.errorFailedCreateInvoice);
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -2047,7 +1994,7 @@ class _CreateInvoiceDialogState extends State<_CreateInvoiceDialog> {
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
           child: Text(l10n.commonCancel),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.commonCreate,
           isLoading: _isSaving,
           onPressed: _createInvoice,

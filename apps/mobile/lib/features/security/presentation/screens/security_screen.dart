@@ -512,7 +512,7 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        GoldButton(
+        PrimaryActionButton.goldButton(
           label: l10n.securityExportBackup,
           icon: Icons.cloud_download_rounded,
           isLoading: isBusy,
