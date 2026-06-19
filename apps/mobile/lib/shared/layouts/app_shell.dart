@@ -7,6 +7,7 @@ import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/features/auth/application/app_permissions.dart';
 import 'package:swarnbook/features/auth/data/auth_provider.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:swarnbook/shared/widgets/brand_mark.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -120,38 +121,63 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 768;
 
-    return Scaffold(
-      backgroundColor: AppColors.bg(context),
-      body: SafeArea(
-        bottom: !isWide,
-        child: Row(
-          children: [
-            // Sidebar
-            if (isWide) _buildSidebar(),
-
-            // Main content
-            Expanded(
-              child: Column(
-                children: [
-                  _buildTopBar(isWide),
-                  Expanded(
-                    child: isWide
-                        ? widget.child
-                        : SafeArea(
-                            top: false,
-                            left: false,
-                            right: false,
-                            child: widget.child,
-                          ),
-                  ),
-                ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Are you sure you want to exit?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('NO'),
               ),
-            ),
-          ],
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('YES'),
+              ),
+            ],
+          ),
+        );
+        if (shouldExit == true) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.bg(context),
+        body: SafeArea(
+          bottom: !isWide,
+          child: Row(
+            children: [
+              // Sidebar
+              if (isWide) _buildSidebar(),
+
+              // Main content
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildTopBar(isWide),
+                    Expanded(
+                      child: isWide
+                          ? widget.child
+                          : SafeArea(
+                              top: false,
+                              left: false,
+                              right: false,
+                              child: widget.child,
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
+        bottomNavigationBar: isWide ? null : _buildBottomNav(),
       ),
-      // Bottom nav for mobile
-      bottomNavigationBar: isWide ? null : _buildBottomNav(),
     );
   }
 

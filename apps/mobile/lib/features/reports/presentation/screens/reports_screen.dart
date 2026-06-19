@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
@@ -53,7 +54,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRoleAndReports();
+    SchedulerBinding.instance.addPostFrameCallback(
+      (_) => _loadRoleAndReports(),
+    );
   }
 
   @override
@@ -231,8 +234,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
               const SizedBox(height: AppSpacing.md),
               _buildGroupSwitch(),
               const SizedBox(height: AppSpacing.lg),
-              _buildActiveSummary(isWide),
-              const SizedBox(height: AppSpacing.lg),
               _buildActiveReport(isWide),
             ],
           ),
@@ -390,196 +391,132 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildActiveSummary(bool isWide) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (_activeGroup) {
-      case 'billing':
-        return _buildSummaryGrid([
-          _ReportMetric(
-            icon: Icons.today_outlined,
-            label: l10n.reportsDailySales,
-            value: _money(_dailySalesTotal),
-            color: AppColors.success,
-          ),
-          _ReportMetric(
-            icon: Icons.calendar_month_outlined,
-            label: l10n.reportsMonthlySales,
-            value: _money(_monthlySalesTotal),
-            color: AppColors.primary,
-          ),
-          _ReportMetric(
-            icon: Icons.percent_rounded,
-            label: l10n.reportsGst,
-            value: _money(_gstTotal),
-            color: AppColors.warning,
-          ),
-        ]);
-      case 'mortgage':
-        return _buildSummaryGrid([
-          _ReportMetric(
-            icon: Icons.pending_actions_rounded,
-            label: l10n.reportsActiveLoans,
-            value: _activeLoansReport.length.toString(),
-            color: AppColors.info,
-          ),
-          _ReportMetric(
-            icon: Icons.payments_outlined,
-            label: l10n.reportsInterestCollection,
-            value: _money(_interestCollectionTotal),
-            color: AppColors.success,
-          ),
-          _ReportMetric(
-            icon: Icons.check_circle_outline_rounded,
-            label: l10n.reportsClosedLoans,
-            value: _closedLoansReport.length.toString(),
-            color: AppColors.primary,
-          ),
-        ]);
-      default:
-        return _buildSummaryGrid([
-          _ReportMetric(
-            icon: Icons.inventory_2_outlined,
-            label: l10n.reportsCurrentStock,
-            value: _currentStockReport.length.toString(),
-            color: AppColors.info,
-          ),
-          _ReportMetric(
-            icon: Icons.shopping_bag_outlined,
-            label: l10n.reportsSoldProducts,
-            value: _soldProductsReport.length.toString(),
-            color: AppColors.success,
-          ),
-          _ReportMetric(
-            icon: Icons.warning_amber_rounded,
-            label: l10n.reportsLowStock,
-            value: _lowStockReport.length.toString(),
-            color: AppColors.warning,
-          ),
-        ]);
-    }
-  }
-
-  Widget _buildSummaryGrid(List<_ReportMetric> metrics) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final count = constraints.maxWidth > 900
-            ? 3
-            : (constraints.maxWidth > 620 ? 2 : 1);
-        final width =
-            (constraints.maxWidth - ((count - 1) * AppSpacing.md)) / count;
-        return Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.md,
-          children: [
-            for (final metric in metrics)
-              SizedBox(
-                width: width,
-                child: StatCard(
-                  icon: metric.icon,
-                  label: metric.label,
-                  value: metric.value,
-                  accentColor: metric.color,
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildActiveReport(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
     switch (_activeGroup) {
       case 'billing':
-        return Column(
-          children: [
-            _ReportSection(
-              title: l10n.reportsDailySales,
-              subtitle: _dailySalesSubtitle,
-              emptyText: l10n.reportsNoSalesDay,
-              rows: _dailySalesReport.map(_dailySalesRow).toList(),
-              onExport: () => _exportReport('daily-sales'),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _ReportSection(
-              title: l10n.reportsMonthlySales,
-              subtitle: _monthlySalesSubtitle,
-              emptyText: l10n.reportsNoSalesMonth,
-              rows: _monthlySalesReport.map(_monthlySalesRow).toList(),
-              onExport: () => _exportReport('monthly-sales'),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _ReportSection(
-              title: l10n.reportsGst,
-              subtitle: l10n.reportsGstSubtitle,
-              emptyText: l10n.reportsNoGstData,
-              rows: _gstReport.map(_gstRow).toList(),
-              onExport: () => _exportReport('gst'),
-            ),
-          ],
-        );
+        return _buildResponsiveSections(context, [
+          _ReportSection(
+            title: l10n.reportsDailySales,
+            subtitle: _dailySalesSubtitle,
+            emptyText: l10n.reportsNoSalesDay,
+            rows: _dailySalesReport.map(_dailySalesRow).toList(),
+            metricValue: _money(_dailySalesTotal),
+            metricColor: AppColors.success,
+            onExport: () => _exportReport('daily-sales'),
+          ),
+          _ReportSection(
+            title: l10n.reportsMonthlySales,
+            subtitle: _monthlySalesSubtitle,
+            emptyText: l10n.reportsNoSalesMonth,
+            rows: _monthlySalesReport.map(_monthlySalesRow).toList(),
+            metricValue: _money(_monthlySalesTotal),
+            metricColor: AppColors.primary,
+            onExport: () => _exportReport('monthly-sales'),
+          ),
+          _ReportSection(
+            title: l10n.reportsGst,
+            subtitle: l10n.reportsGstSubtitle,
+            emptyText: l10n.reportsNoGstData,
+            rows: _gstReport.map(_gstRow).toList(),
+            metricValue: _money(_gstTotal),
+            metricColor: AppColors.warning,
+            onExport: () => _exportReport('gst'),
+          ),
+        ]);
       case 'mortgage':
-        return Column(
-          children: [
-            _ReportSection(
-              title: l10n.reportsActiveLoans,
-              subtitle: l10n.reportsActiveLoansSubtitle,
-              emptyText: l10n.reportsNoActiveLoans,
-              rows: _activeLoansReport.map(_activeLoanRow).toList(),
-              onExport: () => _exportReport('active-loans'),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _ReportSection(
-              title: l10n.reportsInterestCollection,
-              subtitle: l10n.reportsInterestCollectionSubtitle,
-              emptyText: l10n.reportsNoInterestCollections,
-              rows: _interestCollectionReport
-                  .map(_interestCollectionRow)
-                  .toList(),
-              onExport: () => _exportReport('interest-collection'),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _ReportSection(
-              title: l10n.reportsClosedLoans,
-              subtitle: l10n.reportsClosedLoansSubtitle,
-              emptyText: l10n.reportsNoClosedLoans,
-              rows: _closedLoansReport.map(_closedLoanRow).toList(),
-              onExport: () => _exportReport('closed-loans'),
-            ),
-          ],
-        );
+        return _buildResponsiveSections(context, [
+          _ReportSection(
+            title: l10n.reportsActiveLoans,
+            subtitle: l10n.reportsActiveLoansSubtitle,
+            emptyText: l10n.reportsNoActiveLoans,
+            rows: _activeLoansReport.map(_activeLoanRow).toList(),
+            metricValue: _activeLoansReport.length.toString(),
+            metricColor: AppColors.info,
+            onExport: () => _exportReport('active-loans'),
+          ),
+          _ReportSection(
+            title: l10n.reportsInterestCollection,
+            subtitle: l10n.reportsInterestCollectionSubtitle,
+            emptyText: l10n.reportsNoInterestCollections,
+            rows: _interestCollectionReport
+                .map(_interestCollectionRow)
+                .toList(),
+            metricValue: _money(_interestCollectionTotal),
+            metricColor: AppColors.success,
+            onExport: () => _exportReport('interest-collection'),
+          ),
+          _ReportSection(
+            title: l10n.reportsClosedLoans,
+            subtitle: l10n.reportsClosedLoansSubtitle,
+            emptyText: l10n.reportsNoClosedLoans,
+            rows: _closedLoansReport.map(_closedLoanRow).toList(),
+            metricValue: _closedLoansReport.length.toString(),
+            metricColor: AppColors.primary,
+            onExport: () => _exportReport('closed-loans'),
+          ),
+        ]);
       default:
+        return _buildResponsiveSections(context, [
+          _ReportSection(
+            title: l10n.reportsCurrentStock,
+            subtitle: l10n.reportsCurrentStockSubtitle(
+              _weight(_inventoryStats['totalGoldWeight']),
+              _weight(_inventoryStats['totalSilverWeight']),
+            ),
+            emptyText: l10n.reportsNoCurrentStock,
+            rows: _currentStockReport.map(_currentStockRow).toList(),
+            metricValue: _currentStockReport.length.toString(),
+            metricColor: AppColors.info,
+            onExport: () => _exportReport('current-stock'),
+          ),
+          _ReportSection(
+            title: l10n.reportsSoldProducts,
+            subtitle: l10n.reportsSoldProductsSubtitle,
+            emptyText: l10n.reportsNoSoldProducts,
+            rows: _soldProductsReport.map(_soldProductRow).toList(),
+            metricValue: _soldProductsReport.length.toString(),
+            metricColor: AppColors.success,
+            onExport: () => _exportReport('sold-products'),
+          ),
+          _ReportSection(
+            title: l10n.reportsLowStock,
+            subtitle: l10n.reportsLowStockSubtitle,
+            emptyText: l10n.reportsNoLowStock,
+            rows: _lowStockReport.map(_lowStockRow).toList(),
+            metricValue: _lowStockReport.length.toString(),
+            metricColor: AppColors.warning,
+            onExport: () => _exportReport('low-stock'),
+          ),
+        ]);
+    }
+  }
+
+  Widget _buildResponsiveSections(BuildContext context, List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 900) {
+          final width = (constraints.maxWidth - AppSpacing.lg) / 2;
+          return Wrap(
+            spacing: AppSpacing.lg,
+            runSpacing: AppSpacing.lg,
+            crossAxisAlignment: WrapCrossAlignment.start,
+            children: children
+                .map((child) => SizedBox(width: width, child: child))
+                .toList(),
+          );
+        }
         return Column(
           children: [
-            _ReportSection(
-              title: l10n.reportsCurrentStock,
-              subtitle: l10n.reportsCurrentStockSubtitle(
-                _weight(_inventoryStats['totalGoldWeight']),
-                _weight(_inventoryStats['totalSilverWeight']),
-              ),
-              emptyText: l10n.reportsNoCurrentStock,
-              rows: _currentStockReport.map(_currentStockRow).toList(),
-              onExport: () => _exportReport('current-stock'),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _ReportSection(
-              title: l10n.reportsSoldProducts,
-              subtitle: l10n.reportsSoldProductsSubtitle,
-              emptyText: l10n.reportsNoSoldProducts,
-              rows: _soldProductsReport.map(_soldProductRow).toList(),
-              onExport: () => _exportReport('sold-products'),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _ReportSection(
-              title: l10n.reportsLowStock,
-              subtitle: l10n.reportsLowStockSubtitle,
-              emptyText: l10n.reportsNoLowStock,
-              rows: _lowStockReport.map(_lowStockRow).toList(),
-              onExport: () => _exportReport('low-stock'),
-            ),
+            for (var i = 0; i < children.length; i++) ...[
+              children[i],
+              if (i < children.length - 1)
+                const SizedBox(height: AppSpacing.lg),
+            ],
           ],
         );
-    }
+      },
+    );
   }
 
   _ReportRow _currentStockRow(Map<String, dynamic> item) {
@@ -838,20 +775,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 }
 
-class _ReportMetric {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _ReportMetric({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-}
-
 class _ReportCell {
   final String label;
   final String value;
@@ -882,6 +805,8 @@ class _ReportSection extends StatelessWidget {
   final String subtitle;
   final String emptyText;
   final List<_ReportRow> rows;
+  final String? metricValue;
+  final Color? metricColor;
   final VoidCallback? onExport;
 
   const _ReportSection({
@@ -889,6 +814,8 @@ class _ReportSection extends StatelessWidget {
     required this.subtitle,
     required this.emptyText,
     required this.rows,
+    this.metricValue,
+    this.metricColor,
     this.onExport,
   });
 
@@ -919,9 +846,9 @@ class _ReportSection extends StatelessWidget {
                 ),
               ),
               Text(
-                rows.length.toString(),
+                metricValue ?? rows.length.toString(),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppColors.primary,
+                  color: metricColor ?? AppColors.primary,
                   fontWeight: FontWeight.w700,
                 ),
               ),

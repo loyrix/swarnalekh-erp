@@ -51,31 +51,43 @@ class SearchFilterBar extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surfL(context),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.brd(context)),
       ),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Row(
         children: [
-          SizedBox(width: 320, child: _buildSearchField(context, l10n)),
-          ...effectiveFilters,
-          if (onRefresh != null)
-            IconButton.filledTonal(
-              tooltip: refreshTooltip ?? l10n.reportsRefresh,
-              onPressed: isLoading ? null : onRefresh,
-              icon: isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.refresh_rounded, size: 18),
+          SizedBox(width: 300, child: _buildSearchField(context, l10n)),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: effectiveFilters,
             ),
+          ),
+          if (onRefresh != null) ...[
+            const SizedBox(width: 8),
+            Container(
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: AppColors.brd(context))),
+              ),
+              padding: const EdgeInsets.only(left: 8),
+              child: IconButton(
+                tooltip: refreshTooltip ?? l10n.reportsRefresh,
+                onPressed: isLoading ? null : onRefresh,
+                icon: isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh_rounded, size: 20),
+              ),
+            ),
+          ],
         ],
       ),
     );

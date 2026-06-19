@@ -35,48 +35,78 @@ class SectionSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      alignment: alignment,
-      spacing: spacing,
-      runSpacing: runSpacing,
-      children: items.map((item) {
-        final selected = activeValue == item.value;
-        return ChoiceChip(
-          selected: selected,
-          avatar: Icon(
-            item.icon,
-            size: 18,
-            color: selected
-                ? AppColors.primary
-                : item.enabled
-                ? AppColors.text2(context)
-                : AppColors.text3(context),
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfL(context),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.brd(context)),
+      ),
+      child: Row(
+        children: items
+            .map((e) => Expanded(child: _buildSegment(context, e)))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildSegment(BuildContext context, SectionItem item) {
+    final selected = activeValue == item.value;
+
+    return GestureDetector(
+      onTap: item.enabled ? () => onChanged(item.value) : null,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.surf(context) : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+          border: selected
+              ? Border.all(color: AppColors.brd(context).withValues(alpha: 0.8))
+              : Border.all(color: Colors.transparent),
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                item.icon,
+                size: 16,
+                color: selected
+                    ? AppColors.primary
+                    : item.enabled
+                    ? AppColors.text2(context)
+                    : AppColors.text3(context).withValues(alpha: 0.5),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  color: selected
+                      ? AppColors.primary
+                      : item.enabled
+                      ? AppColors.text2(context)
+                      : AppColors.text3(context).withValues(alpha: 0.5),
+                ),
+              ),
+            ],
           ),
-          label: Text(item.label),
-          onSelected: item.enabled ? (_) => onChanged(item.value) : null,
-          selectedColor: AppColors.primary.withValues(alpha: 0.1),
-          checkmarkColor: AppColors.primary,
-          labelStyle: TextStyle(
-            color: selected
-                ? AppColors.primary
-                : item.enabled
-                ? AppColors.text1(context)
-                : AppColors.text3(context),
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-          ),
-          side: BorderSide(
-            color: selected
-                ? AppColors.primary.withValues(alpha: 0.4)
-                : item.enabled
-                ? AppColors.brd(context)
-                : AppColors.brd(context).withValues(alpha: 0.5),
-          ),
-          backgroundColor: AppColors.surfL(context),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.full),
-          ),
-        );
-      }).toList(),
+        ),
+      ),
     );
   }
 }

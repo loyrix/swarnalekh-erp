@@ -89,26 +89,26 @@ class AppColors {
   );
 
   // ========== DARK MODE ==========
-  static const Color background = Color(0xFF0D0D12);
-  static const Color surface = Color(0xFF161621);
-  static const Color surfaceLight = Color(0xFF1E1E2D);
-  static const Color surfaceCard = Color(0xFF1A1A28);
-  static const Color surfaceElevated = Color(0xFF22223A);
-  static const Color textPrimary = Color(0xFFF5F5F7);
+  static const Color background = Color(0xFF09090C); // Deeper black
+  static const Color surface = Color(0xFF121218); // Darker surface
+  static const Color surfaceLight = Color(0xFF1A1A24); // Lighter for inputs
+  static const Color surfaceCard = Color(0xFF16161E); // Distinct card
+  static const Color surfaceElevated = Color(0xFF1E1E2A);
+  static const Color textPrimary = Color(0xFFF9F9FB);
   static const Color textSecondary = Color(0xFFA1A1B5);
   static const Color textMuted = Color(0xFF6B6B80);
-  static const Color textOnPrimary = Color(0xFF1A1A28);
-  static const Color border = Color(0xFF2A2A3D);
-  static const Color borderLight = Color(0xFF33334D);
-  static const Color divider = Color(0xFF1F1F33);
+  static const Color textOnPrimary = Color(0xFF09090C); // Dark text on gold
+  static const Color border = Color(0xFF242433); // Darker border
+  static const Color borderLight = Color(0xFF2E2E40);
+  static const Color divider = Color(0xFF1A1A24);
   static const Color glassBorder = Color(0x1AFFFFFF);
   static const LinearGradient cardGradient = LinearGradient(
-    colors: [Color(0xFF1E1E30), Color(0xFF161625)],
+    colors: [Color(0xFF16161E), Color(0xFF121218)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient surfaceGradient = LinearGradient(
-    colors: [Color(0xFF1E1E2D), Color(0xFF161621)],
+    colors: [Color(0xFF1A1A24), Color(0xFF121218)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

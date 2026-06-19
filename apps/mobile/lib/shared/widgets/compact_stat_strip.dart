@@ -8,55 +8,86 @@ class CompactStatStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        itemCount: stats.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final stat = stats[index];
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: stat.color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: stat.color.withValues(alpha: 0.15)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(stat.icon, size: 14, color: stat.color),
-                const SizedBox(width: 6),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      stat.value,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        color: AppColors.text1(context),
-                      ),
-                    ),
-                    Text(
-                      stat.label,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: AppColors.text3(context),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+        final spacing = 12.0;
+        final runSpacing = 12.0;
+        // Floor to avoid floating point precision layout overflows
+        final itemWidth =
+            ((constraints.maxWidth - (spacing * (crossAxisCount - 1))) /
+                    crossAxisCount)
+                .floorToDouble();
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: runSpacing,
+          children: stats.map((stat) {
+            return SizedBox(
+              width: itemWidth,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surfL(context),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(color: stat.color.withValues(alpha: 0.3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: stat.color.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: stat.color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: Icon(stat.icon, size: 16, color: stat.color),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            stat.value,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              color: AppColors.text1(context),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            stat.label,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppColors.text3(context),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }

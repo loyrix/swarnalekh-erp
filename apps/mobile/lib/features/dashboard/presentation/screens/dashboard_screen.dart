@@ -321,61 +321,43 @@ class _DashboardScreenState extends State<DashboardScreen>
             ).textTheme.titleMedium?.copyWith(color: AppColors.text2(context)),
           ),
           const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            height: 36,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: 5,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final items = <Widget>[];
-                items.add(
-                  _quickActionChip(
-                    Icons.receipt_long_rounded,
-                    l10n.dashboardNewBill,
-                    AppColors.success,
-                    () => context.go('/billing'),
-                  ),
-                );
-                if (canManage) {
-                  items.add(
-                    _quickActionChip(
-                      Icons.add_box_rounded,
-                      l10n.inventoryAddItem,
-                      AppColors.info,
-                      () => context.go('/inventory'),
-                    ),
-                  );
-                  items.add(
-                    _quickActionChip(
-                      Icons.account_balance_rounded,
-                      l10n.dashboardAddMortgage,
-                      AppColors.warning,
-                      () => context.go('/mortgage'),
-                    ),
-                  );
-                }
-                items.add(
-                  _quickActionChip(
-                    Icons.search_rounded,
-                    l10n.dashboardSearchProduct,
-                    AppColors.primary,
-                    () => context.go('/inventory'),
-                  ),
-                );
-                items.add(
-                  _quickActionChip(
-                    Icons.person_search_rounded,
-                    l10n.dashboardSearchCustomer,
-                    AppColors.info,
-                    () => context.go('/customers'),
-                  ),
-                );
-                return index < items.length
-                    ? items[index]
-                    : const SizedBox.shrink();
-              },
-            ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _quickActionChip(
+                Icons.receipt_long_rounded,
+                l10n.dashboardNewBill,
+                AppColors.success,
+                () => context.go('/billing'),
+              ),
+              if (canManage) ...[
+                _quickActionChip(
+                  Icons.add_box_rounded,
+                  l10n.inventoryAddItem,
+                  AppColors.info,
+                  () => context.go('/inventory'),
+                ),
+                _quickActionChip(
+                  Icons.account_balance_rounded,
+                  l10n.dashboardAddMortgage,
+                  AppColors.warning,
+                  () => context.go('/mortgage'),
+                ),
+              ],
+              _quickActionChip(
+                Icons.search_rounded,
+                l10n.dashboardSearchProduct,
+                AppColors.primary,
+                () => context.go('/inventory?focus=search'),
+              ),
+              _quickActionChip(
+                Icons.person_add_alt_1_rounded,
+                l10n.dashboardNewContact,
+                AppColors.info,
+                () => context.go('/reports?focus=search'),
+              ),
+            ],
           ),
         ],
       );
@@ -522,7 +504,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         final actualRevenue = _number(_stats['monthlyRevenue']);
 
         final revenueChart = GlassCard(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -533,7 +515,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.md),
               SizedBox(
                 height: chartHeight,
                 child: LineChart(
@@ -558,7 +540,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
-                          reservedSize: 30,
+                          reservedSize: 22,
                           interval: 1,
                           getTitlesWidget: (value, meta) {
                             if (value >= 0 && value < 4) {
@@ -568,7 +550,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   'W${value.toInt() + 1}',
                                   style: TextStyle(
                                     color: AppColors.text3(context),
-                                    fontSize: 12,
+                                    fontSize: 11,
                                   ),
                                 ),
                               );
@@ -583,13 +565,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                           interval: actualRevenue > 0
                               ? actualRevenue / 4
                               : 1000,
-                          reservedSize: 50,
+                          reservedSize: 40,
                           getTitlesWidget: (value, meta) {
                             return Text(
                               _formatMoney(value),
                               style: TextStyle(
                                 color: AppColors.text3(context),
-                                fontSize: 11,
+                                fontSize: 10,
                               ),
                             );
                           },
@@ -607,12 +589,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ],
                         isCurved: true,
                         color: AppColors.primary,
-                        barWidth: 4,
+                        barWidth: 3,
                         isStrokeCapRound: true,
                         dotData: const FlDotData(show: false),
                         belowBarData: BarAreaData(
                           show: true,
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.primary.withValues(alpha: 0.2),
+                              AppColors.primary.withValues(alpha: 0.01),
+                            ],
+                          ),
                         ),
                       ),
                     ],
