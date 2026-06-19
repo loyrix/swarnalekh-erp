@@ -293,6 +293,7 @@ describe('InventoryService', () => {
       },
     ]);
 
+    prisma.inventoryItem.findMany.mockResolvedValue([]);
     await expect(
       service.getSoldProducts('tenant-1', {
         search: 'Priya',

@@ -430,30 +430,66 @@ export class InventoryService {
   }
 
   async getSoldProducts(tenantId: string, filters?: SoldProductsFilters) {
-    const invoices = await this.prisma.invoice.findMany({
-      where: this.buildSoldProductsWhere(tenantId, filters),
-      orderBy: [{ invoiceDate: 'desc' }, { createdAt: 'desc' }],
-      select: {
-        id: true,
-        invoiceNumber: true,
-        invoiceDate: true,
-        createdAt: true,
-        customerName: true,
-        customerPhone: true,
-        paymentMode: true,
-        items: {
-          select: {
-            id: true,
-            itemName: true,
-            itemTotal: true,
-            quantity: true,
-            inventoryItemId: true,
+    const search = filters?.search?.trim();
+    const dateFrom = this.parseDate(filters?.dateFrom);
+    const dateTo = this.parseDate(filters?.dateTo, true);
+
+    const [invoices, manualItems] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where: this.buildSoldProductsWhere(tenantId, filters),
+        orderBy: [{ invoiceDate: 'desc' }, { createdAt: 'desc' }],
+        select: {
+          id: true,
+          invoiceNumber: true,
+          invoiceDate: true,
+          createdAt: true,
+          customerName: true,
+          customerPhone: true,
+          paymentMode: true,
+          items: {
+            select: {
+              id: true,
+              itemName: true,
+              itemTotal: true,
+              quantity: true,
+              inventoryItemId: true,
+            },
           },
         },
-      },
-    });
+      }),
+      this.prisma.inventoryItem.findMany({
+        where: {
+          tenantId,
+          status: 'sold',
+          deletedAt: null,
+          invoiceItems: { none: {} },
+          ...((dateFrom || dateTo) && {
+            updatedAt: {
+              ...(dateFrom && { gte: dateFrom }),
+              ...(dateTo && { lte: dateTo }),
+            },
+          }),
+          ...(search && {
+            OR: [
+              { itemName: { contains: search, mode: 'insensitive' } },
+              { tagNumber: { contains: search, mode: 'insensitive' } },
+              { barcode: { contains: search, mode: 'insensitive' } },
+            ],
+          }),
+        },
+        select: {
+          id: true,
+          itemName: true,
+          tagNumber: true,
+          updatedAt: true,
+          sellingPrice: true,
+          quantity: true,
+        },
+        orderBy: { updatedAt: 'desc' },
+      }),
+    ]);
 
-    return invoices.flatMap((invoice) =>
+    const soldFromInvoices = invoices.flatMap((invoice) =>
       invoice.items.map((item) => ({
         id: item.id,
         invoiceId: invoice.id,
@@ -467,6 +503,24 @@ export class InventoryService {
         quantity: item.quantity,
         inventoryItemId: item.inventoryItemId,
       })),
+    );
+
+    const soldManually = manualItems.map((item) => ({
+      id: item.id,
+      invoiceId: null,
+      invoiceNumber: '-',
+      customerName: 'Manual Update',
+      customerPhone: null,
+      productName: item.itemName ?? item.tagNumber ?? 'Product',
+      soldDate: item.updatedAt,
+      sellingPrice: this.toNumber(item.sellingPrice) || 0,
+      paymentMethod: '-',
+      quantity: item.quantity,
+      inventoryItemId: item.id,
+    }));
+
+    return [...soldFromInvoices, ...soldManually].sort(
+      (a, b) => b.soldDate.getTime() - a.soldDate.getTime(),
     );
   }
 
