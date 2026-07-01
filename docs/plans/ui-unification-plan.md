@@ -46,7 +46,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 | ------ | --------------------------------------------------------------------- | -------------------- |
 | 0      | Foundation: tokens, cleanup, design-system kit + tests                | ✅ Done (2026-07-01) |
 | **A1** | Dashboard — polish                                                    | ✅ Done (2026-07-01) |
-| **A2** | Inventory — polish                                                    | ⬜                   |
+| **A2** | Inventory — polish                                                    | ✅ Done (2026-07-01) |
 | **A3** | Mortgage — polish                                                     | ⬜                   |
 | **A4** | Reports — polish                                                      | ⬜                   |
 | **A5** | Support screens (User Mgmt, Shop Profile, Rates, Customers) — polish  | ⬜                   |
@@ -228,9 +228,11 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 
 ## Resume pointer (update at end of each work session)
 
-- **Current phase:** A2 — Inventory polish (not started)
-- **Last completed step:** ✅ A1 Dashboard complete (2026-07-01). Delivered: real **7-day salesTrend** in backend `dashboard.getStats` (+ spec; replaced fabricated chart data); typed `DashboardData`/`DashboardStats`/`SalesTrendPoint` + `DashboardRepository` + Riverpod `dashboardProvider`; screen rewritten as `ConsumerWidget` on `AppStateView` (real loading/error+retry/data), unified `CompactStatStrip` (retired tall `_DashboardStatCard`), **localized date** via `intl DateFormat` (removed hardcoded English month/day arrays), cleaned quick actions (removed bogus `/reports?focus=search`). Verified: mobile analyze clean, `flutter test` = 71, `apps/api` test = 59.
-- **Next action:** A2 Inventory — migrate the 2,454-line screen onto the kit (typed `InventoryItem`, `AppSectionScaffold` Stock/Sold/Reports tabs, replace 3 DataTables with `CompactDataRow`, Add/Edit Stock as `AppFormScaffold` route, detail via `AppDetailSheet`, filters via `AppFilterSheet`), 4 states, l10n, decompose file, widget tests.
+- **Current phase:** A3 — Mortgage polish (not started)
+- **Last completed step:** ✅ A2 Inventory complete (2026-07-01). Screen decomposed **2,454 → 699 lines** across typed model/repo/providers + `inventory_form_page` (full-screen `AppFormScaffold` route, pricing auto-calc + image upload preserved) + `ocr_review_page` (full-screen route, **DataTable removed**, hardcoded OCR strings localized) + `inventory_detail_sheet` (`AppDetailSheet`) + `inventory_format`. Screen now `ConsumerStatefulWidget` on `AppSectionScaffold` + `AppStateView`; **all 3 DataTables replaced with `CompactDataRow`** (mobile & wide); filters in `AppFilterSheet`; search always visible. New l10n (en/hi/gu) for OCR fields + generic validations. Verified: mobile analyze clean, `flutter test` = 85 (+14), api unchanged (59).
+- **Prev:** A1 Dashboard complete (2026-07-01). Delivered: real **7-day salesTrend** in backend `dashboard.getStats` (+ spec; replaced fabricated chart data); typed `DashboardData`/`DashboardStats`/`SalesTrendPoint` + `DashboardRepository` + Riverpod `dashboardProvider`; screen rewritten as `ConsumerWidget` on `AppStateView` (real loading/error+retry/data), unified `CompactStatStrip` (retired tall `_DashboardStatCard`), **localized date** via `intl DateFormat` (removed hardcoded English month/day arrays), cleaned quick actions (removed bogus `/reports?focus=search`). Verified: mobile analyze clean, `flutter test` = 71, `apps/api` test = 59.
+- **Next action:** A3 Mortgage — migrate the 1,353-line screen onto the kit (typed `MortgageLoan`/`Payment`, `AppSectionScaffold` Active/Closed tabs, compact `CompactDataRow` loan rows, Add Mortgage + Collect Interest as `AppFormScaffold` routes, detail/receipt via `AppDetailSheet`, `CompactStatStrip`), 4 states, l10n, widget tests.
+- **A2 follow-up (minor):** `inventory_form_page.dart` (821) and `inventory_list_screen.dart` (699) exceed the 400-line target but are cohesive; split further only if they grow. Inventory "Reports" tab (PDF stock-reports) not built — no backend endpoint yet; revisit in reports/hardening.
 - **Deferred nit:** dashboard `totalInventoryValue` vs per-item selling price consistency → handle in **B1** (server pricing) where the root cause lives.
 - **Open questions for owner:** none. Awaiting "go" to start A2.
 - **Kit usage note:** import `package:swarnbook/shared/widgets/app_kit.dart` in feature screens; do not build bespoke stat/row/form/filter widgets.
