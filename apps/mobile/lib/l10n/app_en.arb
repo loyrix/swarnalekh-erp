@@ -457,6 +457,8 @@
     }
   },
   "dashboardRevenueTrend": "Revenue Trend",
+  "dashboardSalesLast7Days": "Sales · last 7 days",
+  "dashboardNoRecentSales": "No sales in the last 7 days",
   "dashboardMonthlyRevenue": "Monthly Revenue",
   "dashboardPendingInterest": "Pending Interest",
   "dashboardActiveLoans": "Active Loans",

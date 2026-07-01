@@ -1243,6 +1243,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardRevenueTrend => 'Revenue Trend';
 
   @override
+  String get dashboardSalesLast7Days => 'Sales · last 7 days';
+
+  @override
+  String get dashboardNoRecentSales => 'No sales in the last 7 days';
+
+  @override
   String get dashboardMonthlyRevenue => 'Monthly Revenue';
 
   @override

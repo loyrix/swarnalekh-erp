@@ -2506,6 +2506,18 @@ abstract class AppLocalizations {
   /// **'Revenue Trend'**
   String get dashboardRevenueTrend;
 
+  /// No description provided for @dashboardSalesLast7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales · last 7 days'**
+  String get dashboardSalesLast7Days;
+
+  /// No description provided for @dashboardNoRecentSales.
+  ///
+  /// In en, this message translates to:
+  /// **'No sales in the last 7 days'**
+  String get dashboardNoRecentSales;
+
   /// No description provided for @dashboardMonthlyRevenue.
   ///
   /// In en, this message translates to:

@@ -352,6 +352,8 @@
     }
   },
   "dashboardRevenueTrend": "रेवेन्यू ट्रेंड",
+  "dashboardSalesLast7Days": "बिक्री · पिछले 7 दिन",
+  "dashboardNoRecentSales": "पिछले 7 दिनों में कोई बिक्री नहीं",
   "dashboardMonthlyRevenue": "मासिक राजस्व",
   "dashboardPendingInterest": "लंबित ब्याज",
   "dashboardActiveLoans": "सक्रिय लोन",

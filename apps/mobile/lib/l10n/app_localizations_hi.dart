@@ -1251,6 +1251,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get dashboardRevenueTrend => 'रेवेन्यू ट्रेंड';
 
   @override
+  String get dashboardSalesLast7Days => 'बिक्री · पिछले 7 दिन';
+
+  @override
+  String get dashboardNoRecentSales => 'पिछले 7 दिनों में कोई बिक्री नहीं';
+
+  @override
   String get dashboardMonthlyRevenue => 'मासिक राजस्व';
 
   @override

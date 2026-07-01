@@ -352,6 +352,8 @@
     }
   },
   "dashboardRevenueTrend": "રેવન્યૂ ટ્રેન્ડ",
+  "dashboardSalesLast7Days": "વેચાણ · છેલ્લા 7 દિવસ",
+  "dashboardNoRecentSales": "છેલ્લા 7 દિવસમાં કોઈ વેચાણ નથી",
   "dashboardMonthlyRevenue": "માસિક રેવન્યૂ",
   "dashboardPendingInterest": "બાકી વ્યાજ",
   "dashboardActiveLoans": "સક્રિય લોન",

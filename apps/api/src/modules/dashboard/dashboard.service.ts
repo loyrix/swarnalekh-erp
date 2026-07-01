@@ -30,6 +30,12 @@ export class DashboardService {
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Inclusive 7-day window ending today (for the sales trend chart).
+    const weekStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 6,
+    );
 
     const latestRateDate = await this.prisma.dailyRate.findFirst({
       where: { tenantId },
@@ -45,6 +51,7 @@ export class DashboardService {
       totalBillsGenerated,
       activeMortgageLoans,
       monthlySoldItemsObj,
+      weeklyInvoices,
     ] = await Promise.all([
       this.prisma.inventoryItem.findMany({
         where: { tenantId, deletedAt: null },
@@ -106,6 +113,14 @@ export class DashboardService {
           },
         },
         _sum: { quantity: true },
+      }),
+      this.prisma.invoice.findMany({
+        where: {
+          tenantId,
+          invoiceDate: { gte: weekStart },
+          deletedAt: null,
+        },
+        select: { invoiceDate: true, grandTotal: true },
       }),
     ]);
 
@@ -170,6 +185,8 @@ export class DashboardService {
 
     const soldProductsThisMonth = monthlySoldItemsObj._sum.quantity ?? 0;
 
+    const salesTrend = this.buildSalesTrend(weeklyInvoices, weekStart);
+
     return {
       totalGoldStock: this.round(totalGoldStock, 3),
       totalSilverStock: this.round(totalSilverStock, 3),
@@ -181,7 +198,42 @@ export class DashboardService {
       totalBillsGenerated,
       activeMortgagePrincipal: this.round(activeMortgagePrincipal),
       soldProductsThisMonth,
+      salesTrend,
     };
+  }
+
+  private dateKey(value: Date): string {
+    const date = new Date(value);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+  }
+
+  /** Buckets invoices into 7 daily totals (oldest → today), zero-filled. */
+  private buildSalesTrend(
+    invoices: Array<{ invoiceDate: Date; grandTotal: unknown }>,
+    weekStart: Date,
+  ): Array<{ date: string; total: number }> {
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(
+        weekStart.getFullYear(),
+        weekStart.getMonth(),
+        weekStart.getDate() + i,
+      );
+      return { date: this.dateKey(day), total: 0 };
+    });
+    const indexByDate = new Map(days.map((day, i) => [day.date, i]));
+
+    for (const invoice of invoices) {
+      const index = indexByDate.get(this.dateKey(invoice.invoiceDate));
+      if (index != null) {
+        days[index].total = this.round(
+          days[index].total + this.toNumber(invoice.grandTotal),
+        );
+      }
+    }
+
+    return days;
   }
 
   async getBootstrap(

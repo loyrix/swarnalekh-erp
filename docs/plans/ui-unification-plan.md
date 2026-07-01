@@ -45,7 +45,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 | Phase  | Title                                                                 | Status               |
 | ------ | --------------------------------------------------------------------- | -------------------- |
 | 0      | Foundation: tokens, cleanup, design-system kit + tests                | ✅ Done (2026-07-01) |
-| **A1** | Dashboard — polish                                                    | ⬜                   |
+| **A1** | Dashboard — polish                                                    | ✅ Done (2026-07-01) |
 | **A2** | Inventory — polish                                                    | ⬜                   |
 | **A3** | Mortgage — polish                                                     | ⬜                   |
 | **A4** | Reports — polish                                                      | ⬜                   |
@@ -228,8 +228,9 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 
 ## Resume pointer (update at end of each work session)
 
-- **Current phase:** A1 — Dashboard polish (not started)
-- **Last completed step:** ✅ Stage 0 complete (2026-07-01) — breakpoints helper, dead-dir cleanup, hardened staff guard, and full design-system kit (`AppStateView`/`AppSectionScaffold`/`AppFormScaffold`/`AppDetailSheet`/`AppFilterSheet` + adopted `CompactDataRow`/`CompactStatStrip`) via `app_kit.dart`. Full analyze clean, 64 tests pass.
-- **Next action:** A1 Dashboard — migrate onto the kit (`CompactStatStrip` for summary cards, quick-action chip row routing into `AppFormScaffold` forms, remove "(Mock)" label, trim welcome banner), typed model, 4 states, l10n, widget tests.
-- **Open questions for owner:** none. Awaiting "go" to start A1.
+- **Current phase:** A2 — Inventory polish (not started)
+- **Last completed step:** ✅ A1 Dashboard complete (2026-07-01). Delivered: real **7-day salesTrend** in backend `dashboard.getStats` (+ spec; replaced fabricated chart data); typed `DashboardData`/`DashboardStats`/`SalesTrendPoint` + `DashboardRepository` + Riverpod `dashboardProvider`; screen rewritten as `ConsumerWidget` on `AppStateView` (real loading/error+retry/data), unified `CompactStatStrip` (retired tall `_DashboardStatCard`), **localized date** via `intl DateFormat` (removed hardcoded English month/day arrays), cleaned quick actions (removed bogus `/reports?focus=search`). Verified: mobile analyze clean, `flutter test` = 71, `apps/api` test = 59.
+- **Next action:** A2 Inventory — migrate the 2,454-line screen onto the kit (typed `InventoryItem`, `AppSectionScaffold` Stock/Sold/Reports tabs, replace 3 DataTables with `CompactDataRow`, Add/Edit Stock as `AppFormScaffold` route, detail via `AppDetailSheet`, filters via `AppFilterSheet`), 4 states, l10n, decompose file, widget tests.
+- **Deferred nit:** dashboard `totalInventoryValue` vs per-item selling price consistency → handle in **B1** (server pricing) where the root cause lives.
+- **Open questions for owner:** none. Awaiting "go" to start A2.
 - **Kit usage note:** import `package:swarnbook/shared/widgets/app_kit.dart` in feature screens; do not build bespoke stat/row/form/filter widgets.

@@ -1244,6 +1244,12 @@ class AppLocalizationsGu extends AppLocalizations {
   String get dashboardRevenueTrend => 'રેવન્યૂ ટ્રેન્ડ';
 
   @override
+  String get dashboardSalesLast7Days => 'વેચાણ · છેલ્લા 7 દિવસ';
+
+  @override
+  String get dashboardNoRecentSales => 'છેલ્લા 7 દિવસમાં કોઈ વેચાણ નથી';
+
+  @override
   String get dashboardMonthlyRevenue => 'માસિક રેવન્યૂ';
 
   @override

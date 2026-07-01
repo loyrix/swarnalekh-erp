@@ -104,6 +104,10 @@ describe('DashboardService', () => {
         { grandTotal: decimal(10000) },
         { grandTotal: decimal(5000) },
         { grandTotal: decimal(25000) },
+      ])
+      // weekly invoices for the sales trend
+      .mockResolvedValueOnce([
+        { invoiceDate: new Date(), grandTotal: decimal(15000) },
       ]);
     prisma.invoice.count.mockResolvedValue(12);
     prisma.mortgageLoan.findMany.mockResolvedValue([makeActiveLoan()]);
@@ -120,6 +124,7 @@ describe('DashboardService', () => {
       totalBillsGenerated: 12,
       activeMortgagePrincipal: 100000,
       soldProductsThisMonth: 5,
+      salesTrend: expect.any(Array),
     });
     expect(prisma.inventoryItem.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -129,6 +134,33 @@ describe('DashboardService', () => {
     expect(prisma.invoice.count).toHaveBeenCalledWith({
       where: { tenantId: 'tenant-1', deletedAt: null },
     });
+  });
+
+  it('builds a zero-filled 7-day sales trend ending today', async () => {
+    const { service, prisma } = createService();
+
+    prisma.dailyRate.findFirst.mockResolvedValue(null);
+    prisma.dailyRate.findMany.mockResolvedValue([]);
+    prisma.inventoryItem.findMany.mockResolvedValue([]);
+    prisma.invoice.findMany
+      .mockResolvedValueOnce([]) // today
+      .mockResolvedValueOnce([]) // month
+      .mockResolvedValueOnce([
+        { invoiceDate: new Date(), grandTotal: decimal(12000) },
+        { invoiceDate: new Date(), grandTotal: decimal(3000) },
+      ]); // week
+    prisma.invoice.count.mockResolvedValue(0);
+    prisma.mortgageLoan.findMany.mockResolvedValue([]);
+    prisma.invoiceItem.aggregate.mockResolvedValue({ _sum: { quantity: 0 } });
+
+    const stats = await service.getStats('tenant-1');
+
+    expect(stats.salesTrend).toHaveLength(7);
+    // Chronological, zero-filled, and today's bucket sums both invoices.
+    const dates = stats.salesTrend.map((point) => point.date);
+    expect([...dates].sort()).toEqual(dates);
+    expect(stats.salesTrend[6].total).toBe(15000);
+    expect(stats.salesTrend.slice(0, 6).every((p) => p.total === 0)).toBe(true);
   });
 
   it('returns a compact bootstrap payload for the PDF dashboard', async () => {

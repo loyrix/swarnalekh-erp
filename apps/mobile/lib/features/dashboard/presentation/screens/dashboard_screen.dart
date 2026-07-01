@@ -1,41 +1,140 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
-import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/features/auth/application/app_permissions.dart';
-import 'package:swarnbook/shared/widgets/common_widgets.dart';
-import 'package:swarnbook/shared/widgets/shimmer_loading.dart';
-import 'package:swarnbook/shared/widgets/quick_action_card.dart';
-import 'package:swarnbook/shared/widgets/staggered_animation.dart';
-import 'package:swarnbook/shared/widgets/error_toast.dart';
-import 'package:swarnbook/shared/widgets/compact_stat_strip.dart';
+import 'package:swarnbook/features/dashboard/application/dashboard_providers.dart';
+import 'package:swarnbook/features/dashboard/data/models/dashboard_data.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/widgets/app_kit.dart';
+import 'package:swarnbook/shared/widgets/staggered_animation.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(dashboardProvider);
+    return AppStateView<DashboardData>(
+      value: async,
+      loading: const _DashboardShimmer(),
+      onRetry: () => ref.invalidate(dashboardProvider),
+      data: (data) => RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () => ref.refresh(dashboardProvider.future),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: _DashboardContent(data: data),
+        ),
+      ),
+    );
+  }
 }
 
-class _DashboardScreenState extends State<DashboardScreen>
-    with TickerProviderStateMixin {
-  Map<String, dynamic> _stats = const {};
-  bool _isLoading = true;
+class _DashboardContent extends StatelessWidget {
+  const _DashboardContent({required this.data});
 
-  // User info (would come from auth state in production)
-  String _userName = '';
-  String _shopName = '';
-  String? _role;
-
-  final _apiClient = ApiClient();
+  final DashboardData data;
 
   @override
-  void initState() {
-    super.initState();
-    _loadDashboard();
+  Widget build(BuildContext context) {
+    final isWide = AppDensity.isExpanded(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        StaggeredSection(index: 0, child: _WelcomeBanner(data: data)),
+        const SizedBox(height: AppSpacing.lg),
+        StaggeredSection(index: 1, child: _QuickActions(role: data.role)),
+        const SizedBox(height: AppSpacing.lg),
+        StaggeredSection(
+          index: 2,
+          child: _SalesTrendChart(points: data.stats.salesTrend),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        StaggeredSection(
+          index: 3,
+          child: CompactStatStrip(stats: _stats(context, data.stats, isWide)),
+        ),
+      ],
+    );
   }
+
+  List<({IconData icon, String label, String value, Color color})> _stats(
+    BuildContext context,
+    DashboardStats s,
+    bool isWide,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      (
+        icon: Icons.scale_rounded,
+        label: l10n.dashboardTotalGoldStock,
+        value: _formatWeight(s.totalGoldStock),
+        color: AppColors.gold,
+      ),
+      (
+        icon: Icons.scale_outlined,
+        label: l10n.dashboardTotalSilverStock,
+        value: _formatWeight(s.totalSilverStock),
+        color: AppColors.silver,
+      ),
+      (
+        icon: Icons.inventory_2_rounded,
+        label: l10n.dashboardInventoryValue,
+        value: _formatMoney(s.totalInventoryValue),
+        color: AppColors.primary,
+      ),
+      (
+        icon: Icons.trending_up_rounded,
+        label: l10n.dashboardMonthlyRevenue,
+        value: _formatMoney(s.monthlyRevenue),
+        color: AppColors.success,
+      ),
+      (
+        icon: Icons.account_balance_wallet_rounded,
+        label: l10n.dashboardPendingInterest,
+        value: _formatMoney(s.pendingMortgageInterest),
+        color: AppColors.warning,
+      ),
+      (
+        icon: Icons.account_balance_rounded,
+        label: l10n.dashboardActiveLoans,
+        value: '${s.activeLoans}',
+        color: AppColors.info,
+      ),
+      (
+        icon: Icons.point_of_sale_rounded,
+        label: l10n.dashboardTodaysSales,
+        value: _formatMoney(s.todaysSales),
+        color: AppColors.success,
+      ),
+      (
+        icon: Icons.receipt_long_rounded,
+        label: l10n.dashboardTotalBills,
+        value: '${s.totalBillsGenerated}',
+        color: AppColors.primary,
+      ),
+      (
+        icon: Icons.shopping_bag_rounded,
+        label: l10n.dashboardSoldProducts,
+        value: '${s.soldProductsThisMonth}',
+        color: AppColors.info,
+      ),
+    ];
+  }
+}
+
+// ==========================================================================
+// WELCOME BANNER
+// ==========================================================================
+
+class _WelcomeBanner extends StatelessWidget {
+  const _WelcomeBanner({required this.data});
+
+  final DashboardData data;
 
   String _greeting(AppLocalizations l10n) {
     final hour = DateTime.now().hour;
@@ -44,159 +143,16 @@ class _DashboardScreenState extends State<DashboardScreen>
     return l10n.dashboardGoodEvening;
   }
 
-  Future<void> _loadDashboard() async {
-    try {
-      final response = await _apiClient.dio.get('/dashboard/bootstrap');
-
-      final payload = response.data as Map<String, dynamic>;
-      final stats = payload['stats'] as Map<String, dynamic>? ?? {};
-      final me = (payload['user'] as Map<String, dynamic>? ?? {});
-      final tenant = (payload['tenant'] as Map<String, dynamic>? ?? {});
-
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        setState(() {
-          _stats = stats;
-          _userName = me['name'] ?? l10n.dashboardOwnerFallback;
-          _role = me['role']?.toString();
-          _shopName = tenant['shopName'] ?? '';
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        setState(() => _isLoading = false);
-        AppToast.error(context, l10n.errorFailedLoadDashboard);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 768;
-    return RefreshIndicator(
-      color: AppColors.primary,
-      onRefresh: _loadDashboard,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: _isLoading ? _buildShimmerState() : _buildLoadedState(isWide),
-      ),
-    );
-  }
-
-  // ========================================
-  // SHIMMER LOADING STATE
-  // ========================================
-
-  Widget _buildShimmerState() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const ShimmerWelcomeBanner(),
-        const SizedBox(height: AppSpacing.lg),
-        _buildShimmerQuickActions(),
-        const SizedBox(height: AppSpacing.lg),
-        _buildShimmerStatsGrid(),
-      ],
-    );
-  }
-
-  Widget _buildShimmerQuickActions() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 900
-            ? 5
-            : constraints.maxWidth > 600
-            ? 3
-            : 2;
-        return Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.md,
-          children: List.generate(
-            5,
-            (_) => SizedBox(
-              width:
-                  (constraints.maxWidth -
-                      (crossAxisCount - 1) * AppSpacing.md) /
-                  crossAxisCount,
-              child: Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  gradient: AppColors.cardGrad(context),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: AppColors.brd(context)),
-                ),
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ShimmerBox(
-                      width: 42,
-                      height: 42,
-                      borderRadius: AppRadius.md,
-                    ),
-                    const Spacer(),
-                    const ShimmerBox(width: 80, height: 13),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildShimmerStatsGrid() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 900 ? 4 : 2;
-        return Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.md,
-          children: List.generate(
-            8,
-            (_) => SizedBox(
-              width:
-                  (constraints.maxWidth -
-                      (crossAxisCount - 1) * AppSpacing.md) /
-                  crossAxisCount,
-              child: const ShimmerStatCard(),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // ========================================
-  // LOADED STATE
-  // ========================================
-
-  Widget _buildLoadedState(bool isWide) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        StaggeredSection(index: 0, child: _buildWelcomeBanner(isWide)),
-        const SizedBox(height: AppSpacing.lg),
-        StaggeredSection(index: 1, child: _buildQuickActions(isWide)),
-        const SizedBox(height: AppSpacing.lg),
-        StaggeredSection(index: 2, child: _buildCharts()),
-        const SizedBox(height: AppSpacing.lg),
-        StaggeredSection(index: 3, child: _buildStatsGrid(isWide)),
-      ],
-    );
-  }
-
-  Widget _buildWelcomeBanner(bool isWide) {
     final l10n = AppLocalizations.of(context)!;
-    final displayName = _userName.isNotEmpty
-        ? _userName
+    final isWide = AppDensity.isExpanded(context);
+    final locale = Localizations.localeOf(context).toString();
+    final displayName = data.userName.isNotEmpty
+        ? data.userName
         : l10n.dashboardOwnerFallback;
-    final shopDisplay = _shopName.isNotEmpty
-        ? _shopName
+    final shopDisplay = data.shopName.isNotEmpty
+        ? data.shopName
         : l10n.dashboardShopFallback;
 
     return Container(
@@ -248,7 +204,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  _formattedDate(),
+                  DateFormat.yMMMMEEEEd(locale).format(DateTime.now()),
                   style: TextStyle(
                     color: AppColors.text3(context),
                     fontSize: isWide ? 12 : 11,
@@ -277,91 +233,61 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
   }
+}
 
-  String _formattedDate() {
-    final now = DateTime.now();
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]} ${now.year}';
-  }
+// ==========================================================================
+// QUICK ACTIONS
+// ==========================================================================
 
-  Widget _buildQuickActions(bool isWide) {
+class _QuickActions extends StatelessWidget {
+  const _QuickActions({required this.role});
+
+  final String? role;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final canManage = isAdminRole(_role);
+    final canManage = isAdminRole(role);
 
-    if (!isWide) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.dashboardQuickActions,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: AppColors.text2(context)),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _quickActionChip(
-                Icons.receipt_long_rounded,
-                l10n.dashboardNewBill,
-                AppColors.success,
-                () => context.go('/billing'),
-              ),
-              if (canManage) ...[
-                _quickActionChip(
-                  Icons.add_box_rounded,
-                  l10n.inventoryAddItem,
-                  AppColors.info,
-                  () => context.go('/inventory'),
-                ),
-                _quickActionChip(
-                  Icons.account_balance_rounded,
-                  l10n.dashboardAddMortgage,
-                  AppColors.warning,
-                  () => context.go('/mortgage'),
-                ),
-              ],
-              _quickActionChip(
-                Icons.search_rounded,
-                l10n.dashboardSearchProduct,
-                AppColors.primary,
-                () => context.go('/inventory?focus=search'),
-              ),
-              _quickActionChip(
-                Icons.person_add_alt_1_rounded,
-                l10n.dashboardNewContact,
-                AppColors.info,
-                () => context.go('/reports?focus=search'),
-              ),
-            ],
-          ),
-        ],
-      );
-    }
+    final actions = <Widget>[
+      _chip(
+        context,
+        Icons.receipt_long_rounded,
+        l10n.dashboardNewBill,
+        AppColors.success,
+        () => context.go('/billing'),
+      ),
+      if (canManage)
+        _chip(
+          context,
+          Icons.add_box_rounded,
+          l10n.inventoryAddItem,
+          AppColors.info,
+          () => context.go('/inventory'),
+        ),
+      if (canManage)
+        _chip(
+          context,
+          Icons.account_balance_rounded,
+          l10n.dashboardAddMortgage,
+          AppColors.warning,
+          () => context.go('/mortgage'),
+        ),
+      _chip(
+        context,
+        Icons.search_rounded,
+        l10n.dashboardSearchProduct,
+        AppColors.primary,
+        () => context.go('/inventory'),
+      ),
+      _chip(
+        context,
+        Icons.person_search_rounded,
+        l10n.dashboardSearchCustomer,
+        AppColors.info,
+        () => context.go('/customers'),
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,93 +299,13 @@ class _DashboardScreenState extends State<DashboardScreen>
           ).textTheme.titleMedium?.copyWith(color: AppColors.text2(context)),
         ),
         const SizedBox(height: AppSpacing.sm),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final crossAxisCount = constraints.maxWidth > 900
-                ? 5
-                : constraints.maxWidth > 600
-                ? 3
-                : 2;
-            return Wrap(
-              spacing: AppSpacing.md,
-              runSpacing: AppSpacing.md,
-              children: [
-                SizedBox(
-                  width:
-                      (constraints.maxWidth -
-                          (crossAxisCount - 1) * AppSpacing.md) /
-                      crossAxisCount,
-                  child: QuickActionCard(
-                    icon: Icons.receipt_long_rounded,
-                    label: l10n.dashboardNewBill,
-                    subtitle: l10n.dashboardCreateInvoice,
-                    color: AppColors.success,
-                    onTap: () => context.go('/billing'),
-                  ),
-                ),
-                if (canManage)
-                  SizedBox(
-                    width:
-                        (constraints.maxWidth -
-                            (crossAxisCount - 1) * AppSpacing.md) /
-                        crossAxisCount,
-                    child: QuickActionCard(
-                      icon: Icons.add_box_rounded,
-                      label: l10n.inventoryAddItem,
-                      subtitle: l10n.navInventory,
-                      color: AppColors.info,
-                      onTap: () => context.go('/inventory'),
-                    ),
-                  ),
-                if (canManage)
-                  SizedBox(
-                    width:
-                        (constraints.maxWidth -
-                            (crossAxisCount - 1) * AppSpacing.md) /
-                        crossAxisCount,
-                    child: QuickActionCard(
-                      icon: Icons.account_balance_rounded,
-                      label: l10n.dashboardAddMortgage,
-                      subtitle: l10n.navMortgage,
-                      color: AppColors.warning,
-                      onTap: () => context.go('/mortgage'),
-                    ),
-                  ),
-                SizedBox(
-                  width:
-                      (constraints.maxWidth -
-                          (crossAxisCount - 1) * AppSpacing.md) /
-                      crossAxisCount,
-                  child: QuickActionCard(
-                    icon: Icons.search_rounded,
-                    label: l10n.dashboardSearchProduct,
-                    subtitle: l10n.navInventory,
-                    color: AppColors.primary,
-                    onTap: () => context.go('/inventory'),
-                  ),
-                ),
-                SizedBox(
-                  width:
-                      (constraints.maxWidth -
-                          (crossAxisCount - 1) * AppSpacing.md) /
-                      crossAxisCount,
-                  child: QuickActionCard(
-                    icon: Icons.person_search_rounded,
-                    label: l10n.dashboardSearchCustomer,
-                    subtitle: l10n.navCustomers,
-                    color: AppColors.info,
-                    onTap: () => context.go('/customers'),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+        Wrap(spacing: 8, runSpacing: 8, children: actions),
       ],
     );
   }
 
-  Widget _quickActionChip(
+  Widget _chip(
+    BuildContext context,
     IconData icon,
     String label,
     Color color,
@@ -468,22 +314,22 @@ class _DashboardScreenState extends State<DashboardScreen>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: color),
+            Icon(icon, size: 16, color: color),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
                 color: AppColors.text1(context),
               ),
             ),
@@ -492,380 +338,193 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
   }
-
-  Widget _buildCharts() {
-    final l10n = AppLocalizations.of(context)!;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 800;
-        final chartHeight = 300.0;
-
-        // Use a mock line chart for Revenue trend ending at actual monthly revenue
-        final actualRevenue = _number(_stats['monthlyRevenue']);
-
-        final revenueChart = GlassCard(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.dashboardRevenueTrend,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.text1(context),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                height: chartHeight,
-                child: LineChart(
-                  LineChartData(
-                    gridData: FlGridData(
-                      show: true,
-                      drawVerticalLine: false,
-                      horizontalInterval: actualRevenue > 0
-                          ? actualRevenue / 4
-                          : 1000,
-                      getDrawingHorizontalLine: (value) =>
-                          FlLine(color: AppColors.div(context), strokeWidth: 1),
-                    ),
-                    titlesData: FlTitlesData(
-                      show: true,
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 22,
-                          interval: 1,
-                          getTitlesWidget: (value, meta) {
-                            if (value >= 0 && value < 4) {
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(
-                                  'W${value.toInt() + 1}',
-                                  style: TextStyle(
-                                    color: AppColors.text3(context),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                      ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          interval: actualRevenue > 0
-                              ? actualRevenue / 4
-                              : 1000,
-                          reservedSize: 40,
-                          getTitlesWidget: (value, meta) {
-                            return Text(
-                              _formatMoney(value),
-                              style: TextStyle(
-                                color: AppColors.text3(context),
-                                fontSize: 10,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    borderData: FlBorderData(show: false),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: [
-                          FlSpot(0, actualRevenue * 0.2),
-                          FlSpot(1, actualRevenue * 0.4),
-                          FlSpot(2, actualRevenue * 0.7),
-                          FlSpot(3, actualRevenue),
-                        ],
-                        isCurved: true,
-                        color: AppColors.primary,
-                        barWidth: 3,
-                        isStrokeCapRound: true,
-                        dotData: const FlDotData(show: false),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              AppColors.primary.withValues(alpha: 0.2),
-                              AppColors.primary.withValues(alpha: 0.01),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-        return isWide
-            ? Row(children: [Expanded(child: revenueChart)])
-            : revenueChart;
-      },
-    );
-  }
-
-  Widget _buildStatsGrid(bool isWide) {
-    final l10n = AppLocalizations.of(context)!;
-    final metrics = <_DashboardMetric>[
-      _DashboardMetric(
-        icon: Icons.scale_rounded,
-        label: l10n.dashboardTotalGoldStock,
-        value: _formatWeight(_stats['totalGoldStock']),
-        subtitle: l10n.dashboardAvailableNetWeight,
-        accentColor: AppColors.gold,
-      ),
-      _DashboardMetric(
-        icon: Icons.scale_outlined,
-        label: l10n.dashboardTotalSilverStock,
-        value: _formatWeight(_stats['totalSilverStock']),
-        subtitle: l10n.dashboardAvailableNetWeight,
-        accentColor: AppColors.silver,
-      ),
-      _DashboardMetric(
-        icon: Icons.inventory_2_rounded,
-        label: l10n.dashboardInventoryValue,
-        value: _formatMoney(_stats['totalInventoryValue']),
-        subtitle: l10n.dashboardAvailableStockValue,
-        accentColor: AppColors.primary,
-      ),
-      _DashboardMetric(
-        icon: Icons.trending_up_rounded,
-        label: l10n.dashboardMonthlyRevenue,
-        value: _formatMoney(_stats['monthlyRevenue']),
-        subtitle: l10n.dashboardThisMonth,
-        accentColor: AppColors.success,
-      ),
-      _DashboardMetric(
-        icon: Icons.account_balance_wallet_rounded,
-        label: l10n.dashboardPendingInterest,
-        value: _formatMoney(_stats['pendingMortgageInterest']),
-        subtitle: l10n.dashboardMortgageDues,
-        accentColor: AppColors.warning,
-      ),
-      _DashboardMetric(
-        icon: Icons.account_balance_rounded,
-        label: l10n.dashboardActiveLoans,
-        value: _formatCount(_stats['activeLoans']),
-        subtitle: l10n.dashboardMortgageAccounts,
-        accentColor: AppColors.info,
-      ),
-      _DashboardMetric(
-        icon: Icons.point_of_sale_rounded,
-        label: l10n.dashboardTodaysSales,
-        value: _formatMoney(_stats['todaysSales']),
-        subtitle: l10n.dashboardBilledToday,
-        accentColor: AppColors.success,
-      ),
-      _DashboardMetric(
-        icon: Icons.receipt_long_rounded,
-        label: l10n.dashboardTotalBills,
-        value: _formatCount(_stats['totalBillsGenerated']),
-        subtitle: l10n.dashboardGeneratedInvoices,
-        accentColor: AppColors.primary,
-      ),
-      _DashboardMetric(
-        icon: Icons.shopping_bag_rounded,
-        label: l10n.dashboardSoldProducts,
-        value: _formatCount(_stats['soldProductsThisMonth']),
-        subtitle: l10n.dashboardSoldThisMonthSubtitle,
-        accentColor: AppColors.info,
-      ),
-    ];
-
-    if (!isWide) {
-      final top4 = <({IconData icon, String label, String value, Color color})>[
-        (
-          icon: Icons.scale_rounded,
-          label: l10n.dashboardGold,
-          value: _formatWeight(_stats['totalGoldStock']),
-          color: AppColors.gold,
-        ),
-        (
-          icon: Icons.scale_outlined,
-          label: l10n.dashboardSilver,
-          value: _formatWeight(_stats['totalSilverStock']),
-          color: AppColors.silver,
-        ),
-        (
-          icon: Icons.trending_up_rounded,
-          label: l10n.dashboardRevenue,
-          value: _formatMoney(_stats['monthlyRevenue']),
-          color: AppColors.success,
-        ),
-        (
-          icon: Icons.account_balance_rounded,
-          label: l10n.dashboardLoans,
-          value: _formatCount(_stats['activeLoans']),
-          color: AppColors.info,
-        ),
-      ];
-      return Column(
-        children: [
-          CompactStatStrip(stats: top4),
-          const SizedBox(height: AppSpacing.sm),
-          ExpansionTile(
-            title: Text(
-              l10n.dashboardViewAllStats(metrics.length),
-              style: TextStyle(fontSize: 13, color: AppColors.text2(context)),
-            ),
-            tilePadding: EdgeInsets.zero,
-            childrenPadding: EdgeInsets.zero,
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final crossAxisCount = constraints.maxWidth > 900 ? 4 : 2;
-                  return Wrap(
-                    spacing: AppSpacing.md,
-                    runSpacing: AppSpacing.md,
-                    children: metrics
-                        .map(
-                          (metric) => SizedBox(
-                            width:
-                                (constraints.maxWidth -
-                                    (crossAxisCount - 1) * AppSpacing.md) /
-                                crossAxisCount,
-                            child: _DashboardStatCard(metric: metric),
-                          ),
-                        )
-                        .toList(),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 900 ? 4 : 2;
-        return Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.md,
-          children: metrics
-              .map(
-                (metric) => SizedBox(
-                  width:
-                      (constraints.maxWidth -
-                          (crossAxisCount - 1) * AppSpacing.md) /
-                      crossAxisCount,
-                  child: _DashboardStatCard(metric: metric),
-                ),
-              )
-              .toList(),
-        );
-      },
-    );
-  }
-
-  double _number(dynamic value) {
-    if (value == null) return 0;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString()) ?? 0;
-  }
-
-  String _formatCount(dynamic value) => _number(value).round().toString();
-
-  String _formatWeight(dynamic value) {
-    final grams = _number(value);
-    if (grams >= 1000) return '${(grams / 1000).toStringAsFixed(2)} kg';
-    return '${grams.toStringAsFixed(3)} g';
-  }
-
-  String _formatMoney(dynamic value) {
-    final amount = _number(value);
-    if (amount >= 10000000) {
-      return '₹${(amount / 10000000).toStringAsFixed(2)}Cr';
-    }
-    if (amount >= 100000) {
-      return '₹${(amount / 100000).toStringAsFixed(2)}L';
-    }
-    if (amount >= 1000) {
-      return '₹${(amount / 1000).toStringAsFixed(1)}K';
-    }
-    return '₹${amount.toStringAsFixed(0)}';
-  }
 }
 
-class _DashboardMetric {
-  final IconData icon;
-  final String label;
-  final String value;
-  final String subtitle;
-  final Color accentColor;
+// ==========================================================================
+// SALES TREND CHART (real 7-day data)
+// ==========================================================================
 
-  const _DashboardMetric({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.subtitle,
-    required this.accentColor,
-  });
-}
+class _SalesTrendChart extends StatelessWidget {
+  const _SalesTrendChart({required this.points});
 
-class _DashboardStatCard extends StatelessWidget {
-  final _DashboardMetric metric;
-
-  const _DashboardStatCard({required this.metric});
+  final List<SalesTrendPoint> points;
 
   @override
   Widget build(BuildContext context) {
-    final color = metric.accentColor;
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
+    final maxTotal = points.fold<double>(
+      0,
+      (m, p) => p.total > m ? p.total : m,
+    );
+
     return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(AppRadius.md),
+          Text(
+            l10n.dashboardSalesLast7Days,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.text1(context),
+              fontWeight: FontWeight.w600,
             ),
-            child: Icon(metric.icon, color: color, size: 22),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
-            metric.value,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.text1(context),
+          SizedBox(
+            height: 240,
+            child: maxTotal <= 0
+                ? Center(
+                    child: Text(
+                      l10n.dashboardNoRecentSales,
+                      style: TextStyle(color: AppColors.text3(context)),
+                    ),
+                  )
+                : _buildChart(context, locale, maxTotal),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChart(BuildContext context, String locale, double maxTotal) {
+    final interval = maxTotal / 4;
+    return LineChart(
+      LineChartData(
+        minY: 0,
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: interval,
+          getDrawingHorizontalLine: (value) =>
+              FlLine(color: AppColors.div(context), strokeWidth: 1),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                final i = value.toInt();
+                if (i < 0 || i >= points.length) return const SizedBox.shrink();
+                final date = points[i].parsedDate;
+                final label = date == null
+                    ? ''
+                    : DateFormat.E(locale).format(date);
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: AppColors.text3(context),
+                      fontSize: 10,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            metric.label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.text2(context)),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: interval,
+              reservedSize: 44,
+              getTitlesWidget: (value, meta) => Text(
+                _formatMoney(value),
+                style: TextStyle(color: AppColors.text3(context), fontSize: 10),
+              ),
+            ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            metric.subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w500,
+        ),
+        borderData: FlBorderData(show: false),
+        lineBarsData: [
+          LineChartBarData(
+            spots: [
+              for (var i = 0; i < points.length; i++)
+                FlSpot(i.toDouble(), points[i].total),
+            ],
+            isCurved: true,
+            color: AppColors.primary,
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: true),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.2),
+                  AppColors.primary.withValues(alpha: 0.01),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+// ==========================================================================
+// SHIMMER
+// ==========================================================================
+
+class _DashboardShimmer extends StatelessWidget {
+  const _DashboardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ShimmerWelcomeBanner(),
+          const SizedBox(height: AppSpacing.lg),
+          Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.md,
+            children: List.generate(
+              4,
+              (_) => const SizedBox(width: 150, child: ShimmerStatCard()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ==========================================================================
+// FORMATTERS
+// ==========================================================================
+
+double _num(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString()) ?? 0;
+}
+
+String _formatWeight(dynamic value) {
+  final grams = _num(value);
+  if (grams >= 1000) return '${(grams / 1000).toStringAsFixed(2)} kg';
+  return '${grams.toStringAsFixed(3)} g';
+}
+
+String _formatMoney(dynamic value) {
+  final amount = _num(value);
+  if (amount >= 10000000) return '₹${(amount / 10000000).toStringAsFixed(2)}Cr';
+  if (amount >= 100000) return '₹${(amount / 100000).toStringAsFixed(2)}L';
+  if (amount >= 1000) return '₹${(amount / 1000).toStringAsFixed(1)}K';
+  return '₹${amount.toStringAsFixed(0)}';
 }
