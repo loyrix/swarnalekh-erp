@@ -1,346 +1,129 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
-import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/auth/application/app_permissions.dart';
-import 'package:swarnbook/features/reports/application/report_export_payloads.dart';
-import 'package:swarnbook/shared/widgets/common_widgets.dart';
-import 'package:swarnbook/shared/widgets/empty_state.dart';
+import 'package:swarnbook/features/reports/application/reports_providers.dart';
+import 'package:swarnbook/features/reports/data/models/reports_data.dart';
+import 'package:swarnbook/features/reports/data/reports_repository.dart';
+import 'package:swarnbook/features/reports/presentation/report_format.dart';
+import 'package:swarnbook/features/reports/presentation/widgets/report_section.dart';
+import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 
-import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
-
-class ReportsScreen extends StatefulWidget {
+class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
 
   @override
-  State<ReportsScreen> createState() => _ReportsScreenState();
+  ConsumerState<ReportsScreen> createState() => _ReportsScreenState();
 }
 
-class _ReportsScreenState extends State<ReportsScreen> {
+class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   final ApiClient _api = ApiClient();
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _dateFromController = TextEditingController();
-  final TextEditingController _dateToController = TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
-  final TextEditingController _branchController = TextEditingController();
-  final NumberFormat _currency = NumberFormat.currency(
-    locale: 'en_IN',
-    symbol: '₹',
-    decimalDigits: 0,
-  );
-  Timer? _filterDebounce;
+  Timer? _searchDebounce;
 
-  bool _isLoading = true;
-  bool _canViewReports = false;
-  String _activeGroup = 'inventory';
-  String _statusFilter = 'all';
-  List<Map<String, dynamic>> _currentStockRows = [];
-  List<Map<String, dynamic>> _soldProductsRows = [];
-  List<Map<String, dynamic>> _lowStockRows = [];
-  List<Map<String, dynamic>> _dailySalesRows = [];
-  List<Map<String, dynamic>> _monthlySalesRows = [];
-  List<Map<String, dynamic>> _gstRows = [];
-  List<Map<String, dynamic>> _activeLoansRows = [];
-  List<Map<String, dynamic>> _interestCollectionRows = [];
-  List<Map<String, dynamic>> _closedLoansRows = [];
-  Map<String, dynamic> _inventoryStats = {};
+  ReportsQuery _query = const ReportsQuery();
+  String _group = 'inventory';
+  bool _roleLoaded = false;
+  bool _canView = false;
 
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback(
-      (_) => _loadRoleAndReports(),
-    );
+    _loadRole();
   }
 
   @override
   void dispose() {
-    _filterDebounce?.cancel();
+    _searchDebounce?.cancel();
     _searchController.dispose();
-    _dateFromController.dispose();
-    _dateToController.dispose();
-    _categoryController.dispose();
-    _branchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadRoleAndReports() async {
-    final l10n = AppLocalizations.of(context)!;
+  Future<void> _loadRole() async {
     try {
       final role = await fetchCurrentUserRole(_api);
       if (!mounted) return;
-      _canViewReports = isAdminRole(role);
-      if (!_canViewReports) {
-        setState(() => _isLoading = false);
-        return;
-      }
-      await _loadReports();
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      AppToast.error(context, l10n.errorFailedLoadDashboard);
-    }
-  }
-
-  Future<void> _loadReports() async {
-    final l10n = AppLocalizations.of(context)!;
-    if (!_canViewReports) return;
-    try {
-      final response = await _api.dio.get(
-        '/reports/overview',
-        queryParameters: _reportQueryParameters(),
-      );
-      final payload = response.data as Map<String, dynamic>? ?? {};
-      final reports = payload['reports'] as Map<String, dynamic>? ?? {};
-
-      if (!mounted) return;
       setState(() {
-        _currentStockRows = _mapList(reports['currentStock']);
-        _soldProductsRows = _mapList(reports['soldProducts']);
-        _lowStockRows = _mapList(reports['lowStock']);
-        _dailySalesRows = _mapList(reports['dailySales']);
-        _monthlySalesRows = _mapList(reports['monthlySales']);
-        _gstRows = _mapList(reports['gst']);
-        _activeLoansRows = _mapList(reports['activeLoans']);
-        _interestCollectionRows = _mapList(reports['interestCollection']);
-        _closedLoansRows = _mapList(reports['closedLoans']);
-        _inventoryStats =
-            payload['inventoryStats'] as Map<String, dynamic>? ?? {};
-        _isLoading = false;
+        _canView = isAdminRole(role);
+        _roleLoaded = true;
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      AppToast.error(context, l10n.errorFailedLoadDashboard);
+      if (mounted) setState(() => _roleLoaded = true);
     }
   }
 
-  Map<String, dynamic>? _reportQueryParameters() {
-    final params = <String, dynamic>{
-      if (_searchController.text.trim().isNotEmpty)
-        'search': _searchController.text.trim(),
-      if (_dateFromController.text.trim().isNotEmpty)
-        'dateFrom': _dateFromController.text.trim(),
-      if (_dateToController.text.trim().isNotEmpty)
-        'dateTo': _dateToController.text.trim(),
-      if (_categoryController.text.trim().isNotEmpty)
-        'categoryName': _categoryController.text.trim(),
-      if (_branchController.text.trim().isNotEmpty)
-        'branch': _branchController.text.trim(),
-      if (_statusFilter != 'all') 'status': _statusFilter,
-    };
-    return params.isEmpty ? null : params;
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      setState(() => _query = _query.copyWith(search: value));
+    });
   }
 
-  void _onFilterChanged(String _) {
-    setState(() {});
-    _filterDebounce?.cancel();
-    _filterDebounce = Timer(const Duration(milliseconds: 350), _loadReports);
+  Future<void> _refresh() async {
+    ref.invalidate(reportsProvider(_query));
+    await ref.read(reportsProvider(_query).future);
   }
 
-  List<Map<String, dynamic>> _mapList(dynamic value) {
-    return (value as List<dynamic>? ?? const [])
-        .map((entry) => Map<String, dynamic>.from(entry as Map))
-        .toList();
-  }
-
-  List<Map<String, dynamic>> get _currentStockReport {
-    return _currentStockRows;
-  }
-
-  List<Map<String, dynamic>> get _lowStockReport {
-    return _lowStockRows;
-  }
-
-  List<Map<String, dynamic>> get _soldProductsReport {
-    return _soldProductsRows;
-  }
-
-  List<Map<String, dynamic>> get _dailySalesReport {
-    return _dailySalesRows;
-  }
-
-  List<Map<String, dynamic>> get _monthlySalesReport {
-    return _monthlySalesRows;
-  }
-
-  List<Map<String, dynamic>> get _gstReport => _gstRows;
-
-  List<Map<String, dynamic>> get _activeLoansReport {
-    return _activeLoansRows;
-  }
-
-  List<Map<String, dynamic>> get _closedLoansReport {
-    return _closedLoansRows;
-  }
-
-  List<Map<String, dynamic>> get _interestCollectionReport {
-    return _interestCollectionRows;
-  }
-
-  Future<void> _exportReport(String reportType) async {
+  Future<void> _export(String reportType) async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final response = await _api.dio.get(
-        '/reports/export/$reportType',
-        queryParameters: _reportQueryParameters(),
-      );
-      final payload = decodeReportPdfPayload(
-        Map<String, dynamic>.from(response.data as Map),
-        fallbackFileName: '$reportType-report.pdf',
-      );
+      final payload = await ref
+          .read(reportsRepositoryProvider)
+          .exportReport(reportType, _query);
       await Printing.sharePdf(bytes: payload.bytes, filename: payload.fileName);
     } catch (_) {
-      if (!mounted) return;
-      AppToast.error(context, l10n.errorFailedLoadDashboard);
+      if (mounted) AppToast.error(context, l10n.errorFailedLoadDashboard);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Future<void> _openFilters() async {
     final l10n = AppLocalizations.of(context)!;
-    final isWide = MediaQuery.of(context).size.width > 768;
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    final from = TextEditingController(text: _query.dateFrom);
+    final to = TextEditingController(text: _query.dateTo);
+    final category = TextEditingController(text: _query.category);
+    final branch = TextEditingController(text: _query.branch);
+    var status = _query.status;
 
-    if (!_canViewReports) {
-      return EmptyState(
-        icon: Icons.lock_outline_rounded,
-        title: l10n.reportsAdminOnly,
-        subtitle: l10n.reportsStaffSubtitle,
-        iconColor: AppColors.warning,
-      );
-    }
-
-    return KeyboardDismissRegion(
-      child: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: _loadReports,
-        child: KeyboardAwareScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(isWide),
-              const SizedBox(height: AppSpacing.lg),
-              _buildFilters(isWide),
-              const SizedBox(height: AppSpacing.md),
-              _buildGroupSwitch(),
-              const SizedBox(height: AppSpacing.lg),
-              _buildActiveReport(isWide),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(bool isWide) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.reportsTitle,
-          style: isWide
-              ? Theme.of(context).textTheme.displaySmall
-              : Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        if (isWide) ...[
-          const SizedBox(height: 6),
-          Text(
-            l10n.reportsSubtitle,
-            style: TextStyle(color: AppColors.text3(context)),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildFilters(bool isWide) {
-    final l10n = AppLocalizations.of(context)!;
-    return SearchFilterBar(
-      searchController: _searchController,
-      onSearchChanged: _onFilterChanged,
-      searchHint: l10n.reportsSearchHint,
-      onRefresh: _loadReports,
-      isLoading: _isLoading,
-      filterBuilder: (_) => [
-        SizedBox(
-          width: 170,
-          child: TextField(
-            controller: _dateFromController,
-            onChanged: _onFilterChanged,
-            decoration: InputDecoration(
-              labelText: l10n.reportsFromDate,
-              hintText: l10n.reportsDateHint,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              isDense: true,
+    await AppFilterSheet.show(
+      context,
+      onApply: () => setState(() {
+        _query = _query.copyWith(
+          dateFrom: from.text,
+          dateTo: to.text,
+          category: category.text,
+          branch: branch.text,
+          status: status,
+        );
+      }),
+      onClear: () {
+        from.clear();
+        to.clear();
+        category.clear();
+        branch.clear();
+        status = 'all';
+      },
+      builder: (context, setSheetState) => [
+        _sheetField(from, l10n.reportsFromDate, hint: l10n.reportsDateHint),
+        _sheetField(to, l10n.reportsToDate, hint: l10n.reportsDateHint),
+        _sheetField(category, l10n.reportsCategory),
+        _sheetField(branch, l10n.reportsBranch),
+        DropdownButtonFormField<String>(
+          initialValue: status,
+          decoration: InputDecoration(
+            labelText: l10n.reportsStatus,
+            isDense: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
-        ),
-        SizedBox(
-          width: 170,
-          child: TextField(
-            controller: _dateToController,
-            onChanged: _onFilterChanged,
-            decoration: InputDecoration(
-              labelText: l10n.reportsToDate,
-              hintText: l10n.reportsDateHint,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              isDense: true,
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 170,
-          child: TextField(
-            controller: _categoryController,
-            onChanged: _onFilterChanged,
-            decoration: InputDecoration(
-              labelText: l10n.reportsCategory,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              isDense: true,
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 170,
-          child: TextField(
-            controller: _branchController,
-            onChanged: _onFilterChanged,
-            decoration: InputDecoration(
-              labelText: l10n.reportsBranch,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              isDense: true,
-            ),
-          ),
-        ),
-        FilterDropdown<String>(
-          value: _statusFilter,
-          label: l10n.reportsStatus,
-          width: 180,
-          onChanged: (value) {
-            setState(() => _statusFilter = value ?? 'all');
-            _loadReports();
-          },
           items: [
             DropdownMenuItem(value: 'all', child: Text(l10n.reportsAllStatus)),
             DropdownMenuItem(
@@ -361,17 +144,52 @@ class _ReportsScreenState extends State<ReportsScreen> {
               child: Text(l10n.reportsClosedLoan),
             ),
           ],
+          onChanged: (v) => setSheetState(() => status = v ?? 'all'),
         ),
       ],
     );
+
+    from.dispose();
+    to.dispose();
+    category.dispose();
+    branch.dispose();
   }
 
-  Widget _buildGroupSwitch() {
+  Widget _sheetField(TextEditingController c, String label, {String? hint}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: TextField(
+        controller: c,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          isDense: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return SectionSwitch(
-      activeValue: _activeGroup,
-      onChanged: (value) => setState(() => _activeGroup = value),
-      items: [
+    if (!_roleLoaded) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (!_canView) {
+      return EmptyState(
+        icon: Icons.lock_outline_rounded,
+        title: l10n.reportsAdminOnly,
+        subtitle: l10n.reportsStaffSubtitle,
+        iconColor: AppColors.warning,
+      );
+    }
+
+    return AppSectionScaffold(
+      header: _header(l10n),
+      sections: [
         SectionItem(
           value: 'inventory',
           label: l10n.reportsInventoryReports,
@@ -388,600 +206,299 @@ class _ReportsScreenState extends State<ReportsScreen> {
           icon: Icons.account_balance_outlined,
         ),
       ],
+      activeSection: _group,
+      onSectionChanged: (v) => setState(() => _group = v),
+      onRefresh: _refresh,
+      body: _body(),
     );
   }
 
-  Widget _buildActiveReport(bool isWide) {
+  Widget _header(AppLocalizations l10n) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            decoration: InputDecoration(
+              hintText: l10n.reportsSearchHint,
+              isDense: true,
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        IconButton.filledTonal(
+          tooltip: l10n.commonFilters,
+          onPressed: _openFilters,
+          icon: const Icon(Icons.tune_rounded),
+        ),
+      ],
+    );
+  }
+
+  Widget _body() {
+    final async = ref.watch(reportsProvider(_query));
+    return AppStateView<ReportsData>(
+      value: async,
+      onRetry: () => ref.invalidate(reportsProvider(_query)),
+      data: (data) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        children: _sectionsFor(data)
+            .map(
+              (s) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: s,
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  List<Widget> _sectionsFor(ReportsData data) {
     final l10n = AppLocalizations.of(context)!;
-    switch (_activeGroup) {
+    switch (_group) {
       case 'billing':
-        return _buildResponsiveSections(context, [
-          _ReportSection(
+        final dailyTotal = data.dailySales.fold<double>(
+          0,
+          (s, i) => s + i.grandTotal,
+        );
+        final monthlyTotal = data.monthlySales.fold<double>(
+          0,
+          (s, i) => s + i.grandTotal,
+        );
+        final gstTotal = data.gst.fold<double>(0, (s, i) => s + i.totalTax);
+        return [
+          ReportSection(
             title: l10n.reportsDailySales,
-            subtitle: _dailySalesSubtitle,
+            subtitle: _salesOn(l10n),
             emptyText: l10n.reportsNoSalesDay,
-            rows: _dailySalesReport.map(_dailySalesRow).toList(),
-            metricValue: _money(_dailySalesTotal),
+            rows: data.dailySales.map((i) => _salesRow(l10n, i)).toList(),
+            metricValue: reportMoney(dailyTotal),
             metricColor: AppColors.success,
-            onExport: () => _exportReport('daily-sales'),
+            onExport: () => _export('daily-sales'),
           ),
-          _ReportSection(
+          ReportSection(
             title: l10n.reportsMonthlySales,
-            subtitle: _monthlySalesSubtitle,
+            subtitle: _salesIn(l10n),
             emptyText: l10n.reportsNoSalesMonth,
-            rows: _monthlySalesReport.map(_monthlySalesRow).toList(),
-            metricValue: _money(_monthlySalesTotal),
+            rows: data.monthlySales.map((i) => _salesRow(l10n, i)).toList(),
+            metricValue: reportMoney(monthlyTotal),
             metricColor: AppColors.primary,
-            onExport: () => _exportReport('monthly-sales'),
+            onExport: () => _export('monthly-sales'),
           ),
-          _ReportSection(
+          ReportSection(
             title: l10n.reportsGst,
             subtitle: l10n.reportsGstSubtitle,
             emptyText: l10n.reportsNoGstData,
-            rows: _gstReport.map(_gstRow).toList(),
-            metricValue: _money(_gstTotal),
+            rows: data.gst.map((i) => _gstRow(l10n, i)).toList(),
+            metricValue: reportMoney(gstTotal),
             metricColor: AppColors.warning,
-            onExport: () => _exportReport('gst'),
+            onExport: () => _export('gst'),
           ),
-        ]);
+        ];
       case 'mortgage':
-        return _buildResponsiveSections(context, [
-          _ReportSection(
+        final interestTotal = data.interestCollection.fold<double>(
+          0,
+          (s, i) => s + i.amount,
+        );
+        return [
+          ReportSection(
             title: l10n.reportsActiveLoans,
             subtitle: l10n.reportsActiveLoansSubtitle,
             emptyText: l10n.reportsNoActiveLoans,
-            rows: _activeLoansReport.map(_activeLoanRow).toList(),
-            metricValue: _activeLoansReport.length.toString(),
+            rows: data.activeLoans.map((i) => _activeLoanRow(l10n, i)).toList(),
+            metricValue: '${data.activeLoans.length}',
             metricColor: AppColors.info,
-            onExport: () => _exportReport('active-loans'),
+            onExport: () => _export('active-loans'),
           ),
-          _ReportSection(
+          ReportSection(
             title: l10n.reportsInterestCollection,
             subtitle: l10n.reportsInterestCollectionSubtitle,
             emptyText: l10n.reportsNoInterestCollections,
-            rows: _interestCollectionReport
-                .map(_interestCollectionRow)
+            rows: data.interestCollection
+                .map((i) => _interestRow(l10n, i))
                 .toList(),
-            metricValue: _money(_interestCollectionTotal),
+            metricValue: reportMoney(interestTotal),
             metricColor: AppColors.success,
-            onExport: () => _exportReport('interest-collection'),
+            onExport: () => _export('interest-collection'),
           ),
-          _ReportSection(
+          ReportSection(
             title: l10n.reportsClosedLoans,
             subtitle: l10n.reportsClosedLoansSubtitle,
             emptyText: l10n.reportsNoClosedLoans,
-            rows: _closedLoansReport.map(_closedLoanRow).toList(),
-            metricValue: _closedLoansReport.length.toString(),
+            rows: data.closedLoans.map((i) => _closedLoanRow(l10n, i)).toList(),
+            metricValue: '${data.closedLoans.length}',
             metricColor: AppColors.primary,
-            onExport: () => _exportReport('closed-loans'),
+            onExport: () => _export('closed-loans'),
           ),
-        ]);
+        ];
       default:
-        return _buildResponsiveSections(context, [
-          _ReportSection(
+        return [
+          ReportSection(
             title: l10n.reportsCurrentStock,
             subtitle: l10n.reportsCurrentStockSubtitle(
-              _weight(_inventoryStats['totalGoldWeight']),
-              _weight(_inventoryStats['totalSilverWeight']),
+              reportWeight(data.totalGoldWeight),
+              reportWeight(data.totalSilverWeight),
             ),
             emptyText: l10n.reportsNoCurrentStock,
-            rows: _currentStockReport.map(_currentStockRow).toList(),
-            metricValue: _currentStockReport.length.toString(),
+            rows: data.currentStock.map((i) => _stockRow(l10n, i)).toList(),
+            metricValue: '${data.currentStock.length}',
             metricColor: AppColors.info,
-            onExport: () => _exportReport('current-stock'),
+            onExport: () => _export('current-stock'),
           ),
-          _ReportSection(
+          ReportSection(
             title: l10n.reportsSoldProducts,
             subtitle: l10n.reportsSoldProductsSubtitle,
             emptyText: l10n.reportsNoSoldProducts,
-            rows: _soldProductsReport.map(_soldProductRow).toList(),
-            metricValue: _soldProductsReport.length.toString(),
+            rows: data.soldProducts.map((i) => _soldRow(l10n, i)).toList(),
+            metricValue: '${data.soldProducts.length}',
             metricColor: AppColors.success,
-            onExport: () => _exportReport('sold-products'),
+            onExport: () => _export('sold-products'),
           ),
-          _ReportSection(
+          ReportSection(
             title: l10n.reportsLowStock,
             subtitle: l10n.reportsLowStockSubtitle,
             emptyText: l10n.reportsNoLowStock,
-            rows: _lowStockReport.map(_lowStockRow).toList(),
-            metricValue: _lowStockReport.length.toString(),
+            rows: data.lowStock.map((i) => _lowStockRow(l10n, i)).toList(),
+            metricValue: '${data.lowStock.length}',
             metricColor: AppColors.warning,
-            onExport: () => _exportReport('low-stock'),
+            onExport: () => _export('low-stock'),
           ),
-        ]);
+        ];
     }
   }
 
-  Widget _buildResponsiveSections(BuildContext context, List<Widget> children) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth > 900) {
-          final width = (constraints.maxWidth - AppSpacing.lg) / 2;
-          return Wrap(
-            spacing: AppSpacing.lg,
-            runSpacing: AppSpacing.lg,
-            crossAxisAlignment: WrapCrossAlignment.start,
-            children: children
-                .map((child) => SizedBox(width: width, child: child))
-                .toList(),
-          );
-        }
-        return Column(
-          children: [
-            for (var i = 0; i < children.length; i++) ...[
-              children[i],
-              if (i < children.length - 1)
-                const SizedBox(height: AppSpacing.lg),
-            ],
-          ],
-        );
-      },
-    );
-  }
+  // ---- typed model → ReportRow view-model mappers ------------------------
 
-  _ReportRow _currentStockRow(Map<String, dynamic> item) {
-    final l10n = AppLocalizations.of(context)!;
-    final productName = _fallback(item['itemName'], l10n.reportsProduct);
-    return _ReportRow(
-      leadingIcon: Icons.diamond_outlined,
-      title: productName,
-      subtitle:
-          '${_fallback(item['categoryName'], l10n.reportsUncategorised)} • ${_fallback(item['tagNumber'] ?? item['barcode'], l10n.reportsNoDesignNumber)}',
-      statusLabel: _readableStatus(item['status']),
-      metrics: [
-        _ReportCell(
-          l10n.reportsPurity,
-          _fallback(item['karat'] ?? item['purity'], '-'),
-        ),
-        _ReportCell(l10n.reportsGross, _weight(item['grossWeight'])),
-        _ReportCell(l10n.reportsNet, _weight(item['netWeight'])),
-        _ReportCell(
-          l10n.reportsSellingPrice,
-          _money(item['estimatedSellingPrice']),
-        ),
-        _ReportCell(
-          l10n.reportsBranch,
-          _fallback(item['location'], l10n.reportsMain),
-        ),
-      ],
-    );
-  }
-
-  _ReportRow _soldProductRow(Map<String, dynamic> row) {
-    final l10n = AppLocalizations.of(context)!;
-    return _ReportRow(
-      leadingIcon: Icons.shopping_bag_outlined,
-      title: _fallback(row['productName'], l10n.reportsProduct),
-      subtitle:
-          '${_fallback(row['invoiceNumber'], l10n.reportsInvoice)} • ${_fallback(row['customerName'], l10n.reportsCustomer)}',
-      statusLabel: _fallback(row['paymentMode'], l10n.reportsPayment),
-      metrics: [
-        _ReportCell(l10n.reportsSoldDate, _formatDate(row['soldDate'])),
-        _ReportCell(l10n.reportsSellingPrice, _money(row['sellingPrice'])),
-        _ReportCell(l10n.reportsMobile, _fallback(row['customerPhone'], '-')),
-      ],
-    );
-  }
-
-  _ReportRow _lowStockRow(Map<String, dynamic> item) {
-    final l10n = AppLocalizations.of(context)!;
-    return _ReportRow(
-      leadingIcon: Icons.warning_amber_rounded,
-      title: _fallback(item['itemName'], l10n.reportsProduct),
-      subtitle:
-          '${_fallback(item['categoryName'], l10n.reportsUncategorised)} • ${_fallback(item['tagNumber'] ?? item['barcode'], l10n.reportsNoDesignNumber)}',
-      statusLabel: l10n.reportsLowStock,
-      statusColor: AppColors.warning,
-      metrics: [
-        _ReportCell(
-          l10n.reportsAvailableQty,
-          _asInt(item['quantity']).toString(),
-        ),
-        _ReportCell(
-          l10n.reportsPurity,
-          _fallback(item['karat'] ?? item['purity'], '-'),
-        ),
-        _ReportCell(
-          l10n.reportsBranch,
-          _fallback(item['location'], l10n.reportsMain),
-        ),
-      ],
-    );
-  }
-
-  _ReportRow _dailySalesRow(Map<String, dynamic> invoice) {
-    return _invoiceSalesRow(invoice, 'Daily Sale');
-  }
-
-  _ReportRow _monthlySalesRow(Map<String, dynamic> invoice) {
-    return _invoiceSalesRow(invoice, 'Monthly Sale');
-  }
-
-  _ReportRow _invoiceSalesRow(Map<String, dynamic> invoice, String label) {
-    final l10n = AppLocalizations.of(context)!;
-    final items = _mapList(invoice['items']);
-    return _ReportRow(
-      leadingIcon: Icons.receipt_long_outlined,
-      title: _fallback(invoice['invoiceNumber'], l10n.reportsInvoice),
-      subtitle: _fallback(invoice['customerName'], l10n.customerWalkIn),
-      statusLabel: label,
-      metrics: [
-        _ReportCell(l10n.reportsDate, _formatDate(invoice['invoiceDate'])),
-        _ReportCell(l10n.reportsTotal, _money(invoice['grandTotal'])),
-        _ReportCell(
-          l10n.reportsPayment,
-          _fallback(invoice['paymentMode'], '-'),
-        ),
-        _ReportCell(l10n.reportsItems, items.length.toString()),
-      ],
-    );
-  }
-
-  _ReportRow _gstRow(Map<String, dynamic> invoice) {
-    final l10n = AppLocalizations.of(context)!;
-    return _ReportRow(
-      leadingIcon: Icons.percent_rounded,
-      title: _fallback(invoice['invoiceNumber'], l10n.reportsInvoice),
-      subtitle: _fallback(invoice['customerName'], l10n.customerWalkIn),
-      statusLabel: l10n.reportsGst,
-      statusColor: AppColors.warning,
-      metrics: [
-        _ReportCell(l10n.reportsTaxable, _money(invoice['taxableAmount'])),
-        _ReportCell(l10n.reportsCgst, _money(invoice['cgstAmount'])),
-        _ReportCell(l10n.reportsSgst, _money(invoice['sgstAmount'])),
-        _ReportCell(l10n.reportsTotalGst, _money(invoice['totalTax'])),
-      ],
-    );
-  }
-
-  _ReportRow _activeLoanRow(Map<String, dynamic> loan) {
-    final l10n = AppLocalizations.of(context)!;
-    return _ReportRow(
-      leadingIcon: Icons.account_balance_outlined,
-      title: _fallback(loan['customerName'], l10n.reportsCustomer),
-      subtitle: _fallback(loan['loanNumber'], l10n.reportsMortgageLoan),
-      statusLabel: l10n.mortgageStatusActive,
-      statusColor: AppColors.info,
-      metrics: [
-        _ReportCell(l10n.reportsLoanAmount, _money(loan['principalAmount'])),
-        _ReportCell(
-          l10n.reportsPendingInterest,
-          _money(loan['pendingInterestAmount']),
-        ),
-        _ReportCell(l10n.reportsPayable, _money(loan['totalPayableAmount'])),
-        _ReportCell(l10n.reportsNextDue, _formatDate(loan['nextDueDate'])),
-      ],
-    );
-  }
-
-  _ReportRow _interestCollectionRow(Map<String, dynamic> row) {
-    final l10n = AppLocalizations.of(context)!;
-    return _ReportRow(
-      leadingIcon: Icons.payments_outlined,
-      title: _fallback(row['receiptNumber'], l10n.reportsReceipt),
-      subtitle:
-          '${_fallback(row['customerName'], l10n.reportsCustomer)} • ${_fallback(row['loanNumber'], l10n.reportsMortgageLoan)}',
-      statusLabel: _readableStatus(row['paymentType']),
-      statusColor: AppColors.success,
-      metrics: [
-        _ReportCell(l10n.reportsDate, _formatDate(row['paymentDate'])),
-        _ReportCell(l10n.reportsAmount, _money(row['amount'])),
-        _ReportCell(l10n.reportsMode, _fallback(row['paymentMode'], '-')),
-        _ReportCell(l10n.reportsMobile, _fallback(row['customerPhone'], '-')),
-      ],
-    );
-  }
-
-  _ReportRow _closedLoanRow(Map<String, dynamic> loan) {
-    final l10n = AppLocalizations.of(context)!;
-    return _ReportRow(
-      leadingIcon: Icons.check_circle_outline_rounded,
-      title: _fallback(loan['customerName'], l10n.reportsCustomer),
-      subtitle: _fallback(loan['loanNumber'], l10n.reportsMortgageLoan),
-      statusLabel: _readableStatus(loan['status']),
-      statusColor: AppColors.success,
-      metrics: [
-        _ReportCell(l10n.reportsLoanAmount, _money(loan['principalAmount'])),
-        _ReportCell(
-          l10n.reportsInterestPaid,
-          _money(loan['totalInterestPaid']),
-        ),
-        _ReportCell(l10n.reportsClosingDate, _formatDate(loan['closedAt'])),
-        _ReportCell(l10n.reportsLoanStatus, _readableStatus(loan['status'])),
-      ],
-    );
-  }
-
-  double get _dailySalesTotal => _dailySalesReport.fold(
-    0,
-    (sum, invoice) => sum + _asDouble(invoice['grandTotal']),
+  ReportRow _stockRow(
+    AppLocalizations l10n,
+    InventoryReportItem i,
+  ) => ReportRow(
+    leadingIcon: Icons.diamond_outlined,
+    title: reportFallback(i.itemName, l10n.reportsProduct),
+    subtitle:
+        '${reportFallback(i.categoryName, l10n.reportsUncategorised)} • ${reportFallback(i.designTag, l10n.reportsNoDesignNumber)}',
+    statusLabel: reportReadableStatus(i.status),
+    metrics: [
+      (l10n.reportsPurity, reportFallback(i.karatOrPurity, '-')),
+      (l10n.reportsNet, reportWeight(i.netWeight)),
+      (l10n.reportsSellingPrice, reportMoney(i.sellingPrice)),
+    ],
   );
 
-  double get _monthlySalesTotal => _monthlySalesReport.fold(
-    0,
-    (sum, invoice) => sum + _asDouble(invoice['grandTotal']),
+  ReportRow _lowStockRow(
+    AppLocalizations l10n,
+    InventoryReportItem i,
+  ) => ReportRow(
+    leadingIcon: Icons.warning_amber_rounded,
+    title: reportFallback(i.itemName, l10n.reportsProduct),
+    subtitle:
+        '${reportFallback(i.categoryName, l10n.reportsUncategorised)} • ${reportFallback(i.designTag, l10n.reportsNoDesignNumber)}',
+    statusLabel: l10n.reportsLowStock,
+    statusColor: AppColors.warning,
+    metrics: [
+      (l10n.reportsAvailableQty, '${i.quantity}'),
+      (l10n.reportsPurity, reportFallback(i.karatOrPurity, '-')),
+      (l10n.reportsBranch, reportFallback(i.location, l10n.reportsMain)),
+    ],
   );
 
-  double get _gstTotal => _gstReport.fold(
-    0,
-    (sum, invoice) => sum + _asDouble(invoice['totalTax']),
+  ReportRow _soldRow(AppLocalizations l10n, SoldReportItem i) => ReportRow(
+    leadingIcon: Icons.shopping_bag_outlined,
+    title: reportFallback(i.productName, l10n.reportsProduct),
+    subtitle:
+        '${reportFallback(i.invoiceNumber, l10n.reportsInvoice)} • ${reportFallback(i.customerName, l10n.reportsCustomer)}',
+    statusLabel: reportFallback(i.paymentMode, l10n.reportsPayment),
+    metrics: [
+      (l10n.reportsSoldDate, reportDate(i.soldDate)),
+      (l10n.reportsSellingPrice, reportMoney(i.sellingPrice)),
+    ],
   );
 
-  double get _interestCollectionTotal => _interestCollectionReport.fold(
-    0,
-    (sum, payment) => sum + _asDouble(payment['amount']),
+  ReportRow _salesRow(AppLocalizations l10n, InvoiceSalesReportItem i) =>
+      ReportRow(
+        leadingIcon: Icons.receipt_long_outlined,
+        title: reportFallback(i.invoiceNumber, l10n.reportsInvoice),
+        subtitle: reportFallback(i.customerName, l10n.customerWalkIn),
+        statusLabel: reportFallback(i.paymentMode, '-'),
+        metrics: [
+          (l10n.reportsDate, reportDate(i.invoiceDate)),
+          (l10n.reportsTotal, reportMoney(i.grandTotal)),
+          (l10n.reportsItems, '${i.itemCount}'),
+        ],
+      );
+
+  ReportRow _gstRow(AppLocalizations l10n, GstReportItem i) => ReportRow(
+    leadingIcon: Icons.percent_rounded,
+    title: reportFallback(i.invoiceNumber, l10n.reportsInvoice),
+    subtitle: reportFallback(i.customerName, l10n.customerWalkIn),
+    statusLabel: l10n.reportsGst,
+    statusColor: AppColors.warning,
+    metrics: [
+      (l10n.reportsTaxable, reportMoney(i.taxableAmount)),
+      (l10n.reportsCgst, reportMoney(i.cgstAmount)),
+      (l10n.reportsSgst, reportMoney(i.sgstAmount)),
+      (l10n.reportsTotalGst, reportMoney(i.totalTax)),
+    ],
   );
 
-  String get _dailySalesSubtitle {
-    final l10n = AppLocalizations.of(context)!;
-    final date = _parseDate(_dateFromController.text) ?? DateTime.now();
+  ReportRow _activeLoanRow(AppLocalizations l10n, ActiveLoanReportItem i) =>
+      ReportRow(
+        leadingIcon: Icons.account_balance_outlined,
+        title: reportFallback(i.customerName, l10n.reportsCustomer),
+        subtitle: reportFallback(i.loanNumber, l10n.reportsMortgageLoan),
+        statusLabel: l10n.mortgageStatusActive,
+        statusColor: AppColors.info,
+        metrics: [
+          (l10n.reportsLoanAmount, reportMoney(i.principalAmount)),
+          (l10n.reportsPendingInterest, reportMoney(i.pendingInterestAmount)),
+          (l10n.reportsNextDue, reportDate(i.nextDueDate)),
+        ],
+      );
+
+  ReportRow _interestRow(
+    AppLocalizations l10n,
+    InterestCollectionReportItem i,
+  ) => ReportRow(
+    leadingIcon: Icons.payments_outlined,
+    title: reportFallback(i.receiptNumber, l10n.reportsReceipt),
+    subtitle:
+        '${reportFallback(i.customerName, l10n.reportsCustomer)} • ${reportFallback(i.loanNumber, l10n.reportsMortgageLoan)}',
+    statusLabel: reportReadableStatus(i.paymentType),
+    statusColor: AppColors.success,
+    metrics: [
+      (l10n.reportsDate, reportDate(i.paymentDate)),
+      (l10n.reportsAmount, reportMoney(i.amount)),
+      (l10n.reportsMode, reportFallback(i.paymentMode, '-')),
+    ],
+  );
+
+  ReportRow _closedLoanRow(AppLocalizations l10n, ClosedLoanReportItem i) =>
+      ReportRow(
+        leadingIcon: Icons.check_circle_outline_rounded,
+        title: reportFallback(i.customerName, l10n.reportsCustomer),
+        subtitle: reportFallback(i.loanNumber, l10n.reportsMortgageLoan),
+        statusLabel: reportReadableStatus(i.status),
+        statusColor: AppColors.success,
+        metrics: [
+          (l10n.reportsLoanAmount, reportMoney(i.principalAmount)),
+          (l10n.reportsInterestPaid, reportMoney(i.totalInterestPaid)),
+          (l10n.reportsClosingDate, reportDate(i.closedAt)),
+        ],
+      );
+
+  String _salesOn(AppLocalizations l10n) {
+    final date = DateTime.tryParse(_query.dateFrom) ?? DateTime.now();
     return l10n.reportsSalesGeneratedOn(DateFormat('dd MMM yyyy').format(date));
   }
 
-  String get _monthlySalesSubtitle {
-    final l10n = AppLocalizations.of(context)!;
-    final date = _parseDate(_dateFromController.text) ?? DateTime.now();
+  String _salesIn(AppLocalizations l10n) {
+    final date = DateTime.tryParse(_query.dateFrom) ?? DateTime.now();
     return l10n.reportsSalesGeneratedIn(DateFormat('MMMM yyyy').format(date));
-  }
-
-  DateTime? _parseDate(dynamic value) {
-    final text = value?.toString().trim();
-    if (text == null || text.isEmpty) return null;
-    return DateTime.tryParse(text);
-  }
-
-  double _asDouble(dynamic value) {
-    if (value == null) return 0;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString()) ?? 0;
-  }
-
-  int _asInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is num) return value.toInt();
-    return int.tryParse(value.toString()) ?? 0;
-  }
-
-  String _money(dynamic value) {
-    return _currency.format(_asDouble(value));
-  }
-
-  String _weight(dynamic value) {
-    final weight = _asDouble(value);
-    if (weight == 0) return '0g';
-    return '${weight.toStringAsFixed(3)}g';
-  }
-
-  String _formatDate(dynamic value) {
-    final date = _parseDate(value);
-    if (date == null) return '-';
-    return DateFormat('dd MMM yyyy').format(date);
-  }
-
-  String _fallback(dynamic value, String fallback) {
-    final text = value?.toString().trim();
-    return text == null || text.isEmpty ? fallback : text;
-  }
-
-  String _readableStatus(dynamic value) {
-    final text = _fallback(value, '-');
-    return text
-        .split('_')
-        .map((part) {
-          if (part.isEmpty) return part;
-          return part[0].toUpperCase() + part.substring(1).toLowerCase();
-        })
-        .join(' ');
-  }
-}
-
-class _ReportCell {
-  final String label;
-  final String value;
-
-  const _ReportCell(this.label, this.value);
-}
-
-class _ReportRow {
-  final IconData leadingIcon;
-  final String title;
-  final String subtitle;
-  final String statusLabel;
-  final Color? statusColor;
-  final List<_ReportCell> metrics;
-
-  const _ReportRow({
-    required this.leadingIcon,
-    required this.title,
-    required this.subtitle,
-    required this.statusLabel,
-    this.statusColor,
-    required this.metrics,
-  });
-}
-
-class _ReportSection extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String emptyText;
-  final List<_ReportRow> rows;
-  final String? metricValue;
-  final Color? metricColor;
-  final VoidCallback? onExport;
-
-  const _ReportSection({
-    required this.title,
-    required this.subtitle,
-    required this.emptyText,
-    required this.rows,
-    this.metricValue,
-    this.metricColor,
-    this.onExport,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(color: AppColors.text3(context)),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                metricValue ?? rows.length.toString(),
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: metricColor ?? AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              ExportMenu(onExportPdf: onExport),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          if (rows.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.surfL(context),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppColors.brd(context)),
-              ),
-              child: Text(
-                emptyText,
-                style: TextStyle(color: AppColors.text3(context)),
-              ),
-            )
-          else
-            ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: rows.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, index) => _ReportRowTile(row: rows[index]),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReportRowTile extends StatelessWidget {
-  final _ReportRow row;
-
-  const _ReportRowTile({required this.row});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surfL(context),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.brd(context)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: Icon(
-                  row.leadingIcon,
-                  size: 16,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      row.title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        color: AppColors.text1(context),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      row.subtitle,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.text3(context),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              StatusBadge(label: row.statusLabel, color: row.statusColor),
-            ],
-          ),
-          if (row.metrics.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 12,
-              runSpacing: 4,
-              children: [
-                for (final metric in row.metrics)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${metric.label}: ',
-                        style: TextStyle(
-                          color: AppColors.text3(context),
-                          fontSize: 11,
-                        ),
-                      ),
-                      Text(
-                        metric.value,
-                        style: TextStyle(
-                          color: AppColors.text1(context),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
   }
 }
