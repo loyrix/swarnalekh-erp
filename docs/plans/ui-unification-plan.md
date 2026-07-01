@@ -47,7 +47,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 | 0      | Foundation: tokens, cleanup, design-system kit + tests                | ✅ Done (2026-07-01) |
 | **A1** | Dashboard — polish                                                    | ✅ Done (2026-07-01) |
 | **A2** | Inventory — polish                                                    | ✅ Done (2026-07-01) |
-| **A3** | Mortgage — polish                                                     | ⬜                   |
+| **A3** | Mortgage — polish                                                     | ✅ Done (2026-07-01) |
 | **A4** | Reports — polish                                                      | ⬜                   |
 | **A5** | Support screens (User Mgmt, Shop Profile, Rates, Customers) — polish  | ⬜                   |
 | **B1** | Billing/Invoice — finish (server pricing + integrity) + polish        | ⬜                   |
@@ -58,6 +58,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 | **C3** | CSV/Excel export — build                                              | ⬜                   |
 | **C4** | Image storage → Supabase Storage — build                              | ⬜                   |
 | **C5** | Full-text search — build                                              | ⬜                   |
+| **V**  | Visual-richness redesign pass (final, post-migration)                 | ⬜                   |
 
 Legend: ⬜ Not started · 🟡 In progress · ✅ Done (full DoD) · ⏸️ Blocked
 
@@ -211,6 +212,22 @@ Backend first (removes UI-vs-charged drift and oversell):
 
 ---
 
+## Stage V — Visual-richness redesign pass (FINAL, after all migrations)
+
+> Owner decision (2026-07-01): migrations use the current compact kit now; a dedicated
+> visual pass comes last so every screen inherits the upgrade at once via the shared kit.
+
+**Owner's design constraints (must honor):**
+
+- **NOT big cards.** This is a phone + tablet app — large cards waste space and show less. Keep rows compact.
+- Goal is **"more detail, easily, with rich UI/UX"** — increase information density _and_ visual quality at the same time (better typography hierarchy, spacing, color/status cues, thumbnails, glanceable key figures), without making items taller.
+- Richness lives in both the **compact list row** (denser but clearer) and the **detail sheet** (fully rich).
+- Uniform across the app — upgrade the shared kit widgets (`CompactDataRow`, `CompactStatStrip`, `AppDetailSheet`, empty/section headers), not per-screen, so all screens change together.
+
+**Scope:** redesign the shared kit visuals only (no feature-logic changes), then visually QA every screen at 375 / 393 / 768 / 1280. Keep all tests green.
+
+---
+
 ## Verification commands (per phase, before ✅)
 
 ```bash
@@ -228,10 +245,11 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 
 ## Resume pointer (update at end of each work session)
 
-- **Current phase:** A3 — Mortgage polish (not started)
-- **Last completed step:** ✅ A2 Inventory complete (2026-07-01). Screen decomposed **2,454 → 699 lines** across typed model/repo/providers + `inventory_form_page` (full-screen `AppFormScaffold` route, pricing auto-calc + image upload preserved) + `ocr_review_page` (full-screen route, **DataTable removed**, hardcoded OCR strings localized) + `inventory_detail_sheet` (`AppDetailSheet`) + `inventory_format`. Screen now `ConsumerStatefulWidget` on `AppSectionScaffold` + `AppStateView`; **all 3 DataTables replaced with `CompactDataRow`** (mobile & wide); filters in `AppFilterSheet`; search always visible. New l10n (en/hi/gu) for OCR fields + generic validations. Verified: mobile analyze clean, `flutter test` = 85 (+14), api unchanged (59).
+- **Current phase:** A4 — Reports polish (not started)
+- **Last completed step:** ✅ A3 Mortgage complete (2026-07-01). Screen decomposed **1,353 → 344 lines**: typed `MortgageLoan`/`Ornament`/`Payment`/`Dashboard` + `MortgageRepository` (+`MortgageQuery`) + Riverpod providers; screen now `ConsumerStatefulWidget` on `AppSectionScaffold` (Active/Closed/All) + `AppStateView`; **tall StatCard + 150px metric boxes replaced** with `CompactStatStrip` + `CompactDataRow` loan rows; create loan / collect payment / close loan → full-screen `AppFormScaffold` routes (`mortgage_form_page`/`collect_payment_page`/`close_loan_page`, KYC image + loan-date preserved, shared `mortgage_form_helpers`); loan detail + payment receipts + Collect/Close via `AppDetailSheet` (`mortgage_detail_sheet`). Verified: mobile analyze clean, `flutter test` = 96 (+11), api unchanged (59).
+- **Prev:** A2 Inventory complete (2026-07-01). Screen decomposed **2,454 → 699 lines**; all 3 DataTables → `CompactDataRow`; forms → full-screen routes; OCR strings localized. Screen decomposed **2,454 → 699 lines** across typed model/repo/providers + `inventory_form_page` (full-screen `AppFormScaffold` route, pricing auto-calc + image upload preserved) + `ocr_review_page` (full-screen route, **DataTable removed**, hardcoded OCR strings localized) + `inventory_detail_sheet` (`AppDetailSheet`) + `inventory_format`. Screen now `ConsumerStatefulWidget` on `AppSectionScaffold` + `AppStateView`; **all 3 DataTables replaced with `CompactDataRow`** (mobile & wide); filters in `AppFilterSheet`; search always visible. New l10n (en/hi/gu) for OCR fields + generic validations. Verified: mobile analyze clean, `flutter test` = 85 (+14), api unchanged (59).
 - **Prev:** A1 Dashboard complete (2026-07-01). Delivered: real **7-day salesTrend** in backend `dashboard.getStats` (+ spec; replaced fabricated chart data); typed `DashboardData`/`DashboardStats`/`SalesTrendPoint` + `DashboardRepository` + Riverpod `dashboardProvider`; screen rewritten as `ConsumerWidget` on `AppStateView` (real loading/error+retry/data), unified `CompactStatStrip` (retired tall `_DashboardStatCard`), **localized date** via `intl DateFormat` (removed hardcoded English month/day arrays), cleaned quick actions (removed bogus `/reports?focus=search`). Verified: mobile analyze clean, `flutter test` = 71, `apps/api` test = 59.
-- **Next action:** A3 Mortgage — migrate the 1,353-line screen onto the kit (typed `MortgageLoan`/`Payment`, `AppSectionScaffold` Active/Closed tabs, compact `CompactDataRow` loan rows, Add Mortgage + Collect Interest as `AppFormScaffold` routes, detail/receipt via `AppDetailSheet`, `CompactStatStrip`), 4 states, l10n, widget tests.
+- **Next action:** A4 Reports — migrate the 987-line screen onto the kit (`AppFilterBar`/`AppFilterSheet` for the 6-field filter bar, report rows → `CompactDataRow`, keep Inventory/Billing/Mortgage report groups, typed models, 4 states, l10n, tests). Confirm staff cannot reach reports (guard already in place from Stage 0).
 - **A2 follow-up (minor):** `inventory_form_page.dart` (821) and `inventory_list_screen.dart` (699) exceed the 400-line target but are cohesive; split further only if they grow. Inventory "Reports" tab (PDF stock-reports) not built — no backend endpoint yet; revisit in reports/hardening.
 - **Deferred nit:** dashboard `totalInventoryValue` vs per-item selling price consistency → handle in **B1** (server pricing) where the root cause lives.
 - **Open questions for owner:** none. Awaiting "go" to start A2.
