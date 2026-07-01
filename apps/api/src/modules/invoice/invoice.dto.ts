@@ -97,4 +97,13 @@ export class CreateInvoiceDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @ApiProperty({
+    description:
+      'Client-generated key to make invoice creation idempotent (safe retries)',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  idempotencyKey?: string;
 }

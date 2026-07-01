@@ -98,171 +98,178 @@ type PdfLogoImage = {
 export class InvoiceService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createInvoice(tenantId: string, userId: string, dto: CreateInvoiceDto) {
-    return this.prisma.$transaction(async (tx) => {
-      // 1. Generate Invoice Number
-      const year = new Date().getFullYear();
-      const startOfYear = new Date(year, 0, 1);
+  /**
+   * Computes customer, priced line items, and totals for an invoice WITHOUT
+   * mutating stock. Shared by `previewInvoice` (read-only) and `createInvoice`
+   * (which then persists + reduces stock). When `lock` is set, each inventory
+   * row is locked `FOR UPDATE` so concurrent invoices for the same unique item
+   * cannot oversell.
+   */
+  private async computeInvoice(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    dto: CreateInvoiceDto,
+    options: { lock: boolean },
+  ) {
+    let customerName: string | undefined | null = dto.customerName;
+    let customerPhone: string | undefined | null = dto.customerPhone;
 
-      const count = await tx.invoice.count({
-        where: {
-          tenantId,
-          createdAt: { gte: startOfYear },
-        },
+    if (dto.customerId) {
+      const customer = await tx.customer.findFirst({
+        where: { id: dto.customerId, tenantId },
       });
-      const prefix = `SLK-${year}`;
-      const invoiceNumber = `${prefix}-${String(count + 1).padStart(4, '0')}`;
+      if (customer) {
+        customerName = customer.name;
+        customerPhone = customer.phone;
+      } else {
+        throw new NotFoundException('Customer not found');
+      }
+    } else if (!customerName) {
+      throw new BadRequestException('Customer Name or ID is required');
+    }
 
-      // 2. Fetch Customer info
-      let customerName: string | undefined | null = dto.customerName;
-      let customerPhone: string | undefined | null = dto.customerPhone;
+    if (dto.items.length === 0) {
+      throw new BadRequestException(
+        'At least one item is required in the invoice',
+      );
+    }
 
-      if (dto.customerId) {
-        const customer = await tx.customer.findFirst({
-          where: { id: dto.customerId, tenantId },
-        });
-        if (customer) {
-          customerName = customer.name;
-          customerPhone = customer.phone;
-        } else {
-          throw new NotFoundException('Customer not found');
-        }
-      } else if (!customerName) {
-        throw new BadRequestException('Customer Name or ID is required');
+    let subtotal = new Prisma.Decimal(0);
+    let totalMakingCharges = new Prisma.Decimal(0);
+    let totalStoneValue = new Prisma.Decimal(0);
+
+    const lines: Array<{
+      invItemId: string;
+      stockType: string;
+      availableQuantity: number;
+      requestedQuantity: number;
+      input: Prisma.InvoiceItemUncheckedCreateWithoutInvoiceInput;
+    }> = [];
+
+    for (const itemDto of dto.items) {
+      // Lock the inventory row for the duration of the transaction so a
+      // concurrent invoice for the same item waits and re-reads a fresh status.
+      if (options.lock) {
+        await tx.$queryRaw`SELECT id FROM inventory_items WHERE id = ${itemDto.inventoryItemId}::uuid AND tenant_id = ${tenantId}::uuid FOR UPDATE`;
       }
 
-      if (dto.items.length === 0) {
+      const invItem = await tx.inventoryItem.findFirst({
+        where: { id: itemDto.inventoryItemId, tenantId },
+      });
+
+      if (!invItem) {
+        throw new NotFoundException(
+          `Inventory item ${itemDto.inventoryItemId} not found`,
+        );
+      }
+      if (invItem.status === 'sold') {
         throw new BadRequestException(
-          'At least one item is required in the invoice',
+          `Item ${invItem.tagNumber || invItem.id} is already sold.`,
         );
       }
 
-      // 3. Process Items & Calculate Totals
-      let subtotal = new Prisma.Decimal(0);
-      let totalMakingCharges = new Prisma.Decimal(0);
-      let totalStoneValue = new Prisma.Decimal(0);
+      const requestedQuantity = Math.max(1, Math.floor(itemDto.quantity ?? 1));
+      const availableQuantity =
+        invItem.stockType === 'bulk' ? invItem.quantity : 1;
 
-      const invoiceItemsInput = [];
-
-      for (const itemDto of dto.items) {
-        // Fetch inventory item
-        const invItem = await tx.inventoryItem.findFirst({
-          where: { id: itemDto.inventoryItemId, tenantId },
-        });
-
-        if (!invItem) {
-          throw new NotFoundException(
-            `Inventory item ${itemDto.inventoryItemId} not found`,
-          );
-        }
-        if (invItem.status === 'sold') {
-          throw new BadRequestException(
-            `Item ${invItem.tagNumber || invItem.id} is already sold.`,
-          );
-        }
-
-        const requestedQuantity = Math.max(
-          1,
-          Math.floor(itemDto.quantity ?? 1),
+      if (invItem.stockType === 'unique' && requestedQuantity !== 1) {
+        throw new BadRequestException(
+          `Unique item ${invItem.tagNumber || invItem.itemName || invItem.id} can only be sold as a single piece.`,
         );
-        const availableQuantity =
-          invItem.stockType === 'bulk' ? invItem.quantity : 1;
+      }
 
-        if (invItem.stockType === 'unique' && requestedQuantity !== 1) {
-          throw new BadRequestException(
-            `Unique item ${invItem.tagNumber || invItem.itemName || invItem.id} can only be sold as a single piece.`,
-          );
-        }
-
-        if (requestedQuantity > availableQuantity) {
-          throw new BadRequestException(
-            `Only ${availableQuantity} piece(s) available for ${invItem.tagNumber || invItem.itemName || invItem.id}.`,
-          );
-        }
-
-        const explicitSellingPricePerPiece = this.toNumber(
-          invItem.sellingPrice,
+      if (requestedQuantity > availableQuantity) {
+        throw new BadRequestException(
+          `Only ${availableQuantity} piece(s) available for ${invItem.tagNumber || invItem.itemName || invItem.id}.`,
         );
-        const hasExplicitSellingPrice = explicitSellingPricePerPiece > 0;
-        const rateRecord = hasExplicitSellingPrice
-          ? null
-          : ((await tx.dailyRate.findFirst({
-              where: {
-                tenantId,
-                metalType: { equals: invItem.metalType, mode: 'insensitive' },
-                karat: invItem.karat ?? null,
-              },
-              orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
-            })) ??
-            (await tx.dailyRate.findFirst({
-              where: {
-                tenantId,
-                metalType: { equals: invItem.metalType, mode: 'insensitive' },
-                karat: null,
-              },
-              orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
-            })));
+      }
 
-        if (!hasExplicitSellingPrice && !rateRecord) {
-          throw new BadRequestException(
-            `No rate set for ${invItem.metalType} ${invItem.karat || ''}. Please set rates first.`,
-          );
-        }
+      const explicitSellingPricePerPiece = this.toNumber(invItem.sellingPrice);
+      const hasExplicitSellingPrice = explicitSellingPricePerPiece > 0;
+      const rateRecord = hasExplicitSellingPrice
+        ? null
+        : ((await tx.dailyRate.findFirst({
+            where: {
+              tenantId,
+              metalType: { equals: invItem.metalType, mode: 'insensitive' },
+              karat: invItem.karat ?? null,
+            },
+            orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
+          })) ??
+          (await tx.dailyRate.findFirst({
+            where: {
+              tenantId,
+              metalType: { equals: invItem.metalType, mode: 'insensitive' },
+              karat: null,
+            },
+            orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
+          })));
 
-        const ratePerGram = rateRecord?.ratePerGram ?? null;
-        const componentRatePerGram =
-          ratePerGram?.toNumber() ?? this.toNumber(invItem.purchaseRate);
-        const grossWeightPerPiece = invItem.grossWeight.toNumber();
-        const netWeightPerPiece = invItem.netWeight.toNumber();
-        const grossWeight = grossWeightPerPiece * requestedQuantity;
-        const netWeight = netWeightPerPiece * requestedQuantity;
-        const stoneValue =
-          (invItem.stoneValue?.toNumber() ?? 0) * requestedQuantity;
-
-        let makingCharges = 0;
-        if (itemDto.makingCharges !== undefined) {
-          makingCharges = itemDto.makingCharges;
-        } else if (invItem.makingChargesFixed) {
-          makingCharges =
-            invItem.makingChargesFixed.toNumber() * requestedQuantity;
-        } else if (invItem.makingChargesPerGram) {
-          makingCharges = invItem.makingChargesPerGram.toNumber() * grossWeight;
-        } else if (invItem.makingChargesPercent && componentRatePerGram > 0) {
-          makingCharges =
-            (netWeight *
-              componentRatePerGram *
-              invItem.makingChargesPercent.toNumber()) /
-            100;
-        }
-
-        const itemBreakdown = hasExplicitSellingPrice
-          ? this.explicitSellingPriceBreakdown({
-              lineTotal: explicitSellingPricePerPiece * requestedQuantity,
-              netWeight,
-              componentRatePerGram,
-              makingCharges,
-              stoneValue,
-              wastagePercent: invItem.wastagePercent.toNumber(),
-            })
-          : calculateItemPrice({
-              netWeight,
-              ratePerGram: ratePerGram!.toNumber(),
-              makingCharges,
-              stoneValue,
-              wastagePercent: invItem.wastagePercent.toNumber(),
-            });
-
-        subtotal = new Prisma.Decimal(
-          subtotal.toNumber() + itemBreakdown.itemTotal,
+      if (!hasExplicitSellingPrice && !rateRecord) {
+        throw new BadRequestException(
+          `No rate set for ${invItem.metalType} ${invItem.karat || ''}. Please set rates first.`,
         );
-        totalMakingCharges = new Prisma.Decimal(
-          totalMakingCharges.toNumber() + itemBreakdown.makingCharges,
-        );
-        totalStoneValue = new Prisma.Decimal(
-          totalStoneValue.toNumber() + itemBreakdown.stoneValue,
-        );
+      }
 
-        invoiceItemsInput.push({
+      const ratePerGram = rateRecord?.ratePerGram ?? null;
+      const componentRatePerGram =
+        ratePerGram?.toNumber() ?? this.toNumber(invItem.purchaseRate);
+      const grossWeightPerPiece = invItem.grossWeight.toNumber();
+      const netWeightPerPiece = invItem.netWeight.toNumber();
+      const grossWeight = grossWeightPerPiece * requestedQuantity;
+      const netWeight = netWeightPerPiece * requestedQuantity;
+      const stoneValue =
+        (invItem.stoneValue?.toNumber() ?? 0) * requestedQuantity;
+
+      let makingCharges = 0;
+      if (itemDto.makingCharges !== undefined) {
+        makingCharges = itemDto.makingCharges;
+      } else if (invItem.makingChargesFixed) {
+        makingCharges =
+          invItem.makingChargesFixed.toNumber() * requestedQuantity;
+      } else if (invItem.makingChargesPerGram) {
+        makingCharges = invItem.makingChargesPerGram.toNumber() * grossWeight;
+      } else if (invItem.makingChargesPercent && componentRatePerGram > 0) {
+        makingCharges =
+          (netWeight *
+            componentRatePerGram *
+            invItem.makingChargesPercent.toNumber()) /
+          100;
+      }
+
+      const itemBreakdown = hasExplicitSellingPrice
+        ? this.explicitSellingPriceBreakdown({
+            lineTotal: explicitSellingPricePerPiece * requestedQuantity,
+            netWeight,
+            componentRatePerGram,
+            makingCharges,
+            stoneValue,
+            wastagePercent: invItem.wastagePercent.toNumber(),
+          })
+        : calculateItemPrice({
+            netWeight,
+            ratePerGram: ratePerGram!.toNumber(),
+            makingCharges,
+            stoneValue,
+            wastagePercent: invItem.wastagePercent.toNumber(),
+          });
+
+      subtotal = new Prisma.Decimal(
+        subtotal.toNumber() + itemBreakdown.itemTotal,
+      );
+      totalMakingCharges = new Prisma.Decimal(
+        totalMakingCharges.toNumber() + itemBreakdown.makingCharges,
+      );
+      totalStoneValue = new Prisma.Decimal(
+        totalStoneValue.toNumber() + itemBreakdown.stoneValue,
+      );
+
+      lines.push({
+        invItemId: invItem.id,
+        stockType: invItem.stockType,
+        availableQuantity,
+        requestedQuantity,
+        input: {
           inventoryItemId: invItem.id,
           itemName:
             invItem.stockType === 'bulk'
@@ -281,104 +288,194 @@ export class InvoiceService {
           hallmarkNumber: invItem.hallmarkNumber,
           huid: invItem.huid,
           itemTotal: new Prisma.Decimal(itemBreakdown.itemTotal),
-        });
-
-        if (invItem.stockType === 'bulk') {
-          const remainingQuantity = availableQuantity - requestedQuantity;
-          await tx.inventoryItem.update({
-            where: { id: invItem.id },
-            data: {
-              quantity: remainingQuantity,
-              status: remainingQuantity > 0 ? 'in_stock' : 'sold',
-            },
-          });
-        } else {
-          await tx.inventoryItem.update({
-            where: { id: invItem.id },
-            data: { status: 'sold' },
-          });
-        }
-      }
-
-      // 4. Handle Old Gold Exchange
-      let oldGoldValue = 0;
-      if (dto.oldGoldWeight && dto.oldGoldRate) {
-        oldGoldValue = calculateOldGoldValue(
-          dto.oldGoldWeight,
-          dto.oldGoldRate,
-        );
-      }
-
-      // 5. Calculate Taxes & Final Grand Total
-      const totals = calculateInvoiceTotals({
-        itemTotals: invoiceItemsInput.map((item) => item.itemTotal.toNumber()),
-        discountAmount: dto.discountAmount || 0,
-        oldGoldValue,
-      });
-
-      // 6. Create Invoice
-      const invoice = await tx.invoice.create({
-        data: {
-          tenantId,
-          invoiceNumber,
-          customerId: dto.customerId,
-          customerName,
-          customerPhone,
-          subtotal,
-          totalMakingCharges,
-          totalStoneValue,
-          discountAmount: new Prisma.Decimal(totals.discountAmount),
-          oldGoldWeight: dto.oldGoldWeight,
-          oldGoldKarat: dto.oldGoldKarat,
-          oldGoldRate: dto.oldGoldRate,
-          oldGoldValue: new Prisma.Decimal(totals.oldGoldValue),
-          taxableAmount: new Prisma.Decimal(totals.taxableAmount),
-          cgstPercent: new Prisma.Decimal(totals.cgstPercent),
-          cgstAmount: new Prisma.Decimal(totals.cgstAmount),
-          sgstPercent: new Prisma.Decimal(totals.sgstPercent),
-          sgstAmount: new Prisma.Decimal(totals.sgstAmount),
-          totalTax: new Prisma.Decimal(totals.totalTax),
-          grandTotal: new Prisma.Decimal(totals.grandTotal),
-          roundOff: new Prisma.Decimal(totals.roundOff),
-          createdBy: userId,
-          notes: dto.notes,
-          amountPaid: dto.amountPaid || 0,
-          balanceDue: totals.grandTotal - (dto.amountPaid || 0),
-          paymentMode: dto.paymentMode,
-          items: {
-            create: invoiceItemsInput,
-          },
         },
+      });
+    }
+
+    let oldGoldValue = 0;
+    if (dto.oldGoldWeight && dto.oldGoldRate) {
+      oldGoldValue = calculateOldGoldValue(dto.oldGoldWeight, dto.oldGoldRate);
+    }
+
+    const totals = calculateInvoiceTotals({
+      itemTotals: lines.map((line) => this.toNumber(line.input.itemTotal)),
+      discountAmount: dto.discountAmount || 0,
+      oldGoldValue,
+    });
+
+    return {
+      customerName,
+      customerPhone,
+      subtotal,
+      totalMakingCharges,
+      totalStoneValue,
+      oldGoldValue,
+      totals,
+      lines,
+    };
+  }
+
+  /**
+   * Server-computed pricing preview for the "New Bill" screen. Runs the exact
+   * same pricing as `createInvoice` (so the shown total equals the charged
+   * total) but persists nothing and does not touch stock.
+   */
+  async previewInvoice(tenantId: string, dto: CreateInvoiceDto) {
+    const computed = await this.prisma.$transaction((tx) =>
+      this.computeInvoice(tx, tenantId, dto, { lock: false }),
+    );
+    const t = computed.totals;
+    return {
+      customerName: computed.customerName ?? null,
+      customerPhone: computed.customerPhone ?? null,
+      items: computed.lines.map((line) => ({
+        inventoryItemId: line.invItemId,
+        itemName: line.input.itemName ?? null,
+        quantity: line.input.quantity ?? 1,
+        grossWeight: this.toNumber(line.input.grossWeight),
+        netWeight: this.toNumber(line.input.netWeight),
+        ratePerGram: this.toNumber(line.input.ratePerGram),
+        metalValue: this.toNumber(line.input.metalValue),
+        makingCharges: this.toNumber(line.input.makingCharges),
+        stoneValue: this.toNumber(line.input.stoneValue),
+        itemTotal: this.toNumber(line.input.itemTotal),
+      })),
+      subtotal: this.toNumber(computed.subtotal),
+      totalMakingCharges: this.toNumber(computed.totalMakingCharges),
+      totalStoneValue: this.toNumber(computed.totalStoneValue),
+      discountAmount: t.discountAmount,
+      oldGoldValue: t.oldGoldValue,
+      taxableAmount: t.taxableAmount,
+      cgstPercent: t.cgstPercent,
+      cgstAmount: t.cgstAmount,
+      sgstPercent: t.sgstPercent,
+      sgstAmount: t.sgstAmount,
+      totalTax: t.totalTax,
+      grandTotal: t.grandTotal,
+      roundOff: t.roundOff,
+    };
+  }
+
+  async createInvoice(tenantId: string, userId: string, dto: CreateInvoiceDto) {
+    // Idempotency: a repeated submit with the same key returns the first result
+    // instead of creating a duplicate invoice + double-reducing stock.
+    if (dto.idempotencyKey) {
+      const existing = await this.prisma.invoice.findFirst({
+        where: { tenantId, idempotencyKey: dto.idempotencyKey },
         include: { items: true },
       });
+      if (existing) return existing;
+    }
 
-      // 7. Create Payment record if amountPaid > 0
-      if (dto.amountPaid && dto.amountPaid > 0) {
-        await tx.payment.create({
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const computed = await this.computeInvoice(tx, tenantId, dto, {
+          lock: true,
+        });
+
+        const year = new Date().getFullYear();
+        const startOfYear = new Date(year, 0, 1);
+        const count = await tx.invoice.count({
+          where: { tenantId, createdAt: { gte: startOfYear } },
+        });
+        const invoiceNumber = `SLK-${year}-${String(count + 1).padStart(4, '0')}`;
+
+        const totals = computed.totals;
+        const invoice = await tx.invoice.create({
           data: {
             tenantId,
-            invoiceId: invoice.id,
+            invoiceNumber,
+            idempotencyKey: dto.idempotencyKey,
             customerId: dto.customerId,
-            amount: dto.amountPaid,
-            paymentMode: dto.paymentMode || 'cash',
+            customerName: computed.customerName,
+            customerPhone: computed.customerPhone,
+            subtotal: computed.subtotal,
+            totalMakingCharges: computed.totalMakingCharges,
+            totalStoneValue: computed.totalStoneValue,
+            discountAmount: new Prisma.Decimal(totals.discountAmount),
+            oldGoldWeight: dto.oldGoldWeight,
+            oldGoldKarat: dto.oldGoldKarat,
+            oldGoldRate: dto.oldGoldRate,
+            oldGoldValue: new Prisma.Decimal(totals.oldGoldValue),
+            taxableAmount: new Prisma.Decimal(totals.taxableAmount),
+            cgstPercent: new Prisma.Decimal(totals.cgstPercent),
+            cgstAmount: new Prisma.Decimal(totals.cgstAmount),
+            sgstPercent: new Prisma.Decimal(totals.sgstPercent),
+            sgstAmount: new Prisma.Decimal(totals.sgstAmount),
+            totalTax: new Prisma.Decimal(totals.totalTax),
+            grandTotal: new Prisma.Decimal(totals.grandTotal),
+            roundOff: new Prisma.Decimal(totals.roundOff),
+            createdBy: userId,
+            notes: dto.notes,
+            amountPaid: dto.amountPaid || 0,
+            balanceDue: totals.grandTotal - (dto.amountPaid || 0),
+            paymentMode: dto.paymentMode,
+            items: { create: computed.lines.map((line) => line.input) },
           },
+          include: { items: true },
         });
-      }
 
-      // 8. Update Customer Stats
-      if (dto.customerId) {
-        await tx.customer.update({
-          where: { id: dto.customerId },
-          data: {
-            totalPurchases: { increment: invoice.grandTotal },
-            totalVisits: { increment: 1 },
-            lastVisitAt: new Date(),
-          },
+        // Reduce stock for each sold line.
+        for (const line of computed.lines) {
+          if (line.stockType === 'bulk') {
+            const remainingQuantity =
+              line.availableQuantity - line.requestedQuantity;
+            await tx.inventoryItem.update({
+              where: { id: line.invItemId },
+              data: {
+                quantity: remainingQuantity,
+                status: remainingQuantity > 0 ? 'in_stock' : 'sold',
+              },
+            });
+          } else {
+            await tx.inventoryItem.update({
+              where: { id: line.invItemId },
+              data: { status: 'sold' },
+            });
+          }
+        }
+
+        if (dto.amountPaid && dto.amountPaid > 0) {
+          await tx.payment.create({
+            data: {
+              tenantId,
+              invoiceId: invoice.id,
+              customerId: dto.customerId,
+              amount: dto.amountPaid,
+              paymentMode: dto.paymentMode || 'cash',
+            },
+          });
+        }
+
+        if (dto.customerId) {
+          await tx.customer.update({
+            where: { id: dto.customerId },
+            data: {
+              totalPurchases: { increment: invoice.grandTotal },
+              totalVisits: { increment: 1 },
+              lastVisitAt: new Date(),
+            },
+          });
+        }
+
+        return invoice;
+      });
+    } catch (error) {
+      // Idempotency race: a concurrent request with the same key won the unique
+      // index — return the already-created invoice instead of surfacing P2002.
+      if (
+        dto.idempotencyKey &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const existing = await this.prisma.invoice.findFirst({
+          where: { tenantId, idempotencyKey: dto.idempotencyKey },
+          include: { items: true },
         });
+        if (existing) return existing;
       }
-
-      return invoice;
-    });
+      throw error;
+    }
   }
 
   async getDashboard(tenantId: string) {

@@ -35,6 +35,18 @@ export class InvoiceController {
     return this.invoiceService.createInvoice(req.tenantId, req.appUser.id, dto);
   }
 
+  @Post('preview')
+  @ApiOperation({
+    summary: 'Preview invoice pricing (server-computed totals, no persistence)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return computed line items and totals.',
+  })
+  async previewInvoice(@Request() req: any, @Body() dto: CreateInvoiceDto) {
+    return this.invoiceService.previewInvoice(req.tenantId, dto);
+  }
+
   @Get('dashboard')
   @ApiOperation({ summary: 'Get billing dashboard metrics' })
   @ApiResponse({

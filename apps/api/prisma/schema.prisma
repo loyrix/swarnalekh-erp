@@ -297,6 +297,8 @@ model Invoice {
   // Metadata
   notes              String?
   createdBy          String?   @map("created_by") @db.Uuid
+  // Idempotency (dedupe duplicate POST /invoices submissions)
+  idempotencyKey     String?   @map("idempotency_key") @db.VarChar(80)
   // Soft delete
   deletedAt          DateTime? @map("deleted_at") @db.Timestamptz()
   createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz()
@@ -308,6 +310,7 @@ model Invoice {
   items    InvoiceItem[]
   payments Payment[]
 
+  @@unique([tenantId, idempotencyKey])
   @@index([tenantId])
   @@index([tenantId, customerId])
   @@index([tenantId, invoiceDate])

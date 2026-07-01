@@ -8,6 +8,7 @@ const decimal = (value: number) => new Prisma.Decimal(value);
 describe('InvoiceService', () => {
   const createService = () => {
     const tx = {
+      $queryRaw: jest.fn().mockResolvedValue([]),
       invoice: {
         count: jest.fn(),
         create: jest.fn(),
@@ -234,6 +235,98 @@ describe('InvoiceService', () => {
     await expect(
       service.createInvoice('tenant-1', 'user-1', { items: [] }),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it('locks the inventory row FOR UPDATE before selling it', async () => {
+    const { service, tx } = createService();
+    tx.invoice.count.mockResolvedValue(0);
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'item-1',
+      tagNumber: 'INV-0001',
+      itemName: 'Gold Ring',
+      metalType: 'gold',
+      karat: '22K',
+      stockType: 'unique',
+      quantity: 1,
+      status: 'in_stock',
+      grossWeight: decimal(10),
+      netWeight: decimal(9),
+      sellingPrice: decimal(59000),
+      wastagePercent: decimal(0),
+      stoneValue: decimal(0),
+      makingChargesFixed: null,
+      makingChargesPerGram: null,
+      makingChargesPercent: null,
+      hallmarkNumber: null,
+      huid: null,
+    });
+    tx.invoice.create.mockResolvedValue({
+      id: 'invoice-1',
+      grandTotal: decimal(60770),
+      items: [],
+    });
+
+    await service.createInvoice('tenant-1', 'user-1', {
+      customerName: 'Asha',
+      items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+      paymentMode: 'cash',
+    });
+
+    expect(tx.$queryRaw).toHaveBeenCalled();
+  });
+
+  it('previews server-computed totals without persisting or reducing stock', async () => {
+    const { service, tx } = createService();
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'item-1',
+      tagNumber: 'INV-0001',
+      itemName: 'Gold Ring',
+      metalType: 'gold',
+      karat: '22K',
+      stockType: 'unique',
+      quantity: 1,
+      status: 'in_stock',
+      grossWeight: decimal(10),
+      netWeight: decimal(9),
+      sellingPrice: decimal(59000),
+      wastagePercent: decimal(0),
+      stoneValue: decimal(250),
+      makingChargesFixed: decimal(500),
+      makingChargesPerGram: null,
+      makingChargesPercent: null,
+      hallmarkNumber: null,
+      huid: null,
+    });
+
+    const preview = await service.previewInvoice('tenant-1', {
+      customerName: 'Asha',
+      items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+    });
+
+    expect(preview.grandTotal).toBe(60770);
+    expect(preview.items[0].itemTotal).toBe(59000);
+    // Preview must not lock, persist, or reduce stock.
+    expect(tx.$queryRaw).not.toHaveBeenCalled();
+    expect(tx.invoice.create).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.update).not.toHaveBeenCalled();
+  });
+
+  it('returns the existing invoice for a repeated idempotency key', async () => {
+    const { service, prisma } = createService();
+    prisma.invoice.findFirst.mockResolvedValue({
+      id: 'existing-invoice',
+      items: [],
+    });
+
+    const result = await service.createInvoice('tenant-1', 'user-1', {
+      customerName: 'Asha',
+      items: [{ inventoryItemId: 'item-1' }],
+      idempotencyKey: 'idem-123',
+    });
+
+    expect(result.id).toBe('existing-invoice');
+    // Short-circuits before opening a transaction.
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it('aggregates billing dashboard metrics', async () => {
