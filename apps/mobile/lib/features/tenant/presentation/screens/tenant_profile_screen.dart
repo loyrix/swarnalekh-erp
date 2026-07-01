@@ -8,9 +8,8 @@ import 'package:swarnbook/features/tenant/data/models/tenant_profile.dart';
 import 'package:swarnbook/features/tenant/data/repositories/tenant_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/application/data_image.dart';
-import 'package:swarnbook/shared/widgets/common_widgets.dart';
+import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
-import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 
 class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
@@ -39,6 +38,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
   String? _logoUrl;
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _hasError = false;
   bool _canManageProfile = false;
 
   @override
@@ -73,7 +73,10 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final profile = await _repository.getProfile();
       if (!mounted) return;
@@ -85,7 +88,10 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
     } catch (_) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
         AppToast.error(context, l10n.errorFailedLoadShopProfile);
       }
     }
@@ -179,6 +185,9 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
+    }
+    if (_hasError && _profile == null) {
+      return AppErrorView(onRetry: _loadProfile);
     }
 
     return RefreshIndicator(

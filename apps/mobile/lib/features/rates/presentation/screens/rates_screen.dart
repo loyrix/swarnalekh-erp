@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
-import 'package:swarnbook/shared/widgets/common_widgets.dart';
+import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 import '../../data/repositories/rates_repository.dart';
 
@@ -16,6 +16,7 @@ class _RatesScreenState extends State<RatesScreen> {
   final _repository = RatesRepository();
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _hasError = false;
   List<Map<String, dynamic>> _history = [];
   DateTime? _latestAvailableDate;
 
@@ -41,7 +42,10 @@ class _RatesScreenState extends State<RatesScreen> {
   }
 
   Future<void> _loadRates() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final results = await Future.wait([
         _repository.getRatesByDate(_selectedDate),
@@ -78,6 +82,7 @@ class _RatesScreenState extends State<RatesScreen> {
       }
     } catch (e) {
       if (mounted) {
+        setState(() => _hasError = true);
         final l10n = AppLocalizations.of(context)!;
         AppToast.error(context, l10n.errorFailedLoadRates);
       }
@@ -186,6 +191,8 @@ class _RatesScreenState extends State<RatesScreen> {
                 height: 320,
                 child: Center(child: CircularProgressIndicator()),
               )
+            else if (_hasError)
+              SizedBox(height: 320, child: AppErrorView(onRetry: _loadRates))
             else ...[
               Center(
                 child: Container(
@@ -228,24 +235,13 @@ class _RatesScreenState extends State<RatesScreen> {
 
                         const SizedBox(height: AppSpacing.xxl),
 
-                        ElevatedButton.icon(
-                          icon: _isSaving
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.textOnPrimary,
-                                  ),
-                                )
-                              : const Icon(Icons.check_circle_outline),
-                          label: Text(
-                            _isSaving ? l10n.ratesSaving : l10n.ratesSaveRates,
-                          ),
+                        GoldButton(
+                          label: _isSaving
+                              ? l10n.ratesSaving
+                              : l10n.ratesSaveRates,
+                          icon: Icons.check_circle_outline,
+                          isLoading: _isSaving,
                           onPressed: _isSaving ? null : _saveRates,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
                         ),
                       ],
                     ),
