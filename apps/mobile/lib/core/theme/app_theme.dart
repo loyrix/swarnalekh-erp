@@ -187,6 +187,40 @@ class AppRadius {
   static const double full = 999;
 }
 
+/// Canonical responsive breakpoints. Use these instead of scattering magic
+/// widths (768/900/600/…) across screens so the mobile/desktop switch is
+/// consistent everywhere.
+class AppBreakpoints {
+  AppBreakpoints._();
+
+  /// Below this width we treat the layout as a phone (compact).
+  static const double compact = 768;
+
+  /// At/above this width we treat the layout as a wide desktop.
+  static const double expanded = 1024;
+}
+
+/// Density/layout helpers derived from [AppBreakpoints]. Prefer these over
+/// ad-hoc `MediaQuery`/`LayoutBuilder` width comparisons.
+class AppDensity {
+  AppDensity._();
+
+  /// True on phone-sized layouts (width < [AppBreakpoints.compact]).
+  static bool isCompact(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < AppBreakpoints.compact;
+
+  /// True on wide desktop layouts (width >= [AppBreakpoints.expanded]).
+  static bool isExpanded(BuildContext context) =>
+      MediaQuery.sizeOf(context).width >= AppBreakpoints.expanded;
+
+  /// Compact-aware value picker: returns [compact] on phones, else [wide].
+  static T pick<T>(
+    BuildContext context, {
+    required T compact,
+    required T wide,
+  }) => isCompact(context) ? compact : wide;
+}
+
 class AppShadows {
   AppShadows._();
 

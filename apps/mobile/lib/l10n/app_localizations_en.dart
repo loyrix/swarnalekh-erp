@@ -954,6 +954,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonClose => 'Close';
 
   @override
+  String get commonRetry => 'Retry';
+
+  @override
+  String get commonFilters => 'Filters';
+
+  @override
+  String get commonClear => 'Clear';
+
+  @override
+  String get commonApply => 'Apply';
+
+  @override
+  String get commonErrorTitle => 'Something went wrong';
+
+  @override
+  String get commonErrorBody => 'We couldn\'t load this. Please try again.';
+
+  @override
   String get pageSecurity => 'Security';
 
   @override

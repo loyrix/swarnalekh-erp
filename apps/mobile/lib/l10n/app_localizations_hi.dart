@@ -957,6 +957,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get commonClose => 'बंद करें';
 
   @override
+  String get commonRetry => 'पुनः प्रयास करें';
+
+  @override
+  String get commonFilters => 'फ़िल्टर';
+
+  @override
+  String get commonClear => 'साफ़ करें';
+
+  @override
+  String get commonApply => 'लागू करें';
+
+  @override
+  String get commonErrorTitle => 'कुछ गड़बड़ हो गई';
+
+  @override
+  String get commonErrorBody =>
+      'हम इसे लोड नहीं कर सके। कृपया पुनः प्रयास करें।';
+
+  @override
   String get pageSecurity => 'सुरक्षा';
 
   @override

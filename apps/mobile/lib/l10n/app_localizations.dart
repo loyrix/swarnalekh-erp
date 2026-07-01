@@ -1954,6 +1954,42 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get commonClose;
 
+  /// No description provided for @commonRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get commonRetry;
+
+  /// No description provided for @commonFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get commonFilters;
+
+  /// No description provided for @commonClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get commonClear;
+
+  /// No description provided for @commonApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get commonApply;
+
+  /// No description provided for @commonErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get commonErrorTitle;
+
+  /// No description provided for @commonErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load this. Please try again.'**
+  String get commonErrorBody;
+
   /// No description provided for @pageSecurity.
   ///
   /// In en, this message translates to:

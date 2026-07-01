@@ -47,6 +47,18 @@ class _AppShellState extends ConsumerState<AppShell> {
     _loadUserContext();
   }
 
+  @override
+  void didUpdateWidget(covariant AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Enforce role restrictions on mid-session navigation (e.g. a staff user
+    // typing an admin-only URL) using the already-cached role, no extra fetch.
+    if (oldWidget.currentLocation != widget.currentLocation) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _redirectIfRestricted(_role);
+      });
+    }
+  }
+
   Future<void> _loadUserContext() async {
     try {
       String? role;
@@ -80,13 +92,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _redirectIfRestricted(String? role) {
     if (!mounted) return;
-    final location = widget.currentLocation;
-    final isStaff = isStaffRole(role);
-    if (isStaff &&
-        (location == '/reports' ||
-            location == '/security' ||
-            location == '/user-management' ||
-            location == '/shop-profile')) {
+    if (isRestrictedRoute(role, widget.currentLocation)) {
       context.go('/dashboard');
     }
   }

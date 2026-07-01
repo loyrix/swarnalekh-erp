@@ -953,6 +953,25 @@ class AppLocalizationsGu extends AppLocalizations {
   String get commonClose => 'બંધ કરો';
 
   @override
+  String get commonRetry => 'ફરી પ્રયાસ કરો';
+
+  @override
+  String get commonFilters => 'ફિલ્ટર';
+
+  @override
+  String get commonClear => 'સાફ કરો';
+
+  @override
+  String get commonApply => 'લાગુ કરો';
+
+  @override
+  String get commonErrorTitle => 'કંઈક ખોટું થયું';
+
+  @override
+  String get commonErrorBody =>
+      'અમે આ લોડ કરી શક્યા નહીં. કૃપા કરીને ફરી પ્રયાસ કરો.';
+
+  @override
   String get pageSecurity => 'સુરક્ષા';
 
   @override

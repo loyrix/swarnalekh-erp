@@ -15,6 +15,20 @@ bool isAdminRole(String? role) {
 
 bool isStaffRole(String? role) => role?.trim().toLowerCase() == 'staff';
 
+/// Admin-only shell routes. Staff must never land on these (they are hidden
+/// from the nav, but can still be reached by direct URL on web).
+const Set<String> kAdminOnlyRoutes = {
+  '/reports',
+  '/security',
+  '/user-management',
+  '/shop-profile',
+};
+
+/// Pure guard: true when a user with [role] should be redirected away from
+/// [location]. Kept side-effect free so it is unit-testable without a router.
+bool isRestrictedRoute(String? role, String location) =>
+    isStaffRole(role) && kAdminOnlyRoutes.contains(location);
+
 Future<String?> fetchCurrentUserRole(ApiClient api) async {
   final context = await fetchCurrentUserContext(api);
   return context.role;
