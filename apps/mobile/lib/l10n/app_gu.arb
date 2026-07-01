@@ -188,6 +188,7 @@
   "billingQrPayload": "QR પેલોડ",
   "billingGenerated": "જનરેટેડ",
   "billingInvoicePdfReady": "ઇન્વોઇસ PDF તૈયાર છે",
+  "billingInvoiceCreated": "બિલ બની ગયું",
   "billingWhatsAppOpened": "WhatsApp ખુલ્યું",
   "errorInvoiceIdMissing": "ઇન્વોઇસ ID મળ્યું નથી",
   "errorFailedLoadInvoiceDetails": "ઇન્વોઇસ વિગતો લોડ ન થઈ શકી",

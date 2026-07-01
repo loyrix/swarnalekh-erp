@@ -188,6 +188,7 @@
   "billingQrPayload": "QR Payload",
   "billingGenerated": "Generated",
   "billingInvoicePdfReady": "Invoice PDF ready",
+  "billingInvoiceCreated": "Invoice created",
   "billingWhatsAppOpened": "WhatsApp opened",
   "errorInvoiceIdMissing": "Invoice ID is missing",
   "errorFailedLoadInvoiceDetails": "Failed to load invoice details",

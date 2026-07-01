@@ -562,6 +562,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get billingInvoicePdfReady => 'इनवॉइस PDF तैयार है';
 
   @override
+  String get billingInvoiceCreated => 'बिल बन गया';
+
+  @override
   String get billingWhatsAppOpened => 'WhatsApp खुल गया';
 
   @override

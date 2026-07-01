@@ -1186,6 +1186,12 @@ abstract class AppLocalizations {
   /// **'Invoice PDF ready'**
   String get billingInvoicePdfReady;
 
+  /// No description provided for @billingInvoiceCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice created'**
+  String get billingInvoiceCreated;
+
   /// No description provided for @billingWhatsAppOpened.
   ///
   /// In en, this message translates to:

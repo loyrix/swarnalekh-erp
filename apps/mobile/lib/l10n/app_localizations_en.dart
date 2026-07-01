@@ -560,6 +560,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingInvoicePdfReady => 'Invoice PDF ready';
 
   @override
+  String get billingInvoiceCreated => 'Invoice created';
+
+  @override
   String get billingWhatsAppOpened => 'WhatsApp opened';
 
   @override

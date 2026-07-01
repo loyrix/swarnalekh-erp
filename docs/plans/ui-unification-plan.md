@@ -25,40 +25,40 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 
 ## Completion matrix (drives the ordering)
 
-| Feature                                                          | API                                                               | Mobile UI | Tests   | Class         |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------- | --------- | ------- | ------------- |
-| Dashboard                                                        | ✅ bootstrap/stats                                                | ✅        | ✅      | A (polish)    |
-| Inventory                                                        | ✅ 10 routes                                                      | ✅        | ✅      | A (polish)    |
-| Mortgage (+partial payments)                                     | ✅ 8 routes                                                       | ✅        | ✅      | A (polish)    |
-| Reports                                                          | ✅ overview/export                                                | ✅        | ✅      | A (polish)    |
-| User Mgmt / Shop Profile / Rates / Customers                     | ✅                                                                | ✅        | partial | A (polish)    |
-| Billing / Invoice                                                | ⚠️ no `/preview`, stock-race, no idempotency, client-side pricing | ✅        | ✅      | B (finish)    |
-| Security (audit/backup/invoice protection)                       | ⚠️ interceptor not global                                         | ✅        | ✅      | B (finish)    |
-| Auth onboarding (signup/register/reset)                          | ⚠️ no password reset                                              | ✅        | —       | B (finish)    |
-| Invoice partial-payments                                         | ❌ model only                                                     | ❌        | ❌      | C (scratch)   |
-| Robust PDF / CSV-Excel export / image storage / full-text search | ❌                                                                | ❌        | ❌      | C (hardening) |
+| Feature                                                          | API                                                                   | Mobile UI | Tests   | Class         |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------- | --------- | ------- | ------------- |
+| Dashboard                                                        | ✅ bootstrap/stats                                                    | ✅        | ✅      | A (polish)    |
+| Inventory                                                        | ✅ 10 routes                                                          | ✅        | ✅      | A (polish)    |
+| Mortgage (+partial payments)                                     | ✅ 8 routes                                                           | ✅        | ✅      | A (polish)    |
+| Reports                                                          | ✅ overview/export                                                    | ✅        | ✅      | A (polish)    |
+| User Mgmt / Shop Profile / Rates / Customers                     | ✅                                                                    | ✅        | partial | A (polish)    |
+| Billing / Invoice                                                | ✅ `/preview` + `FOR UPDATE` lock + idempotency (server-only pricing) | ✅        | ✅      | ✅ B1 done    |
+| Security (audit/backup/invoice protection)                       | ⚠️ interceptor not global                                             | ✅        | ✅      | B (finish)    |
+| Auth onboarding (signup/register/reset)                          | ⚠️ no password reset                                                  | ✅        | —       | B (finish)    |
+| Invoice partial-payments                                         | ❌ model only                                                         | ❌        | ❌      | C (scratch)   |
+| Robust PDF / CSV-Excel export / image storage / full-text search | ❌                                                                    | ❌        | ❌      | C (hardening) |
 
 ---
 
 ## Progress Overview
 
-| Phase  | Title                                                                 | Status                          |
-| ------ | --------------------------------------------------------------------- | ------------------------------- |
-| 0      | Foundation: tokens, cleanup, design-system kit + tests                | ✅ Done (2026-07-01)            |
-| **A1** | Dashboard — polish                                                    | ✅ Done (2026-07-01)            |
-| **A2** | Inventory — polish                                                    | ✅ Done (2026-07-01)            |
-| **A3** | Mortgage — polish                                                     | ✅ Done (2026-07-01)            |
-| **A4** | Reports — polish                                                      | ✅ Done (2026-07-01)            |
-| **A5** | Support screens (User Mgmt, Shop Profile, Rates, Customers) — polish  | ✅ Done (2026-07-01)            |
-| **B1** | Billing/Invoice — finish (server pricing + integrity) + polish        | 🟡 Backend done; mobile pending |
-| **B2** | Security — finish (global audit, backup, invoice protection) + polish | ⬜                              |
-| **B3** | Auth onboarding — finish (password reset, robust register) + polish   | ⬜                              |
-| **C1** | Invoice partial-payments — build                                      | ⬜                              |
-| **C2** | Robust invoice PDF generation — build                                 | ⬜                              |
-| **C3** | CSV/Excel export — build                                              | ⬜                              |
-| **C4** | Image storage → Supabase Storage — build                              | ⬜                              |
-| **C5** | Full-text search — build                                              | ⬜                              |
-| **V**  | Visual-richness redesign pass (final, post-migration)                 | ⬜                              |
+| Phase  | Title                                                                 | Status               |
+| ------ | --------------------------------------------------------------------- | -------------------- |
+| 0      | Foundation: tokens, cleanup, design-system kit + tests                | ✅ Done (2026-07-01) |
+| **A1** | Dashboard — polish                                                    | ✅ Done (2026-07-01) |
+| **A2** | Inventory — polish                                                    | ✅ Done (2026-07-01) |
+| **A3** | Mortgage — polish                                                     | ✅ Done (2026-07-01) |
+| **A4** | Reports — polish                                                      | ✅ Done (2026-07-01) |
+| **A5** | Support screens (User Mgmt, Shop Profile, Rates, Customers) — polish  | ✅ Done (2026-07-01) |
+| **B1** | Billing/Invoice — finish (server pricing + integrity) + polish        | ✅ Done (2026-07-01) |
+| **B2** | Security — finish (global audit, backup, invoice protection) + polish | ⬜                   |
+| **B3** | Auth onboarding — finish (password reset, robust register) + polish   | ⬜                   |
+| **C1** | Invoice partial-payments — build                                      | ⬜                   |
+| **C2** | Robust invoice PDF generation — build                                 | ⬜                   |
+| **C3** | CSV/Excel export — build                                              | ⬜                   |
+| **C4** | Image storage → Supabase Storage — build                              | ⬜                   |
+| **C5** | Full-text search — build                                              | ⬜                   |
+| **V**  | Visual-richness redesign pass (final, post-migration)                 | ⬜                   |
 
 Legend: ⬜ Not started · 🟡 In progress · ✅ Done (full DoD) · ⏸️ Blocked
 
@@ -245,20 +245,16 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 
 ## Resume pointer (update at end of each work session)
 
-- **Current phase:** B1 — Billing/Invoice — 🟡 **backend done, mobile migration pending**
-- **B1 backend done (2026-07-01, verified: api test = 62, `nest build` clean):**
-  - `POST /invoices/preview` — server-computed line items + totals, no persistence/stock mutation (so shown total == charged total). Extracted shared `computeInvoice()` used by both preview and create.
-  - `FOR UPDATE` row lock on each inventory row inside the create transaction (`tx.$queryRaw ... FOR UPDATE`) → no concurrent oversell of a unique item.
-  - Idempotency: `Invoice.idempotencyKey` (+ `@@unique([tenantId, idempotencyKey])`, migration `20260701_invoice_idempotency`), `POST /invoices` short-circuits/returns the existing invoice on repeat + P2002 race guard. DTO gained optional `idempotencyKey`.
-  - Spec `invoice.service.spec.ts` +3 tests (lock, preview no-persist, idempotency). Prisma client regenerated.
-- **B1 mobile remaining:** typed `Invoice`/`InvoiceLine` models + repo + providers; migrate 2,005-line `billing_screen.dart` onto kit (New Bill/History tabs via `AppSectionScaffold`, **new-bill form calls `/invoices/preview` and shows SERVER totals** + sends `idempotencyKey` on create, replace the detail-dialog **DataTable** + bill-preview table with compact rows, invoice detail via `AppDetailSheet`, `CompactStatStrip`), typed models, 4 states, tests. Then the deferred dashboard price-consistency nit.
+- **Current phase:** B1 — Billing/Invoice — ✅ **DONE (backend + mobile), verified**
+- **B1 backend done (2026-07-01, committed+pushed caa9459, migration applied to Supabase, api test = 62):** `POST /invoices/preview` (server-computed totals, no persist — shown total == charged total, via extracted `computeInvoice()`); `FOR UPDATE` inventory row lock in create tx (no oversell); `Invoice.idempotencyKey` + `@@unique([tenantId, idempotencyKey])` (migration `20260701_invoice_idempotency`) + P2002 race guard; DTO optional `idempotencyKey`; spec +3 tests.
+- **B1 mobile done (2026-07-01, working tree — not committed):** new `features/billing/data/models/invoice.dart` (typed `Invoice`, `BillingDashboard`/`TopSellingProduct`, `InvoicePreview`/`InvoicePreviewLine`, `BillingInventoryItem`, `BillingCustomerOption`, `BillingFormData`, `PrintableInvoice`+`Shop`/`Item`/`Detail`); `data/invoice_repository.dart` (+`InvoiceQuery`, `InvoiceDraft`/`InvoiceDraftItem`; getDashboard/getInvoices/getFormData/**preview**/**create(idempotencyKey)**/getPrintable/getPdf/getShareUri); `application/invoice_providers.dart` (`billingDashboardProvider`, `invoicesProvider.family`, `invoiceRepositoryProvider`). Screen **2,005 → ~430 lines**: `ConsumerStatefulWidget` on `AppSectionScaffold` (Dashboard/History sections + **New Bill** `GoldButton` → full-screen route) + `AppStateView` (4 states) + `CompactStatStrip` + `CompactDataRow` invoice rows (PopupMenu view/print/download/share) + `AppFilterSheet` date filters. New full-screen `create_invoice_page.dart` (`AppFormScaffold`) **calls `/invoices/preview` (debounced) → SERVER totals in footer** + sends stable `idempotencyKey` on create. `invoice_detail_sheet.dart` (`AppDetailSheet`; **DataTable removed** → `CompactDataRow` items + QR/verification extra). `billing_format.dart` shared. **DELETED** dead client-pricing `application/billing_pricing_calculations.dart` + its test (server is now sole pricing source → drift impossible). New l10n `billingInvoiceCreated` (en/hi/gu). Tests: `billing_model_test.dart` + `billing_screen_test.dart` (+15). Verified: mobile analyze clean, `flutter test` = 124, api = 62. **Deferred dashboard price-consistency nit resolved** (no client pricing remains anywhere).
 - **Prev:** A5 Support screens complete; Stage A fully done & pushed (…ba32372). **Customers** (555→163): typed `Customer` + repo + provider, `AppStateView`, `CompactDataRow` rows, form → `AppFormScaffold` route (`customer_form_page`). **User Management** (557→285): `UsersRepository`+provider, `AppStateView`, `CompactDataRow` rows + `ItemActionsMenu`, form → route (`user_form_page`), kept onboarding tip + admin-only guard + deactivate confirm. **Rates** + **Shop Profile/Tenant**: light polish (already clean single-form screens — added real error+retry state via `AppErrorView`, `GoldButton`/app_kit). Verified: mobile analyze clean, `flutter test` = 111 (+8), api unchanged (59).
 - **Prev:** A4 Reports (987→478); A3 Mortgage (1,353→344); A2 Inventory (2,454→699); A1 Dashboard (real sales trend). Screen decomposed **987 → 478 lines**: 7 typed report models + `ReportsData` (`reports_data.dart`) + `ReportsRepository` (+`ReportsQuery`) + Riverpod family provider; screen now `ConsumerStatefulWidget` on `AppSectionScaffold` (Inventory/Billing/Mortgage groups) + `AppStateView`; the **6-field filter bar → `AppFilterSheet`** (search stays on-screen); report rows now render via **`CompactDataRow`** through a reusable `ReportSection` widget (+`ReportRow` view-model); typed-model→row mappers keep the screen `Map`-free; admin-only empty-state kept (guard covers `/reports`). No new l10n needed. Verified: mobile analyze clean, `flutter test` = 103 (+7), api unchanged (59).
 - **Prev:** A3 Mortgage complete — 1,353 → 344 lines; A2 Inventory — 2,454 → 699; A1 Dashboard — real 7-day sales trend + kit. Screen decomposed **1,353 → 344 lines**: typed `MortgageLoan`/`Ornament`/`Payment`/`Dashboard` + `MortgageRepository` (+`MortgageQuery`) + Riverpod providers; screen now `ConsumerStatefulWidget` on `AppSectionScaffold` (Active/Closed/All) + `AppStateView`; **tall StatCard + 150px metric boxes replaced** with `CompactStatStrip` + `CompactDataRow` loan rows; create loan / collect payment / close loan → full-screen `AppFormScaffold` routes (`mortgage_form_page`/`collect_payment_page`/`close_loan_page`, KYC image + loan-date preserved, shared `mortgage_form_helpers`); loan detail + payment receipts + Collect/Close via `AppDetailSheet` (`mortgage_detail_sheet`). Verified: mobile analyze clean, `flutter test` = 96 (+11), api unchanged (59).
 - **Prev:** A2 Inventory complete (2026-07-01). Screen decomposed **2,454 → 699 lines**; all 3 DataTables → `CompactDataRow`; forms → full-screen routes; OCR strings localized. Screen decomposed **2,454 → 699 lines** across typed model/repo/providers + `inventory_form_page` (full-screen `AppFormScaffold` route, pricing auto-calc + image upload preserved) + `ocr_review_page` (full-screen route, **DataTable removed**, hardcoded OCR strings localized) + `inventory_detail_sheet` (`AppDetailSheet`) + `inventory_format`. Screen now `ConsumerStatefulWidget` on `AppSectionScaffold` + `AppStateView`; **all 3 DataTables replaced with `CompactDataRow`** (mobile & wide); filters in `AppFilterSheet`; search always visible. New l10n (en/hi/gu) for OCR fields + generic validations. Verified: mobile analyze clean, `flutter test` = 85 (+14), api unchanged (59).
 - **Prev:** A1 Dashboard complete (2026-07-01). Delivered: real **7-day salesTrend** in backend `dashboard.getStats` (+ spec; replaced fabricated chart data); typed `DashboardData`/`DashboardStats`/`SalesTrendPoint` + `DashboardRepository` + Riverpod `dashboardProvider`; screen rewritten as `ConsumerWidget` on `AppStateView` (real loading/error+retry/data), unified `CompactStatStrip` (retired tall `_DashboardStatCard`), **localized date** via `intl DateFormat` (removed hardcoded English month/day arrays), cleaned quick actions (removed bogus `/reports?focus=search`). Verified: mobile analyze clean, `flutter test` = 71, `apps/api` test = 59.
-- **Next action:** B1 Billing/Invoice — **finish functionality + polish** (this is a Stage B item, not just UI): add `POST /invoices/preview` (server pricing) + `FOR UPDATE` stock lock + idempotency key (backend + Jest), then migrate the 2,005-line billing screen onto the kit (typed `Invoice`/`InvoiceLine`, `AppSectionScaffold` New Bill/History/Reports, new-bill as `AppFormScaffold` route showing **server** totals, replace bill-preview DataTable, `AppDetailSheet`, `CompactStatStrip`). Also fold in the deferred dashboard price-consistency nit.
+- **Next action:** B2 Security — finish + polish (global audit interceptor, soft-delete filter in `forTenant`, backup + activity-logs UI). Await owner "go" before starting.
 - **A2 follow-up (minor):** `inventory_form_page.dart` (821) and `inventory_list_screen.dart` (699) exceed the 400-line target but are cohesive; split further only if they grow. Inventory "Reports" tab (PDF stock-reports) not built — no backend endpoint yet; revisit in reports/hardening.
-- **Deferred nit:** dashboard `totalInventoryValue` vs per-item selling price consistency → handle in **B1** (server pricing) where the root cause lives.
-- **Open questions for owner:** none. Awaiting "go" to start A2.
+- **Deferred nit:** ✅ resolved in B1 — all client-side Dart pricing removed (`billing_pricing_calculations.dart` deleted); the server is the sole pricing source, so dashboard/invoice totals can no longer drift.
+- **Open questions for owner:** none. Awaiting "go" to start B2 (Security).
 - **Kit usage note:** import `package:swarnbook/shared/widgets/app_kit.dart` in feature screens; do not build bespoke stat/row/form/filter widgets.

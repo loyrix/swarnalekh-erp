@@ -560,6 +560,9 @@ class AppLocalizationsGu extends AppLocalizations {
   String get billingInvoicePdfReady => 'ઇન્વોઇસ PDF તૈયાર છે';
 
   @override
+  String get billingInvoiceCreated => 'બિલ બની ગયું';
+
+  @override
   String get billingWhatsAppOpened => 'WhatsApp ખુલ્યું';
 
   @override
