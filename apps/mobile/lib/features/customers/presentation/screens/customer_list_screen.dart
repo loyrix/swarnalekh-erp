@@ -7,6 +7,7 @@ import 'package:swarnbook/features/customers/application/customers_providers.dar
 import 'package:swarnbook/features/customers/data/models/customer.dart';
 import 'package:swarnbook/features/customers/presentation/screens/customer_form_page.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/data_export.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 
 class CustomerListScreen extends ConsumerStatefulWidget {
@@ -101,6 +102,16 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                       ),
                     ),
                     if (_canManage) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      IconButton.filledTonal(
+                        tooltip: l10n.exportCsv,
+                        onPressed: () => exportAndShareCsv(
+                          context,
+                          'customers',
+                          query: _search.isEmpty ? null : {'search': _search},
+                        ),
+                        icon: const Icon(Icons.file_download_outlined),
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       IconButton.filledTonal(
                         tooltip: l10n.customerAdd,

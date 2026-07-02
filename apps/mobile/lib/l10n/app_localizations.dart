@@ -4113,6 +4113,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to record payment'**
   String get errorFailedRecordPayment;
+
+  /// No description provided for @exportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export CSV'**
+  String get exportCsv;
+
+  /// No description provided for @exportReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Export ready: {fileName}'**
+  String exportReady(String fileName);
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed'**
+  String get exportFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -15,6 +15,7 @@ import 'package:swarnbook/features/inventory/presentation/screens/inventory_form
 import 'package:swarnbook/features/inventory/presentation/screens/ocr_review_page.dart';
 import 'package:swarnbook/features/inventory/presentation/widgets/inventory_detail_sheet.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/data_export.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 
@@ -458,6 +459,14 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
               tooltip: l10n.commonFilters,
               onPressed: _openFilters,
               icon: const Icon(Icons.tune_rounded),
+            ),
+          ],
+          if (_canManage) ...[
+            const SizedBox(width: AppSpacing.sm),
+            IconButton.filledTonal(
+              tooltip: l10n.exportCsv,
+              onPressed: () => exportAndShareCsv(context, 'inventory'),
+              icon: const Icon(Icons.file_download_outlined),
             ),
           ],
         ],

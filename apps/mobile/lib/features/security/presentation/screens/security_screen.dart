@@ -6,6 +6,7 @@ import 'package:swarnbook/features/security/application/security_providers.dart'
 import 'package:swarnbook/features/security/data/models/activity_log.dart';
 import 'package:swarnbook/features/security/data/security_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/data_export.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -227,6 +228,12 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
                     ),
                   ),
                 ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              IconButton.filledTonal(
+                tooltip: l10n.exportCsv,
+                onPressed: () => exportAndShareCsv(context, 'activity'),
+                icon: const Icon(Icons.file_download_outlined),
               ),
               const SizedBox(width: AppSpacing.sm),
               IconButton.filledTonal(

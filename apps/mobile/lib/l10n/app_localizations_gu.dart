@@ -2077,4 +2077,15 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get errorFailedRecordPayment => 'ચુકવણી નોંધવામાં નિષ્ફળ';
+
+  @override
+  String get exportCsv => 'CSV નિકાસ';
+
+  @override
+  String exportReady(String fileName) {
+    return 'નિકાસ તૈયાર: $fileName';
+  }
+
+  @override
+  String get exportFailed => 'નિકાસ નિષ્ફળ';
 }

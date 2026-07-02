@@ -18,6 +18,7 @@ import { MortgageModule } from './modules/mortgage/mortgage.module.js';
 import { ReportModule } from './modules/report/report.module.js';
 import { SecurityModule } from './modules/security/security.module.js';
 import { UserManagementModule } from './modules/user-management/user-management.module.js';
+import { ExportModule } from './modules/export/export.module.js';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { UserManagementModule } from './modules/user-management/user-management.
     UserManagementModule,
     TenantModule,
     DashboardModule,
+    ExportModule,
   ],
   controllers: [AppController],
   providers: [

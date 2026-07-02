@@ -770,5 +770,15 @@
   "billingPaymentRecorded": "Payment recorded",
   "billingNoPayments": "No payments recorded yet",
   "billingCollectSubtitle": "Record a payment against this invoice",
-  "errorFailedRecordPayment": "Failed to record payment"
+  "errorFailedRecordPayment": "Failed to record payment",
+  "exportCsv": "Export CSV",
+  "exportReady": "Export ready: {fileName}",
+  "exportFailed": "Export failed",
+  "@exportReady": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  }
 }

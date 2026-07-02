@@ -762,5 +762,8 @@
   "billingPaymentRecorded": "भुगतान दर्ज हुआ",
   "billingNoPayments": "अभी तक कोई भुगतान दर्ज नहीं",
   "billingCollectSubtitle": "इस बिल के लिए भुगतान दर्ज करें",
-  "errorFailedRecordPayment": "भुगतान दर्ज करने में विफल"
+  "errorFailedRecordPayment": "भुगतान दर्ज करने में विफल",
+  "exportCsv": "CSV निर्यात",
+  "exportReady": "निर्यात तैयार: {fileName}",
+  "exportFailed": "निर्यात विफल"
 }

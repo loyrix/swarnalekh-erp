@@ -2084,4 +2084,15 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errorFailedRecordPayment => 'भुगतान दर्ज करने में विफल';
+
+  @override
+  String get exportCsv => 'CSV निर्यात';
+
+  @override
+  String exportReady(String fileName) {
+    return 'निर्यात तैयार: $fileName';
+  }
+
+  @override
+  String get exportFailed => 'निर्यात विफल';
 }

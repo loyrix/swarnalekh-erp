@@ -2076,4 +2076,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorFailedRecordPayment => 'Failed to record payment';
+
+  @override
+  String get exportCsv => 'Export CSV';
+
+  @override
+  String exportReady(String fileName) {
+    return 'Export ready: $fileName';
+  }
+
+  @override
+  String get exportFailed => 'Export failed';
 }

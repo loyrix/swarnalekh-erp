@@ -4,7 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
+import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
+import 'package:swarnbook/features/auth/application/app_permissions.dart';
 import 'package:swarnbook/features/billing/application/invoice_providers.dart';
 import 'package:swarnbook/features/billing/data/invoice_repository.dart';
 import 'package:swarnbook/features/billing/data/models/invoice.dart';
@@ -14,6 +16,7 @@ import 'package:swarnbook/features/billing/presentation/screens/collect_invoice_
 import 'package:swarnbook/features/billing/presentation/screens/create_invoice_page.dart';
 import 'package:swarnbook/features/billing/presentation/widgets/invoice_detail_sheet.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/data_export.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -32,7 +35,23 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
   InvoiceQuery _query = const InvoiceQuery();
   String _section = 'dashboard';
   bool _busy = false;
+  bool _canManage = false;
   InvoicePdfFonts? _cachedFonts;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    try {
+      final role = await fetchCurrentUserRole(ApiClient());
+      if (mounted) setState(() => _canManage = isAdminRole(role));
+    } catch (_) {
+      if (mounted) setState(() => _canManage = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -279,6 +298,23 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                   child: const Icon(Icons.tune_rounded),
                 ),
               ),
+              if (_canManage) ...[
+                const SizedBox(width: AppSpacing.sm),
+                IconButton.filledTonal(
+                  tooltip: l10n.exportCsv,
+                  onPressed: () => exportAndShareCsv(
+                    context,
+                    'invoices',
+                    query: {
+                      if (_query.search.trim().isNotEmpty)
+                        'search': _query.search.trim(),
+                      if (_query.dateFrom != null) 'dateFrom': _query.dateFrom,
+                      if (_query.dateTo != null) 'dateTo': _query.dateTo,
+                    },
+                  ),
+                  icon: const Icon(Icons.file_download_outlined),
+                ),
+              ],
             ],
           ),
         ],
