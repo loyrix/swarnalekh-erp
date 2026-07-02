@@ -60,15 +60,16 @@ class AppColors {
   static const Color primaryDark = Color(0xFFB8902E);
   static const Color primaryMuted = Color(0x33D4A853);
 
-  // Accent colors (always the same)
-  static const Color success = Color(0xFF34C759);
-  static const Color successMuted = Color(0x3334C759);
-  static const Color warning = Color(0xFFFF9F0A);
-  static const Color warningMuted = Color(0x33FF9F0A);
-  static const Color error = Color(0xFFFF453A);
-  static const Color errorMuted = Color(0x33FF453A);
-  static const Color info = Color(0xFF5E9EFF);
-  static const Color infoMuted = Color(0x335E9EFF);
+  // Status colors — warm-tuned to sit beside gold (used ONLY for real status:
+  // in-stock / sold / overdue / error — never as decoration).
+  static const Color success = Color(0xFF2E9E6B); // deep emerald
+  static const Color successMuted = Color(0x332E9E6B);
+  static const Color warning = Color(0xFFE0912E); // gold-family amber
+  static const Color warningMuted = Color(0x33E0912E);
+  static const Color error = Color(0xFFE04B43); // warm coral red
+  static const Color errorMuted = Color(0x33E04B43);
+  static const Color info = Color(0xFF5E86C7); // muted slate blue
+  static const Color infoMuted = Color(0x335E86C7);
 
   // Metal colors
   static const Color gold = Color(0xFFD4A853);
@@ -114,7 +115,7 @@ class AppColors {
   );
 
   // ========== LIGHT MODE ==========
-  static const Color backgroundLight = Color(0xFFF7F6F3);
+  static const Color backgroundLight = Color(0xFFF3EFE8); // deeper warm cream
   static const Color surfaceLightMode = Color(0xFFFFFFFF);
   static const Color surfaceLightLight = Color(0xFFF0EDE8);
   static const Color surfaceCardLight = Color(0xFFFFFFFF);
@@ -123,7 +124,7 @@ class AppColors {
   static const Color textSecondaryLight = Color(0xFF6B6B80);
   static const Color textMutedLight = Color(0xFF9E9EB0);
   static const Color textOnPrimaryLight = Color(0xFFFFFFFF);
-  static const Color borderLightMode = Color(0xFFE5E2DC);
+  static const Color borderLightMode = Color(0xFFDED8CC); // defined warm edge
   static const Color borderLightLight = Color(0xFFEAE7E2);
   static const Color dividerLight = Color(0xFFEDE9E3);
   static const Color glassBorderLight = Color(0x1A000000);
@@ -264,6 +265,25 @@ class AppShadows {
       AppColors.isDark(context) ? card : cardLight;
   static List<BoxShadow> forElevated(BuildContext context) =>
       AppColors.isDark(context) ? elevated : elevatedLight;
+
+  /// A whisper-soft lift for compact list rows / stat cards — premium depth
+  /// without extra height. Tuned per theme.
+  static List<BoxShadow> softLight = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.04),
+      blurRadius: 8,
+      offset: const Offset(0, 2),
+    ),
+  ];
+  static List<BoxShadow> softDark = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.18),
+      blurRadius: 10,
+      offset: const Offset(0, 3),
+    ),
+  ];
+  static List<BoxShadow> soft(BuildContext context) =>
+      AppColors.isDark(context) ? softDark : softLight;
 }
 
 // ====================================
@@ -363,6 +383,9 @@ ThemeData buildDarkTheme() {
       primary: AppColors.primary,
       onPrimary: AppColors.textOnPrimary,
       secondary: AppColors.primaryLight,
+      // Soft gold-tinted tile for filledTonal icon buttons (not loud solid gold).
+      secondaryContainer: Color(0xFF2A2418),
+      onSecondaryContainer: AppColors.primary,
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
       error: AppColors.error,
@@ -457,6 +480,9 @@ ThemeData buildLightTheme() {
       primary: AppColors.primaryDark,
       onPrimary: AppColors.textOnPrimaryLight,
       secondary: AppColors.primary,
+      // Soft gold-cream tile for filledTonal icon buttons (not loud solid gold).
+      secondaryContainer: Color(0xFFF3E9D4),
+      onSecondaryContainer: AppColors.primaryDark,
       surface: AppColors.surfaceLightMode,
       onSurface: AppColors.textPrimaryLight,
       error: AppColors.error,
@@ -480,7 +506,9 @@ ThemeData buildLightTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surfaceLightLight,
+      // White fields on the deeper cream background read cleanly and separate
+      // from both the page and white cards (via the defined border).
+      fillColor: AppColors.surfaceLightMode,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -492,7 +520,7 @@ ThemeData buildLightTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: AppColors.primaryDark, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
       ),
       hintStyle: textTheme.bodyMedium?.copyWith(
         color: AppColors.textMutedLight,

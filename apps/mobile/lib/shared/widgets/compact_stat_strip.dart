@@ -31,16 +31,14 @@ class CompactStatStrip extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surfL(context),
+                  // Uniform card: one neutral surface + hairline border + soft
+                  // lift for every stat. The only colour is the small icon tile.
+                  color: AppColors.surf(context),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: stat.color.withValues(alpha: 0.3)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: stat.color.withValues(alpha: 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: AppColors.brd(context).withValues(alpha: 0.6),
+                  ),
+                  boxShadow: AppShadows.soft(context),
                 ),
                 child: Row(
                   children: [

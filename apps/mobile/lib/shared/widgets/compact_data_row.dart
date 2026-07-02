@@ -75,6 +75,7 @@ class CompactDataRow extends StatelessWidget {
               border: Border.all(
                 color: AppColors.brd(context).withValues(alpha: 0.5),
               ),
+              boxShadow: AppShadows.soft(context),
             ),
             child: Stack(
               children: [
