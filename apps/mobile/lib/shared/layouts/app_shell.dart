@@ -365,37 +365,53 @@ class _AppShellState extends ConsumerState<AppShell> {
               maxLines: 1,
             ),
           ),
-          // Search
+          // Search — tappable pill on wide layouts, icon-only elsewhere.
           if (showSearch) ...[
-            Container(
-              width: 280,
-              height: 38,
-              decoration: BoxDecoration(
-                color: AppColors.surfL(context),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppColors.brd(context)),
-              ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 12),
-                  Icon(
-                    Icons.search_rounded,
-                    size: 18,
-                    color: AppColors.text3(context),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.searchHint,
-                    style: TextStyle(
+            InkWell(
+              onTap: () => context.go('/search'),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Container(
+                width: 280,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.surfL(context),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: AppColors.brd(context)),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.search_rounded,
+                      size: 18,
                       color: AppColors.text3(context),
-                      fontSize: 13,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.searchGlobalHint,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.text3(context),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-          ],
+          ] else
+            IconButton(
+              visualDensity: isWide
+                  ? VisualDensity.standard
+                  : VisualDensity.compact,
+              icon: Icon(Icons.search_rounded, color: AppColors.text2(context)),
+              onPressed: () => context.go('/search'),
+              tooltip: l10n.searchGlobalHint,
+            ),
           // Theme toggle
           IconButton(
             visualDensity: isWide

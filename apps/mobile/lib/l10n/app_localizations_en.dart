@@ -2087,4 +2087,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFailed => 'Export failed';
+
+  @override
+  String get searchGlobalHint => 'Search customers, items, invoices...';
+
+  @override
+  String get searchStartTitle => 'Search everything';
+
+  @override
+  String get searchStartSubtitle =>
+      'Find customers, inventory items and invoices in one place.';
 }

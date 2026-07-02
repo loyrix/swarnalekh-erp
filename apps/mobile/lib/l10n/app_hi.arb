@@ -765,5 +765,8 @@
   "errorFailedRecordPayment": "भुगतान दर्ज करने में विफल",
   "exportCsv": "CSV निर्यात",
   "exportReady": "निर्यात तैयार: {fileName}",
-  "exportFailed": "निर्यात विफल"
+  "exportFailed": "निर्यात विफल",
+  "searchGlobalHint": "ग्राहक, आइटम, बिल खोजें...",
+  "searchStartTitle": "सब कुछ खोजें",
+  "searchStartSubtitle": "ग्राहक, इन्वेंट्री आइटम और बिल एक ही जगह खोजें।"
 }

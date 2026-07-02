@@ -13,6 +13,7 @@ import 'package:swarnbook/features/billing/presentation/screens/billing_screen.d
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_screen.dart';
 import 'package:swarnbook/features/rates/presentation/screens/rates_screen.dart';
 import 'package:swarnbook/features/reports/presentation/screens/reports_screen.dart';
+import 'package:swarnbook/features/search/presentation/screens/search_screen.dart';
 import 'package:swarnbook/features/security/presentation/screens/security_screen.dart';
 import 'package:swarnbook/features/tenant/presentation/screens/tenant_profile_screen.dart';
 import 'package:swarnbook/features/users/presentation/screens/user_management_screen.dart';
@@ -126,6 +127,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => _fadeTransitionPage(
               key: state.pageKey,
               child: const TenantProfileScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/search',
+            pageBuilder: (context, state) => _fadeTransitionPage(
+              key: state.pageKey,
+              child: const SearchScreen(),
             ),
           ),
           GoRoute(

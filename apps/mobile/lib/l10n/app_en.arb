@@ -774,6 +774,9 @@
   "exportCsv": "Export CSV",
   "exportReady": "Export ready: {fileName}",
   "exportFailed": "Export failed",
+  "searchGlobalHint": "Search customers, items, invoices...",
+  "searchStartTitle": "Search everything",
+  "searchStartSubtitle": "Find customers, inventory items and invoices in one place.",
   "@exportReady": {
     "placeholders": {
       "fileName": {

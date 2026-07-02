@@ -2088,4 +2088,14 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get exportFailed => 'નિકાસ નિષ્ફળ';
+
+  @override
+  String get searchGlobalHint => 'ગ્રાહકો, વસ્તુઓ, બિલ શોધો...';
+
+  @override
+  String get searchStartTitle => 'બધું શોધો';
+
+  @override
+  String get searchStartSubtitle =>
+      'ગ્રાહકો, ઇન્વેન્ટરી વસ્તુઓ અને બિલ એક જ જગ્યાએ શોધો.';
 }

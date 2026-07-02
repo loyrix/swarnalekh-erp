@@ -4131,6 +4131,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export failed'**
   String get exportFailed;
+
+  /// No description provided for @searchGlobalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search customers, items, invoices...'**
+  String get searchGlobalHint;
+
+  /// No description provided for @searchStartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search everything'**
+  String get searchStartTitle;
+
+  /// No description provided for @searchStartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find customers, inventory items and invoices in one place.'**
+  String get searchStartSubtitle;
 }
 
 class _AppLocalizationsDelegate

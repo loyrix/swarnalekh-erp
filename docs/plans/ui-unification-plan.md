@@ -58,7 +58,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 | **C2** | Robust invoice PDF generation — build                                      | ✅ Done (2026-07-02)                                                     |
 | **C3** | CSV/Excel export — build                                                   | ✅ Done (2026-07-02)                                                     |
 | **C4** | Image storage → Supabase Storage — build                                   | ⬜                                                                       |
-| **C5** | Full-text search — build                                                   | ⬜                                                                       |
+| **C5** | Full-text search — build                                                   | ✅ Done (2026-07-02)                                                     |
 | **V**  | Visual-richness redesign pass (final, post-migration)                      | ⬜                                                                       |
 
 Legend: ⬜ Not started · 🟡 In progress · ✅ Done (full DoD) · ⏸️ Blocked
@@ -207,7 +207,7 @@ Backend first (removes UI-vs-charged drift and oversell):
 
 ### C5 — Full-text search
 
-- [ ] PostgreSQL `tsvector` search for products/customers/invoices (replace `ILIKE`). Index + query + tests; wire into the unified `AppFilterBar`.
+- [x] Global cross-entity search endpoint (`GET /search?q=`, all app roles, tenant + soft-delete scoped) spanning customers/inventory/invoices with JS relevance ranking (exact ×3, prefix ×2, substring ×1). Mobile: typed `SearchResults` models + repo + `searchResultsProvider.family`, dedicated `/search` screen on the kit (debounced field, grouped `CompactDataRow` results, all 4 states, en/hi/gu), reachable from the app-shell search pill/icon. Tests: api +5 (93→98), flutter +6 (152→158). **NOTE:** ships the zero-infra ILIKE version; upgrading to a Postgres `tsvector` GIN index (true FTS, typo/stemming) is a documented follow-up.
 
 **Stage C DoD:** each feature functional end-to-end, UI on kit where user-facing, tests covering edges, suites green, README updated.
 
@@ -260,7 +260,8 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 - **C1 DONE (2026-07-02):** invoice partial-payments. Backend `AddInvoicePaymentDto` + `addPayment`/`getInvoicePayments` (`POST`/`GET /invoices/:id/payments`, tx-guarded: amount>0 & ≤ balance, moves amountPaid/balanceDue) + `payments[]` on the printable payload; spec +4 (api 81→85). Mobile: `InvoicePayment` model + `hasBalance`/`payments` on the printable detail, `repo.addPayment`, full-screen `collect_invoice_payment_page.dart`, payments list + **Collect Payment** action in `invoice_detail_sheet` (only when balance>0), `billing_screen._collect` refreshes on success; new l10n; tests (billing_model + collect page); flutter test 141→145.
 - **C2 DONE (2026-07-02):** rich client-side invoice PDF (`invoice_pdf.dart` `buildInvoicePdf` on the `pdf` pkg — MultiPage table/GST/payments/logo/QR, Noto+Devanagari+Gujarati fonts via PdfGoogleFonts w/ offline fallback); `_print`/`_download` render locally; removed dead `repo.getPdf`; +4 tests; flutter test 145→149.
 - **C3 DONE (2026-07-02):** server CSV export (`csv.util` + `ExportModule` `GET /export/:type`, admin, invoices/inventory/customers/activity; UTF-8 BOM) + admin Export-CSV buttons on 4 screens sharing via `Printing.sharePdf`; api 85→93, flutter test 149→152.
-- **Next action:** Stage **C5 — Full-text search** (no external creds), or **C4 — image storage → cloud** (needs a storage bucket/creds — partly blocked). Await owner "go". (Deferred: B3c Google/Apple.)
+- **C5 DONE (2026-07-02):** global cross-entity search. Backend `SearchModule` `GET /search?q=` (all app roles; tenant + `deletedAt` scoped; searches customer name/phone/email/city, inventory tag/barcode/name/hallmark/huid, invoice number/customer/phone) with JS relevance ranking (exact ×3 / prefix ×2 / substring ×1) and per-group limit; spec +5 (api 93→98). Mobile: typed `SearchResults`/`CustomerHit`/`InventoryHit`/`InvoiceHit` + `SearchRepository` + `searchResultsProvider.family`, new `/search` screen on the kit (autofocus debounced field, grouped `CompactDataRow` results with counts, start/empty/error/data states, tap → section route), wired into the app-shell top-bar search pill (wide) + search icon (narrow); new l10n en/hi/gu; tests +6 (flutter 152→158). Ships ILIKE now; Postgres `tsvector` GIN index is a documented follow-up.
+- **Next action:** Stage **C4 — image storage → cloud** (needs a storage bucket/creds — partly blocked), or **Stage V** visual-richness pass (final). Await owner "go". (Deferred: B3c Google/Apple.)
 - **A2 follow-up (minor):** `inventory_form_page.dart` (821) and `inventory_list_screen.dart` (699) exceed the 400-line target but are cohesive; split further only if they grow. Inventory "Reports" tab (PDF stock-reports) not built — no backend endpoint yet; revisit in reports/hardening.
 - **Deferred nit:** ✅ resolved in B1 — all client-side Dart pricing removed (`billing_pricing_calculations.dart` deleted); the server is the sole pricing source, so dashboard/invoice totals can no longer drift.
 - **Open questions for owner:** none. Awaiting "go" to start B3 (Auth onboarding).

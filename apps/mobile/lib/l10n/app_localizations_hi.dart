@@ -2095,4 +2095,14 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get exportFailed => 'निर्यात विफल';
+
+  @override
+  String get searchGlobalHint => 'ग्राहक, आइटम, बिल खोजें...';
+
+  @override
+  String get searchStartTitle => 'सब कुछ खोजें';
+
+  @override
+  String get searchStartSubtitle =>
+      'ग्राहक, इन्वेंट्री आइटम और बिल एक ही जगह खोजें।';
 }
