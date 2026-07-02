@@ -583,7 +583,7 @@ class _StatsStrip extends StatelessWidget {
             icon: Icons.shopping_bag_rounded,
             label: l10n.inventorySoldProducts,
             value: '${stats!.soldThisMonth}',
-            color: AppColors.success,
+            color: AppColors.primary,
           ),
         ],
       ),

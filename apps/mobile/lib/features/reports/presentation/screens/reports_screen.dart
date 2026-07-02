@@ -279,7 +279,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             emptyText: l10n.reportsNoSalesDay,
             rows: data.dailySales.map((i) => _salesRow(l10n, i)).toList(),
             metricValue: reportMoney(dailyTotal),
-            metricColor: AppColors.success,
+            metricColor: AppColors.primary,
             onExport: () => _export('daily-sales'),
           ),
           ReportSection(
@@ -297,7 +297,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             emptyText: l10n.reportsNoGstData,
             rows: data.gst.map((i) => _gstRow(l10n, i)).toList(),
             metricValue: reportMoney(gstTotal),
-            metricColor: AppColors.warning,
+            metricColor: AppColors.primary,
             onExport: () => _export('gst'),
           ),
         ];
@@ -313,7 +313,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             emptyText: l10n.reportsNoActiveLoans,
             rows: data.activeLoans.map((i) => _activeLoanRow(l10n, i)).toList(),
             metricValue: '${data.activeLoans.length}',
-            metricColor: AppColors.info,
+            metricColor: AppColors.primary,
             onExport: () => _export('active-loans'),
           ),
           ReportSection(
@@ -324,7 +324,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 .map((i) => _interestRow(l10n, i))
                 .toList(),
             metricValue: reportMoney(interestTotal),
-            metricColor: AppColors.success,
+            metricColor: AppColors.primary,
             onExport: () => _export('interest-collection'),
           ),
           ReportSection(
@@ -348,7 +348,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             emptyText: l10n.reportsNoCurrentStock,
             rows: data.currentStock.map((i) => _stockRow(l10n, i)).toList(),
             metricValue: '${data.currentStock.length}',
-            metricColor: AppColors.info,
+            metricColor: AppColors.primary,
             onExport: () => _export('current-stock'),
           ),
           ReportSection(
@@ -357,7 +357,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             emptyText: l10n.reportsNoSoldProducts,
             rows: data.soldProducts.map((i) => _soldRow(l10n, i)).toList(),
             metricValue: '${data.soldProducts.length}',
-            metricColor: AppColors.success,
+            metricColor: AppColors.primary,
             onExport: () => _export('sold-products'),
           ),
           ReportSection(
@@ -366,7 +366,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             emptyText: l10n.reportsNoLowStock,
             rows: data.lowStock.map((i) => _lowStockRow(l10n, i)).toList(),
             metricValue: '${data.lowStock.length}',
-            metricColor: AppColors.warning,
+            metricColor: AppColors.primary,
             onExport: () => _export('low-stock'),
           ),
         ];
