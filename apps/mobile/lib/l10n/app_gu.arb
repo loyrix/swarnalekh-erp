@@ -766,6 +766,10 @@
   "exportCsv": "CSV નિકાસ",
   "exportReady": "નિકાસ તૈયાર: {fileName}",
   "exportFailed": "નિકાસ નિષ્ફળ",
+  "billingActionCollect": "વસૂલ",
+  "billingActionPrint": "પ્રિન્ટ",
+  "billingActionDownload": "ડાઉનલોડ",
+  "billingActionShare": "શેર",
   "searchGlobalHint": "ગ્રાહકો, વસ્તુઓ, બિલ શોધો...",
   "searchStartTitle": "બધું શોધો",
   "searchStartSubtitle": "ગ્રાહકો, ઇન્વેન્ટરી વસ્તુઓ અને બિલ એક જ જગ્યાએ શોધો."

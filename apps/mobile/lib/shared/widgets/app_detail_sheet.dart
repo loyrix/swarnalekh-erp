@@ -170,14 +170,32 @@ class AppDetailSheet extends StatelessWidget {
             ],
             if (actions.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  for (var i = 0; i < actions.length; i++) ...[
-                    if (i > 0) const SizedBox(width: AppSpacing.sm),
-                    Expanded(child: actions[i]),
+              // 1–2 actions sit side by side; 3+ wrap into a 2-per-row grid so
+              // buttons never overflow on a phone.
+              if (actions.length <= 2)
+                Row(
+                  children: [
+                    for (var i = 0; i < actions.length; i++) ...[
+                      if (i > 0) const SizedBox(width: AppSpacing.sm),
+                      Expanded(child: actions[i]),
+                    ],
                   ],
-                ],
-              ),
+                )
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    const spacing = AppSpacing.sm;
+                    final itemWidth = (constraints.maxWidth - spacing) / 2;
+                    return Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: [
+                        for (final action in actions)
+                          SizedBox(width: itemWidth, child: action),
+                      ],
+                    );
+                  },
+                ),
             ],
           ],
         ),

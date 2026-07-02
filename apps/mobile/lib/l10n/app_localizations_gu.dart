@@ -2090,6 +2090,18 @@ class AppLocalizationsGu extends AppLocalizations {
   String get exportFailed => 'નિકાસ નિષ્ફળ';
 
   @override
+  String get billingActionCollect => 'વસૂલ';
+
+  @override
+  String get billingActionPrint => 'પ્રિન્ટ';
+
+  @override
+  String get billingActionDownload => 'ડાઉનલોડ';
+
+  @override
+  String get billingActionShare => 'શેર';
+
+  @override
   String get searchGlobalHint => 'ગ્રાહકો, વસ્તુઓ, બિલ શોધો...';
 
   @override

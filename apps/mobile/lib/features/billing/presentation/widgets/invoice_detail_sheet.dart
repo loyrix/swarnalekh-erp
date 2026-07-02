@@ -96,7 +96,7 @@ Future<void> showInvoiceDetail(
     actions: [
       if (onCollect != null && inv.hasBalance)
         GoldButton(
-          label: l10n.billingCollectPayment,
+          label: l10n.billingActionCollect,
           icon: Icons.payments_outlined,
           onPressed: () {
             Navigator.of(context).maybePop();
@@ -104,7 +104,7 @@ Future<void> showInvoiceDetail(
           },
         ),
       GoldButton(
-        label: l10n.billingReprintInvoice,
+        label: l10n.billingActionPrint,
         icon: Icons.print_outlined,
         isOutlined: true,
         onPressed: () {
@@ -113,7 +113,7 @@ Future<void> showInvoiceDetail(
         },
       ),
       GoldButton(
-        label: l10n.billingDownloadPdf,
+        label: l10n.billingActionDownload,
         icon: Icons.download_outlined,
         isOutlined: true,
         onPressed: () {
@@ -122,7 +122,7 @@ Future<void> showInvoiceDetail(
         },
       ),
       GoldButton(
-        label: l10n.billingShareWhatsApp,
+        label: l10n.billingActionShare,
         icon: Icons.share_outlined,
         onPressed: () {
           Navigator.of(context).maybePop();

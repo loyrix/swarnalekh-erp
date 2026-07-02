@@ -766,6 +766,10 @@
   "exportCsv": "CSV निर्यात",
   "exportReady": "निर्यात तैयार: {fileName}",
   "exportFailed": "निर्यात विफल",
+  "billingActionCollect": "वसूलें",
+  "billingActionPrint": "प्रिंट",
+  "billingActionDownload": "डाउनलोड",
+  "billingActionShare": "शेयर",
   "searchGlobalHint": "ग्राहक, आइटम, बिल खोजें...",
   "searchStartTitle": "सब कुछ खोजें",
   "searchStartSubtitle": "ग्राहक, इन्वेंट्री आइटम और बिल एक ही जगह खोजें।"

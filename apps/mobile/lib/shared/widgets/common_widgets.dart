@@ -182,10 +182,10 @@ class _GoldButtonState extends State<GoldButton>
             onTap: widget.isLoading ? null : widget.onPressed,
             borderRadius: BorderRadius.circular(AppRadius.md),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              child: Center(
-                child: widget.isLoading
-                    ? SizedBox(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              child: widget.isLoading
+                  ? Center(
+                      child: SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
@@ -196,22 +196,32 @@ class _GoldButtonState extends State<GoldButton>
                                 : AppColors.textOnPrimary,
                           ),
                         ),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (widget.icon != null) ...[
-                            Icon(
-                              widget.icon,
-                              size: 18,
-                              color: widget.isOutlined
-                                  ? AppColors.primary
-                                  : AppColors.textOnPrimary,
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Text(
+                      ),
+                    )
+                  // No Center wrapper: keeps a finite width so the label can
+                  // ellipsize instead of overflowing when the button is
+                  // constrained (e.g. side-by-side action buttons).
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (widget.icon != null) ...[
+                          Icon(
+                            widget.icon,
+                            size: 18,
+                            color: widget.isOutlined
+                                ? AppColors.primary
+                                : AppColors.textOnPrimary,
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Flexible(
+                          child: Text(
                             widget.label,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -221,9 +231,9 @@ class _GoldButtonState extends State<GoldButton>
                               letterSpacing: 0.3,
                             ),
                           ),
-                        ],
-                      ),
-              ),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ),

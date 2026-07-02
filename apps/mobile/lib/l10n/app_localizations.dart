@@ -4132,6 +4132,30 @@ abstract class AppLocalizations {
   /// **'Export failed'**
   String get exportFailed;
 
+  /// No description provided for @billingActionCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect'**
+  String get billingActionCollect;
+
+  /// No description provided for @billingActionPrint.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get billingActionPrint;
+
+  /// No description provided for @billingActionDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get billingActionDownload;
+
+  /// No description provided for @billingActionShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get billingActionShare;
+
   /// No description provided for @searchGlobalHint.
   ///
   /// In en, this message translates to:

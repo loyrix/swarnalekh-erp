@@ -2097,6 +2097,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get exportFailed => 'निर्यात विफल';
 
   @override
+  String get billingActionCollect => 'वसूलें';
+
+  @override
+  String get billingActionPrint => 'प्रिंट';
+
+  @override
+  String get billingActionDownload => 'डाउनलोड';
+
+  @override
+  String get billingActionShare => 'शेयर';
+
+  @override
   String get searchGlobalHint => 'ग्राहक, आइटम, बिल खोजें...';
 
   @override

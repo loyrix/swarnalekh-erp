@@ -2089,6 +2089,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFailed => 'Export failed';
 
   @override
+  String get billingActionCollect => 'Collect';
+
+  @override
+  String get billingActionPrint => 'Print';
+
+  @override
+  String get billingActionDownload => 'Download';
+
+  @override
+  String get billingActionShare => 'Share';
+
+  @override
   String get searchGlobalHint => 'Search customers, items, invoices...';
 
   @override
