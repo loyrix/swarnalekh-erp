@@ -1,13 +1,42 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
+  MaxLength,
   ValidateNested,
 } from 'class-validator';
+
+export class AddInvoicePaymentDto {
+  @ApiProperty({ description: 'Payment amount to record', example: 5000 })
+  @IsNumber()
+  @IsPositive()
+  amount: number;
+
+  @ApiPropertyOptional({
+    description: 'Payment mode (cash, upi, card, …)',
+    example: 'upi',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  paymentMode?: string;
+
+  @ApiPropertyOptional({ description: 'Reference / transaction number' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  referenceNumber?: string;
+
+  @ApiPropertyOptional({ description: 'Notes' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}
 
 export class CreateInvoiceItemDto {
   @ApiProperty({ description: 'Inventory Item ID' })

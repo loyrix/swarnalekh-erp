@@ -15,7 +15,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { InvoiceService } from './invoice.service.js';
-import { CreateInvoiceDto } from './invoice.dto.js';
+import { AddInvoicePaymentDto, CreateInvoiceDto } from './invoice.dto.js';
 import {
   ALL_APP_ROLES,
   Roles,
@@ -45,6 +45,27 @@ export class InvoiceController {
   })
   async previewInvoice(@Request() req: any, @Body() dto: CreateInvoiceDto) {
     return this.invoiceService.previewInvoice(req.tenantId, dto);
+  }
+
+  @Post(':id/payments')
+  @ApiOperation({ summary: 'Record a payment against an invoice' })
+  @ApiResponse({
+    status: 201,
+    description: 'Payment recorded; balances moved.',
+  })
+  async addPayment(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() dto: AddInvoicePaymentDto,
+  ) {
+    return this.invoiceService.addPayment(req.tenantId, id, dto);
+  }
+
+  @Get(':id/payments')
+  @ApiOperation({ summary: 'List payments recorded against an invoice' })
+  @ApiResponse({ status: 200, description: 'Return invoice payments.' })
+  async getInvoicePayments(@Request() req: any, @Param('id') id: string) {
+    return this.invoiceService.getInvoicePayments(req.tenantId, id);
   }
 
   @Get('dashboard')

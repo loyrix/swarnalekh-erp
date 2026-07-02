@@ -2053,4 +2053,28 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get inventoryCompactPayment => 'ચુકવણી';
+
+  @override
+  String get billingCollectPayment => 'ચુકવણી લો';
+
+  @override
+  String get billingPayments => 'ચુકવણીઓ';
+
+  @override
+  String get billingPaymentAmount => 'રકમ';
+
+  @override
+  String get billingReference => 'સંદર્ભ (વૈકલ્પિક)';
+
+  @override
+  String get billingPaymentRecorded => 'ચુકવણી નોંધાઈ';
+
+  @override
+  String get billingNoPayments => 'હજી કોઈ ચુકવણી નોંધાઈ નથી';
+
+  @override
+  String get billingCollectSubtitle => 'આ બિલ સામે ચુકવણી નોંધો';
+
+  @override
+  String get errorFailedRecordPayment => 'ચુકવણી નોંધવામાં નિષ્ફળ';
 }

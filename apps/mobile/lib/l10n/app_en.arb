@@ -762,5 +762,13 @@
   "inventoryCompactPayment": "Payment",
   "@appTitle": {
     "description": "The application title"
-  }
+  },
+  "billingCollectPayment": "Collect Payment",
+  "billingPayments": "Payments",
+  "billingPaymentAmount": "Amount",
+  "billingReference": "Reference (optional)",
+  "billingPaymentRecorded": "Payment recorded",
+  "billingNoPayments": "No payments recorded yet",
+  "billingCollectSubtitle": "Record a payment against this invoice",
+  "errorFailedRecordPayment": "Failed to record payment"
 }

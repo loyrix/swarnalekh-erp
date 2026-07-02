@@ -754,5 +754,13 @@
   "userRestrictedTitle": "उपयोगकर्ता प्रबंधन केवल व्यवस्थापक के लिए है",
   "userRestrictedSubtitle": "स्टाफ उपयोगकर्ता अपने निर्धारित कार्य क्षेत्रों में काम करना जारी रख सकते हैं।",
   "userOnboardingTipTitle": "स्टाफ ऑनबोर्डिंग",
-  "userOnboardingTipDesc": "नए जोड़े गए स्टाफ को ऐप डाउनलोड करना होगा और यहां दिए गए ईमेल पते से साइन अप विकल्प का उपयोग करके अपना पासवर्ड सेट करना होगा और अपना खाता लिंक करना होगा।"
+  "userOnboardingTipDesc": "नए जोड़े गए स्टाफ को ऐप डाउनलोड करना होगा और यहां दिए गए ईमेल पते से साइन अप विकल्प का उपयोग करके अपना पासवर्ड सेट करना होगा और अपना खाता लिंक करना होगा।",
+  "billingCollectPayment": "भुगतान लें",
+  "billingPayments": "भुगतान",
+  "billingPaymentAmount": "राशि",
+  "billingReference": "संदर्भ (वैकल्पिक)",
+  "billingPaymentRecorded": "भुगतान दर्ज हुआ",
+  "billingNoPayments": "अभी तक कोई भुगतान दर्ज नहीं",
+  "billingCollectSubtitle": "इस बिल के लिए भुगतान दर्ज करें",
+  "errorFailedRecordPayment": "भुगतान दर्ज करने में विफल"
 }

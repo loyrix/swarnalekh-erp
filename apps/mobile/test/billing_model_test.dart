@@ -215,5 +215,39 @@ void main() {
       expect(printable.verificationCode, 'ABC123');
       expect(printable.invoice.invoiceDate?.year, 2026);
     });
+
+    test('parses payments and flags an outstanding balance', () {
+      final printable = PrintableInvoice.fromJson({
+        'shop': {'name': 'S'},
+        'invoice': {
+          'invoiceNumber': 'SLK-2026-0002',
+          'grandTotal': 10000,
+          'amountPaid': 4000,
+          'balanceDue': 6000,
+          'payments': [
+            {
+              'id': 'p1',
+              'amount': '4000',
+              'paymentMode': 'upi',
+              'referenceNumber': 'TXN-1',
+              'paymentDate': '2026-06-11T00:00:00.000Z',
+            },
+          ],
+        },
+      });
+      expect(printable.invoice.hasBalance, isTrue);
+      expect(printable.invoice.payments, hasLength(1));
+      expect(printable.invoice.payments.first.amount, 4000);
+      expect(printable.invoice.payments.first.paymentMode, 'upi');
+      expect(printable.invoice.payments.first.referenceNumber, 'TXN-1');
+    });
+
+    test('no balance when fully paid and no payments list', () {
+      final printable = PrintableInvoice.fromJson({
+        'invoice': {'grandTotal': 5000, 'amountPaid': 5000, 'balanceDue': 0},
+      });
+      expect(printable.invoice.hasBalance, isFalse);
+      expect(printable.invoice.payments, isEmpty);
+    });
   });
 }

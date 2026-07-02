@@ -329,6 +329,39 @@ class PrintableItem {
   }
 }
 
+/// A payment recorded against an invoice (`GET /invoices/:id/payments` or the
+/// `payments` array on the printable detail).
+class InvoicePayment {
+  const InvoicePayment({
+    required this.id,
+    required this.amount,
+    required this.paymentMode,
+    required this.referenceNumber,
+    required this.notes,
+    required this.paymentDate,
+  });
+
+  final String id;
+  final double amount;
+  final String paymentMode;
+  final String? referenceNumber;
+  final String? notes;
+  final DateTime? paymentDate;
+
+  factory InvoicePayment.fromJson(Map<String, dynamic> json) {
+    return InvoicePayment(
+      id: (json['id'] ?? '').toString(),
+      amount: _d(json['amount']),
+      paymentMode: (json['paymentMode'] ?? 'cash').toString(),
+      referenceNumber: _s(json['referenceNumber']),
+      notes: _s(json['notes']),
+      paymentDate: DateTime.tryParse(
+        (json['paymentDate'] ?? json['createdAt'])?.toString() ?? '',
+      ),
+    );
+  }
+}
+
 class PrintableInvoiceDetail {
   const PrintableInvoiceDetail({
     required this.invoiceNumber,
@@ -355,6 +388,7 @@ class PrintableInvoiceDetail {
     required this.amountPaid,
     required this.balanceDue,
     required this.notes,
+    required this.payments,
   });
 
   final String? invoiceNumber;
@@ -381,9 +415,13 @@ class PrintableInvoiceDetail {
   final double amountPaid;
   final double balanceDue;
   final String? notes;
+  final List<InvoicePayment> payments;
+
+  bool get hasBalance => balanceDue > 0;
 
   factory PrintableInvoiceDetail.fromJson(Map<String, dynamic> json) {
     final items = json['items'];
+    final payments = json['payments'];
     return PrintableInvoiceDetail(
       invoiceNumber: _s(json['invoiceNumber']),
       invoiceDate: DateTime.tryParse(json['invoiceDate']?.toString() ?? ''),
@@ -414,6 +452,12 @@ class PrintableInvoiceDetail {
       amountPaid: _d(json['amountPaid']),
       balanceDue: _d(json['balanceDue']),
       notes: _s(json['notes']),
+      payments: payments is List
+          ? payments
+                .whereType<Map<String, dynamic>>()
+                .map(InvoicePayment.fromJson)
+                .toList()
+          : const [],
     );
   }
 }

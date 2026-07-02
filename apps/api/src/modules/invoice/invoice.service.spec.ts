@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InvoiceService } from './invoice.service';
@@ -12,6 +12,8 @@ describe('InvoiceService', () => {
       invoice: {
         count: jest.fn(),
         create: jest.fn(),
+        findFirst: jest.fn(),
+        update: jest.fn(),
       },
       customer: {
         findFirst: jest.fn(),
@@ -34,6 +36,9 @@ describe('InvoiceService', () => {
         findMany: jest.fn(),
         count: jest.fn(),
         findFirst: jest.fn(),
+      },
+      payment: {
+        findMany: jest.fn(),
       },
       tenant: {
         findUnique: jest.fn(),
@@ -492,6 +497,95 @@ describe('InvoiceService', () => {
     expect(shareUrl.hostname).toBe('wa.me');
     expect(shareUrl.searchParams.get('text')).toBe(share.whatsappText);
     expect(share.verificationCode).toMatch(/^[A-F0-9]{12}$/);
+  });
+
+  describe('addPayment', () => {
+    const invoiceRow = (over: Record<string, unknown> = {}) => ({
+      id: 'inv-1',
+      customerId: 'cust-1',
+      grandTotal: decimal(10000),
+      amountPaid: decimal(3000),
+      balanceDue: decimal(7000),
+      paymentMode: 'cash',
+      ...over,
+    });
+
+    it('records a partial payment and moves the balance', async () => {
+      const { service, tx } = createService();
+      tx.invoice.findFirst.mockResolvedValue(invoiceRow());
+      tx.payment.create.mockResolvedValue({
+        id: 'pay-1',
+        amount: decimal(4000),
+        paymentMode: 'upi',
+        paymentDate: new Date('2026-06-11'),
+        referenceNumber: 'TXN-9',
+        notes: null,
+        createdAt: new Date('2026-06-11'),
+      });
+      tx.invoice.update.mockResolvedValue({
+        id: 'inv-1',
+        grandTotal: decimal(10000),
+        amountPaid: decimal(7000),
+        balanceDue: decimal(3000),
+      });
+
+      const result = await service.addPayment('tenant-1', 'inv-1', {
+        amount: 4000,
+        paymentMode: 'upi',
+        referenceNumber: 'TXN-9',
+      });
+
+      expect(tx.payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            tenantId: 'tenant-1',
+            invoiceId: 'inv-1',
+            customerId: 'cust-1',
+            paymentMode: 'upi',
+          }),
+        }),
+      );
+      expect(tx.invoice.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'inv-1' },
+          data: expect.objectContaining({
+            amountPaid: expect.anything(),
+            balanceDue: expect.anything(),
+          }),
+        }),
+      );
+      expect(result.invoice.amountPaid).toBe(7000);
+      expect(result.invoice.balanceDue).toBe(3000);
+      expect(result.payment.amount).toBe(4000);
+    });
+
+    it('rejects a payment that exceeds the balance due', async () => {
+      const { service, tx } = createService();
+      tx.invoice.findFirst.mockResolvedValue(invoiceRow());
+
+      await expect(
+        service.addPayment('tenant-1', 'inv-1', { amount: 9000 }),
+      ).rejects.toThrow(BadRequestException);
+      expect(tx.payment.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects a non-positive payment', async () => {
+      const { service, tx } = createService();
+      tx.invoice.findFirst.mockResolvedValue(invoiceRow());
+
+      await expect(
+        service.addPayment('tenant-1', 'inv-1', { amount: 0 }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws when the invoice is not found for the tenant', async () => {
+      const { service, tx } = createService();
+      tx.invoice.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.addPayment('tenant-1', 'missing', { amount: 100 }),
+      ).rejects.toThrow(NotFoundException);
+    });
   });
 });
 

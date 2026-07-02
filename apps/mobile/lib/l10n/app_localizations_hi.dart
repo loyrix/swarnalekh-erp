@@ -2060,4 +2060,28 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get inventoryCompactPayment => 'भुगतान';
+
+  @override
+  String get billingCollectPayment => 'भुगतान लें';
+
+  @override
+  String get billingPayments => 'भुगतान';
+
+  @override
+  String get billingPaymentAmount => 'राशि';
+
+  @override
+  String get billingReference => 'संदर्भ (वैकल्पिक)';
+
+  @override
+  String get billingPaymentRecorded => 'भुगतान दर्ज हुआ';
+
+  @override
+  String get billingNoPayments => 'अभी तक कोई भुगतान दर्ज नहीं';
+
+  @override
+  String get billingCollectSubtitle => 'इस बिल के लिए भुगतान दर्ज करें';
+
+  @override
+  String get errorFailedRecordPayment => 'भुगतान दर्ज करने में विफल';
 }

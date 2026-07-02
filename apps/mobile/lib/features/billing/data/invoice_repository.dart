@@ -160,6 +160,25 @@ class InvoiceRepository {
     );
   }
 
+  Future<void> addPayment(
+    String invoiceId, {
+    required double amount,
+    required String paymentMode,
+    String? referenceNumber,
+    String? notes,
+  }) {
+    return _api.dio.post(
+      '/invoices/$invoiceId/payments',
+      data: {
+        'amount': amount,
+        'paymentMode': paymentMode,
+        if (referenceNumber != null && referenceNumber.trim().isNotEmpty)
+          'referenceNumber': referenceNumber.trim(),
+        if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+      },
+    );
+  }
+
   Future<PrintableInvoice> getPrintable(String id) async {
     final response = await _api.dio.get('/invoices/$id/print');
     final data = (response.data as Map).cast<String, dynamic>();

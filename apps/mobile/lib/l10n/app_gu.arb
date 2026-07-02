@@ -754,5 +754,13 @@
   "userRestrictedTitle": "યુઝર મેનેજમેન્ટ ફક્ત એડમિન માટે છે",
   "userRestrictedSubtitle": "સ્ટાફ વપરાશકર્તાઓ તેમના સોંપાયેલ કાર્ય ક્ષેત્રોમાં કામ ચાલુ રાખી શકે છે.",
   "userOnboardingTipTitle": "સ્ટાફ ઓનબોર્ડિંગ",
-  "userOnboardingTipDesc": "નવા ઉમેરાયેલા સ્ટાફે એપ ડાઉનલોડ કરવી જોઈએ અને અહીં આપેલા ચોક્કસ ઇમેઇલ સરનામા સાથે સાઇન અપ વિકલ્પનો ઉપયોગ કરીને તેમનો પાસવર્ડ સેટ કરવો જોઈએ અને તેમનું એકાઉન્ટ લિંક કરવું જોઈએ."
+  "userOnboardingTipDesc": "નવા ઉમેરાયેલા સ્ટાફે એપ ડાઉનલોડ કરવી જોઈએ અને અહીં આપેલા ચોક્કસ ઇમેઇલ સરનામા સાથે સાઇન અપ વિકલ્પનો ઉપયોગ કરીને તેમનો પાસવર્ડ સેટ કરવો જોઈએ અને તેમનું એકાઉન્ટ લિંક કરવું જોઈએ.",
+  "billingCollectPayment": "ચુકવણી લો",
+  "billingPayments": "ચુકવણીઓ",
+  "billingPaymentAmount": "રકમ",
+  "billingReference": "સંદર્ભ (વૈકલ્પિક)",
+  "billingPaymentRecorded": "ચુકવણી નોંધાઈ",
+  "billingNoPayments": "હજી કોઈ ચુકવણી નોંધાઈ નથી",
+  "billingCollectSubtitle": "આ બિલ સામે ચુકવણી નોંધો",
+  "errorFailedRecordPayment": "ચુકવણી નોંધવામાં નિષ્ફળ"
 }

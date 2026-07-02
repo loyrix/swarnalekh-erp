@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { CreateInvoiceDto } from './invoice.dto.js';
+import { AddInvoicePaymentDto, CreateInvoiceDto } from './invoice.dto.js';
 import { Prisma } from '@prisma/client';
 import {
   calculateInvoiceTotals,
@@ -82,6 +82,14 @@ type PrintableInvoice = {
     amountPaid: number;
     balanceDue: number;
     notes: string | null;
+    payments: Array<{
+      id: string;
+      amount: number;
+      paymentMode: string;
+      paymentDate: Date;
+      referenceNumber: string | null;
+      notes: string | null;
+    }>;
   };
   qrPayload: string;
   verificationCode: string;
@@ -478,6 +486,124 @@ export class InvoiceService {
     }
   }
 
+  /**
+   * Records a partial (or final) payment against an existing invoice and moves
+   * `amountPaid`/`balanceDue`. Runs in a transaction so the payment row and the
+   * invoice totals stay consistent. Blocks over-payment beyond the balance.
+   */
+  async addPayment(
+    tenantId: string,
+    invoiceId: string,
+    dto: AddInvoicePaymentDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.findFirst({
+        where: { id: invoiceId, tenantId, deletedAt: null },
+        select: {
+          id: true,
+          customerId: true,
+          grandTotal: true,
+          amountPaid: true,
+          balanceDue: true,
+          paymentMode: true,
+        },
+      });
+      if (!invoice) {
+        throw new NotFoundException('Invoice not found');
+      }
+
+      const amount = this.round(dto.amount);
+      if (amount <= 0) {
+        throw new BadRequestException(
+          'Payment amount must be greater than zero',
+        );
+      }
+
+      const balanceDue = this.toNumber(invoice.balanceDue);
+      if (amount > balanceDue + 0.01) {
+        throw new BadRequestException(
+          `Payment of ${amount.toFixed(2)} exceeds the balance due of ${balanceDue.toFixed(2)}.`,
+        );
+      }
+
+      const newPaid = this.round(this.toNumber(invoice.amountPaid) + amount);
+      const newBalance = this.round(
+        Math.max(0, this.toNumber(invoice.grandTotal) - newPaid),
+      );
+
+      const payment = await tx.payment.create({
+        data: {
+          tenantId,
+          invoiceId: invoice.id,
+          customerId: invoice.customerId,
+          amount: new Prisma.Decimal(amount),
+          paymentMode: dto.paymentMode || invoice.paymentMode || 'cash',
+          referenceNumber: dto.referenceNumber,
+          notes: dto.notes,
+        },
+      });
+
+      const updated = await tx.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          amountPaid: new Prisma.Decimal(newPaid),
+          balanceDue: new Prisma.Decimal(newBalance),
+        },
+        select: {
+          id: true,
+          grandTotal: true,
+          amountPaid: true,
+          balanceDue: true,
+        },
+      });
+
+      return {
+        payment: this.serializePayment(payment),
+        invoice: {
+          id: updated.id,
+          grandTotal: this.toNumber(updated.grandTotal),
+          amountPaid: this.toNumber(updated.amountPaid),
+          balanceDue: this.toNumber(updated.balanceDue),
+        },
+      };
+    });
+  }
+
+  async getInvoicePayments(tenantId: string, invoiceId: string) {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { id: invoiceId, tenantId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+    const payments = await this.prisma.payment.findMany({
+      where: { tenantId, invoiceId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return payments.map((payment) => this.serializePayment(payment));
+  }
+
+  private serializePayment(payment: {
+    id: string;
+    amount: Prisma.Decimal;
+    paymentMode: string;
+    paymentDate: Date;
+    referenceNumber: string | null;
+    notes: string | null;
+    createdAt: Date;
+  }) {
+    return {
+      id: payment.id,
+      amount: this.toNumber(payment.amount),
+      paymentMode: payment.paymentMode,
+      paymentDate: payment.paymentDate,
+      referenceNumber: payment.referenceNumber,
+      notes: payment.notes,
+      createdAt: payment.createdAt,
+    };
+  }
+
   async getDashboard(tenantId: string) {
     const now = new Date();
     const today = new Date(now);
@@ -647,6 +773,14 @@ export class InvoiceService {
         amountPaid: this.toNumber(invoice.amountPaid),
         balanceDue: this.toNumber(invoice.balanceDue),
         notes: invoice.notes,
+        payments: invoice.payments.map((payment) => ({
+          id: payment.id,
+          amount: this.toNumber(payment.amount),
+          paymentMode: payment.paymentMode,
+          paymentDate: payment.paymentDate,
+          referenceNumber: payment.referenceNumber,
+          notes: payment.notes,
+        })),
       },
       qrPayload,
       verificationCode,

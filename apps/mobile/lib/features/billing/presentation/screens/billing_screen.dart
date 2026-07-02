@@ -8,6 +8,7 @@ import 'package:swarnbook/features/billing/application/invoice_providers.dart';
 import 'package:swarnbook/features/billing/data/invoice_repository.dart';
 import 'package:swarnbook/features/billing/data/models/invoice.dart';
 import 'package:swarnbook/features/billing/presentation/billing_format.dart';
+import 'package:swarnbook/features/billing/presentation/screens/collect_invoice_payment_page.dart';
 import 'package:swarnbook/features/billing/presentation/screens/create_invoice_page.dart';
 import 'package:swarnbook/features/billing/presentation/widgets/invoice_detail_sheet.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
@@ -92,11 +93,36 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
         onPrint: () => _print(invoice),
         onDownload: () => _download(invoice),
         onShare: () => _share(invoice),
+        onCollect: () => _collect(
+          invoice,
+          printable.invoice.invoiceNumber,
+          printable.invoice.balanceDue,
+        ),
       );
     } catch (_) {
       if (mounted) AppToast.error(context, l10n.errorFailedLoadInvoiceDetails);
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _collect(
+    Invoice invoice,
+    String? invoiceNumber,
+    double balanceDue,
+  ) async {
+    final recorded = await CollectInvoicePaymentPage.open(
+      context,
+      invoiceId: invoice.id,
+      invoiceNumber: invoiceNumber ?? invoice.invoiceNumber,
+      balanceDue: balanceDue,
+    );
+    if (recorded == true && mounted) {
+      AppToast.success(
+        context,
+        AppLocalizations.of(context)!.billingPaymentRecorded,
+      );
+      _invalidateAll();
     }
   }
 

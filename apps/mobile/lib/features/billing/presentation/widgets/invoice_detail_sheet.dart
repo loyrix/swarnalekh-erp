@@ -15,6 +15,7 @@ Future<void> showInvoiceDetail(
   required VoidCallback onPrint,
   required VoidCallback onDownload,
   required VoidCallback onShare,
+  VoidCallback? onCollect,
 }) {
   final l10n = AppLocalizations.of(context)!;
   final inv = printable.invoice;
@@ -93,6 +94,15 @@ Future<void> showInvoiceDetail(
       AppDetailSection(heading: l10n.billingBillCalculation, rows: summaryRows),
     ],
     actions: [
+      if (onCollect != null && inv.hasBalance)
+        GoldButton(
+          label: l10n.billingCollectPayment,
+          icon: Icons.payments_outlined,
+          onPressed: () {
+            Navigator.of(context).maybePop();
+            onCollect();
+          },
+        ),
       GoldButton(
         label: l10n.billingReprintInvoice,
         icon: Icons.print_outlined,
@@ -159,6 +169,43 @@ class _InvoiceExtras extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: AppColors.text1(context),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        const SizedBox(height: AppSpacing.md),
+        _heading(context, l10n.billingPayments),
+        const SizedBox(height: AppSpacing.xs),
+        if (printable.invoice.payments.isEmpty)
+          Text(
+            l10n.billingNoPayments,
+            style: TextStyle(color: AppColors.text3(context)),
+          )
+        else
+          ...printable.invoice.payments.map(
+            (p) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: CompactDataRow(
+                leading: Container(
+                  alignment: Alignment.center,
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: AppColors.success,
+                    size: 18,
+                  ),
+                ),
+                title: billingMoney(p.amount),
+                subtitle: [
+                  p.paymentMode,
+                  if (p.referenceNumber != null) p.referenceNumber!,
+                ].join(' • '),
+                trailing: Text(
+                  billingDate(p.paymentDate),
+                  style: TextStyle(
+                    color: AppColors.text3(context),
+                    fontSize: 12,
                   ),
                 ),
               ),

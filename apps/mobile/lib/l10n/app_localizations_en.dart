@@ -2052,4 +2052,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryCompactPayment => 'Payment';
+
+  @override
+  String get billingCollectPayment => 'Collect Payment';
+
+  @override
+  String get billingPayments => 'Payments';
+
+  @override
+  String get billingPaymentAmount => 'Amount';
+
+  @override
+  String get billingReference => 'Reference (optional)';
+
+  @override
+  String get billingPaymentRecorded => 'Payment recorded';
+
+  @override
+  String get billingNoPayments => 'No payments recorded yet';
+
+  @override
+  String get billingCollectSubtitle => 'Record a payment against this invoice';
+
+  @override
+  String get errorFailedRecordPayment => 'Failed to record payment';
 }

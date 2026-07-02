@@ -4065,6 +4065,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payment'**
   String get inventoryCompactPayment;
+
+  /// No description provided for @billingCollectPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect Payment'**
+  String get billingCollectPayment;
+
+  /// No description provided for @billingPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments'**
+  String get billingPayments;
+
+  /// No description provided for @billingPaymentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get billingPaymentAmount;
+
+  /// No description provided for @billingReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference (optional)'**
+  String get billingReference;
+
+  /// No description provided for @billingPaymentRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment recorded'**
+  String get billingPaymentRecorded;
+
+  /// No description provided for @billingNoPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'No payments recorded yet'**
+  String get billingNoPayments;
+
+  /// No description provided for @billingCollectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a payment against this invoice'**
+  String get billingCollectSubtitle;
+
+  /// No description provided for @errorFailedRecordPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to record payment'**
+  String get errorFailedRecordPayment;
 }
 
 class _AppLocalizationsDelegate
