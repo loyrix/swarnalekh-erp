@@ -1882,6 +1882,18 @@ abstract class AppLocalizations {
   /// **'Item name is required'**
   String get validationItemNameRequired;
 
+  /// No description provided for @validationKaratRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Karat / purity is required'**
+  String get validationKaratRequired;
+
+  /// No description provided for @inventorySellingPriceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — leave blank to price live from the daily rate'**
+  String get inventorySellingPriceHint;
+
   /// No description provided for @validationQuantityRequired.
   ///
   /// In en, this message translates to:

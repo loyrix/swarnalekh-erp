@@ -915,6 +915,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationItemNameRequired => 'Item name is required';
 
   @override
+  String get validationKaratRequired => 'Karat / purity is required';
+
+  @override
+  String get inventorySellingPriceHint =>
+      'Optional — leave blank to price live from the daily rate';
+
+  @override
   String get validationQuantityRequired => 'Quantity is required';
 
   @override

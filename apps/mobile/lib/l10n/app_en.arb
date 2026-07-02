@@ -311,6 +311,8 @@
   "inventoryMakingModeFixed": "Fixed",
   "inventoryMakingModePercentage": "Percentage",
   "validationItemNameRequired": "Item name is required",
+  "validationKaratRequired": "Karat / purity is required",
+  "inventorySellingPriceHint": "Optional — leave blank to price live from the daily rate",
   "validationQuantityRequired": "Quantity is required",
   "validationValidNumber": "Enter a valid number",
   "validationWholeNumber": "Enter a valid whole number",

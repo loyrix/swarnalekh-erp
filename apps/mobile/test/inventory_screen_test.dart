@@ -55,6 +55,20 @@ void main() {
 
       expect(find.text('Gold Ring'), findsOneWidget); // name prefilled
     });
+
+    testWidgets('requires a karat before saving (dynamic pricing needs it)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const InventoryFormPage()));
+      await tester.pump();
+
+      await tester.tap(find.text('Create'));
+      await tester.pump();
+
+      // Karat is mandatory so every item can be priced from the daily rate.
+      expect(find.text('Karat / purity is required'), findsOneWidget);
+      expect(find.byType(InventoryFormPage), findsOneWidget);
+    });
   });
 
   group('InventoryListScreen', () {

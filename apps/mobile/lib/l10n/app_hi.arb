@@ -311,6 +311,8 @@
   "inventoryMakingModeFixed": "फिक्स्ड",
   "inventoryMakingModePercentage": "प्रतिशत",
   "validationItemNameRequired": "आइटम का नाम आवश्यक है",
+  "validationKaratRequired": "कैरेट / शुद्धता आवश्यक है",
+  "inventorySellingPriceHint": "वैकल्पिक — दैनिक रेट से लाइव मूल्य के लिए खाली छोड़ें",
   "validationQuantityRequired": "मात्रा आवश्यक है",
   "validationValidNumber": "मान्य नंबर दर्ज करें",
   "validationWholeNumber": "मान्य पूर्णांक दर्ज करें",

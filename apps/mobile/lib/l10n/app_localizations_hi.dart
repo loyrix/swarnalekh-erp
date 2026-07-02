@@ -918,6 +918,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get validationItemNameRequired => 'आइटम का नाम आवश्यक है';
 
   @override
+  String get validationKaratRequired => 'कैरेट / शुद्धता आवश्यक है';
+
+  @override
+  String get inventorySellingPriceHint =>
+      'वैकल्पिक — दैनिक रेट से लाइव मूल्य के लिए खाली छोड़ें';
+
+  @override
   String get validationQuantityRequired => 'मात्रा आवश्यक है';
 
   @override

@@ -56,7 +56,6 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
   late String _status;
   late String _makingMode;
   bool _isSaving = false;
-  late bool _sellingPriceTouched;
 
   static const List<Map<String, String>> _metalOptions = [
     {'label': 'Gold', 'value': 'gold'},
@@ -138,11 +137,11 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
     _purchaseRateController = TextEditingController(
       text: item?.purchaseRate?.toString() ?? '',
     );
+    // Dynamic pricing: prefill only an explicit override; a blank field means
+    // the item is priced live from the daily rate at bill time.
     _sellingPriceController = TextEditingController(
-      text:
-          (item?.sellingPrice ?? item?.estimatedSellingPrice)?.toString() ?? '',
+      text: item?.sellingPrice?.toString() ?? '',
     );
-    _sellingPriceTouched = item?.sellingPrice != null;
     if (item?.makingChargesPercent != null) {
       _makingMode = inventoryMakingModePercentage;
     } else if (item?.makingChargesFixed != null) {
@@ -314,26 +313,15 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
     setState(() {
       _netWeightGramsController.text = split.grams;
       _netWeightMgController.text = split.milligrams;
-      _syncSellingPriceFromCalculation();
     });
   }
 
-  void _onPricingChanged() => setState(_syncSellingPriceFromCalculation);
+  // Pricing inputs changed → just refresh the live preview. We intentionally do
+  // NOT auto-fill a stored selling price: a blank field prices the item live
+  // from the daily rate at bill time (dynamic pricing).
+  void _onPricingChanged() => setState(() {});
 
-  void _onSellingPriceChanged(String value) {
-    if (value.trim().isEmpty) {
-      _sellingPriceTouched = false;
-      _onPricingChanged();
-      return;
-    }
-    setState(() => _sellingPriceTouched = true);
-  }
-
-  void _syncSellingPriceFromCalculation() {
-    if (_sellingPriceTouched) return;
-    final value = _calculatedFinalSellingPrice;
-    _sellingPriceController.text = value <= 0 ? '' : value.toStringAsFixed(2);
-  }
+  void _onSellingPriceChanged(String value) => setState(() {});
 
   double get _currentNetWeight => composeInventoryWeight(
     _netWeightGramsController.text,
@@ -435,7 +423,10 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
             items: _karatOptions[_metalType] ?? const [],
             labelBuilder: (value) => _karatLabel(l10n, value),
             onChanged: (value) => setState(() => _karat = value),
-            allowEmpty: true,
+            // Karat is mandatory so every item matches a daily rate and prices
+            // dynamically (prevents ₹0 bills from unmatched rates).
+            validator: (value) =>
+                value == null ? l10n.validationKaratRequired : null,
           ),
           const SizedBox(height: AppSpacing.lg),
           _sectionTitle(l10n.inventoryWeightDetails),
@@ -479,7 +470,6 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               setState(() {
                 _makingMode = value;
                 _makingController.clear();
-                _syncSellingPriceFromCalculation();
               });
             },
           ),
@@ -500,6 +490,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
             l10n.inventoryFieldSellingPrice,
             isNumber: true,
             onChanged: _onSellingPriceChanged,
+            helperText: l10n.inventorySellingPriceHint,
           ),
           const SizedBox(height: AppSpacing.md),
           _autoCalculationSummary(),
@@ -687,6 +678,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
     String? requiredMessage,
     String? wholeNumberMessage,
     String? minOneMessage,
+    String? helperText,
   }) {
     final l10n = AppLocalizations.of(context)!;
     return TextFormField(
@@ -698,6 +690,8 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
+        helperText: helperText,
+        helperMaxLines: 2,
         border: const OutlineInputBorder(),
       ),
       validator: (value) {
@@ -786,6 +780,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
     required ValueChanged<T?> onChanged,
     String Function(dynamic value)? labelBuilder,
     bool allowEmpty = false,
+    String? Function(T?)? validator,
   }) {
     final l10n = AppLocalizations.of(context)!;
     final dropdownItems = <DropdownMenuItem<T>>[
@@ -803,6 +798,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
       initialValue: value,
       items: dropdownItems,
       onChanged: onChanged,
+      validator: validator,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),

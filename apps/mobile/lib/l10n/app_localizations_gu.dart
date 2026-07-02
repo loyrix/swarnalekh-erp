@@ -914,6 +914,13 @@ class AppLocalizationsGu extends AppLocalizations {
   String get validationItemNameRequired => 'આઇટમનું નામ જરૂરી છે';
 
   @override
+  String get validationKaratRequired => 'કેરેટ / શુદ્ધતા જરૂરી છે';
+
+  @override
+  String get inventorySellingPriceHint =>
+      'વૈકલ્પિક — દૈનિક દરથી લાઇવ કિંમત માટે ખાલી છોડો';
+
+  @override
   String get validationQuantityRequired => 'જથ્થો જરૂરી છે';
 
   @override

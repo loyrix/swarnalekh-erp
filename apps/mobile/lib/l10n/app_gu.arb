@@ -311,6 +311,8 @@
   "inventoryMakingModeFixed": "ફિક્સ્ડ",
   "inventoryMakingModePercentage": "ટકા",
   "validationItemNameRequired": "આઇટમનું નામ જરૂરી છે",
+  "validationKaratRequired": "કેરેટ / શુદ્ધતા જરૂરી છે",
+  "inventorySellingPriceHint": "વૈકલ્પિક — દૈનિક દરથી લાઇવ કિંમત માટે ખાલી છોડો",
   "validationQuantityRequired": "જથ્થો જરૂરી છે",
   "validationValidNumber": "માન્ય નંબર દાખલ કરો",
   "validationWholeNumber": "માન્ય પૂર્ણાંક દાખલ કરો",
