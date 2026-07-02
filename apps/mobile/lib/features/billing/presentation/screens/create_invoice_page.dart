@@ -318,29 +318,25 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
             onChanged: _onCustomerChanged,
           ),
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _customerName,
-                  decoration: InputDecoration(
-                    labelText: l10n.billingCustomerName,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: TextFormField(
-                  controller: _customerPhone,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    labelText: l10n.billingMobileNumber,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              ),
-            ],
+          // Full-width stacked fields — no truncated floating labels.
+          TextFormField(
+            controller: _customerName,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              labelText: l10n.billingCustomerName,
+              prefixIcon: const Icon(Icons.person_outline_rounded),
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            controller: _customerPhone,
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              labelText: l10n.billingMobileNumber,
+              prefixIcon: const Icon(Icons.phone_outlined),
+              border: const OutlineInputBorder(),
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           SectionHeader(title: l10n.billingSelectInventoryItems),
@@ -387,6 +383,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                   ),
                   decoration: InputDecoration(
                     labelText: l10n.billingDiscountAmount,
+                    prefixText: '₹ ',
                     border: const OutlineInputBorder(),
                   ),
                   onChanged: (_) => _schedulePreview(),
@@ -401,6 +398,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                   ),
                   decoration: InputDecoration(
                     labelText: l10n.billingAmountPaid,
+                    prefixText: '₹ ',
                     border: const OutlineInputBorder(),
                   ),
                   onChanged: (_) => setState(() {}),
