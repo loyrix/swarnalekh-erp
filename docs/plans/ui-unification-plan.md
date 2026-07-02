@@ -54,7 +54,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 | **B2** | Security — finish (global audit, backup, invoice protection) + polish      | ✅ Done (2026-07-02)                                                     |
 | **B3** | Auth onboarding — self-owned email/password + Google/Apple (drop Supabase) | ✅ email/password (B3a+B3b); ⏸️ B3c Google/Apple deferred (no creds yet) |
 | **C1** | Invoice partial-payments — build                                           | ✅ Done (2026-07-02)                                                     |
-| **C2** | Robust invoice PDF generation — build                                      | ⬜                                                                       |
+| **C2** | Robust invoice PDF generation — build                                      | ✅ Done (2026-07-02)                                                     |
 | **C3** | CSV/Excel export — build                                                   | ⬜                                                                       |
 | **C4** | Image storage → Supabase Storage — build                                   | ⬜                                                                       |
 | **C5** | Full-text search — build                                                   | ⬜                                                                       |
@@ -194,7 +194,7 @@ Backend first (removes UI-vs-charged drift and oversell):
 
 ### C2 — Robust invoice PDF generation
 
-- [ ] Replace hand-rolled `renderTextPdf` with a real PDF lib (pagination, Unicode/RTL, font embedding, logo/QR/GST). Snapshot/golden test on a long, special-char invoice.
+- [x] **Done (2026-07-02) — client-side.** Rich on-device PDF via the `pdf` package (`invoice_pdf.dart` `buildInvoicePdf`): `MultiPage` auto-pagination, logo header + GSTIN/PAN, item `TableHelper` table, GST + bill-summary boxes, payments table, verification code + QR (`BarcodeWidget`); Noto Sans + Devanagari + Gujarati fonts via `PdfGoogleFonts` (cached, offline-fallback to built-in). `_print`/`_download` render locally. Tests build a rich/long/logo invoice (valid `%PDF`, pagination). Server `renderTextPdf` kept (unused by mobile).
 
 ### C3 — CSV/Excel export
 
@@ -257,7 +257,8 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 - **Prev:** A1 Dashboard complete (2026-07-01). Delivered: real **7-day salesTrend** in backend `dashboard.getStats` (+ spec; replaced fabricated chart data); typed `DashboardData`/`DashboardStats`/`SalesTrendPoint` + `DashboardRepository` + Riverpod `dashboardProvider`; screen rewritten as `ConsumerWidget` on `AppStateView` (real loading/error+retry/data), unified `CompactStatStrip` (retired tall `_DashboardStatCard`), **localized date** via `intl DateFormat` (removed hardcoded English month/day arrays), cleaned quick actions (removed bogus `/reports?focus=search`). Verified: mobile analyze clean, `flutter test` = 71, `apps/api` test = 59.
 - **B3c DEFERRED (owner, 2026-07-02):** no Google/Apple OAuth creds yet — parked. When resumed: Google & Apple sign-in on mobile + backend token verifiers behind env config, plus cleanup of leftover Supabase env plumbing (mobile `.env`, `sync_mobile_env.mjs`) and the now-unused backend `/tenant/register`.
 - **C1 DONE (2026-07-02):** invoice partial-payments. Backend `AddInvoicePaymentDto` + `addPayment`/`getInvoicePayments` (`POST`/`GET /invoices/:id/payments`, tx-guarded: amount>0 & ≤ balance, moves amountPaid/balanceDue) + `payments[]` on the printable payload; spec +4 (api 81→85). Mobile: `InvoicePayment` model + `hasBalance`/`payments` on the printable detail, `repo.addPayment`, full-screen `collect_invoice_payment_page.dart`, payments list + **Collect Payment** action in `invoice_detail_sheet` (only when balance>0), `billing_screen._collect` refreshes on success; new l10n; tests (billing_model + collect page); flutter test 141→145.
-- **Next action:** Stage **C2 — Robust invoice PDF** (templated invoice: logo, GST layout, item table — replace the hand-rolled text PDF), or another Stage C item per owner priority. Await owner "go". (Deferred: B3c Google/Apple; C4 image storage needs a bucket/creds.)
+- **C2 DONE (2026-07-02):** rich client-side invoice PDF (`invoice_pdf.dart` `buildInvoicePdf` on the `pdf` pkg — MultiPage table/GST/payments/logo/QR, Noto+Devanagari+Gujarati fonts via PdfGoogleFonts w/ offline fallback); `_print`/`_download` render locally; removed dead `repo.getPdf`; +4 tests; flutter test 145→149.
+- **Next action:** Stage **C3 — CSV/Excel export** (export inventory / invoices / customers / activity), or another Stage C item per owner priority. Await owner "go". (Deferred: B3c Google/Apple; C4 image storage needs a bucket/creds.)
 - **A2 follow-up (minor):** `inventory_form_page.dart` (821) and `inventory_list_screen.dart` (699) exceed the 400-line target but are cohesive; split further only if they grow. Inventory "Reports" tab (PDF stock-reports) not built — no backend endpoint yet; revisit in reports/hardening.
 - **Deferred nit:** ✅ resolved in B1 — all client-side Dart pricing removed (`billing_pricing_calculations.dart` deleted); the server is the sole pricing source, so dashboard/invoice totals can no longer drift.
 - **Open questions for owner:** none. Awaiting "go" to start B3 (Auth onboarding).

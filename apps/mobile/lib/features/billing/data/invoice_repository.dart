@@ -185,15 +185,6 @@ class InvoiceRepository {
     return PrintableInvoice.fromJson(data);
   }
 
-  Future<InvoicePdfPayload> getPdf(String id) async {
-    final response = await _api.dio.get('/invoices/$id/pdf');
-    final payload = (response.data as Map).cast<String, dynamic>();
-    return decodeInvoicePdfPayload(
-      payload,
-      fallbackFileName: 'invoice-$id.pdf',
-    );
-  }
-
   Future<Uri> getShareUri(String id) async {
     final response = await _api.dio.get('/invoices/$id/share');
     final payload = (response.data as Map).cast<String, dynamic>();

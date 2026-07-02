@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import 'package:swarnbook/features/billing/application/invoice_providers.dart';
 import 'package:swarnbook/features/billing/data/invoice_repository.dart';
 import 'package:swarnbook/features/billing/data/models/invoice.dart';
 import 'package:swarnbook/features/billing/presentation/billing_format.dart';
+import 'package:swarnbook/features/billing/presentation/invoice_pdf.dart';
 import 'package:swarnbook/features/billing/presentation/screens/collect_invoice_payment_page.dart';
 import 'package:swarnbook/features/billing/presentation/screens/create_invoice_page.dart';
 import 'package:swarnbook/features/billing/presentation/widgets/invoice_detail_sheet.dart';
@@ -30,6 +32,7 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
   InvoiceQuery _query = const InvoiceQuery();
   String _section = 'dashboard';
   bool _busy = false;
+  InvoicePdfFonts? _cachedFonts;
 
   @override
   void dispose() {
@@ -126,15 +129,46 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     }
   }
 
+  /// Renders the invoice PDF on-device from the server's printable payload.
+  Future<({Uint8List bytes, String fileName})> _renderPdf(
+    Invoice invoice,
+  ) async {
+    final printable = await _repo.getPrintable(invoice.id);
+    final bytes = await buildInvoicePdf(printable, fonts: await _pdfFonts());
+    final number =
+        printable.invoice.invoiceNumber ?? invoice.invoiceNumber ?? invoice.id;
+    final safe = number.replaceAll(RegExp(r'[^A-Za-z0-9-]+'), '-');
+    return (bytes: bytes, fileName: '$safe.pdf');
+  }
+
+  Future<InvoicePdfFonts> _pdfFonts() async {
+    if (_cachedFonts != null) return _cachedFonts!;
+    try {
+      final base = await PdfGoogleFonts.notoSansRegular();
+      final bold = await PdfGoogleFonts.notoSansBold();
+      final devanagari = await PdfGoogleFonts.notoSansDevanagariRegular();
+      final gujarati = await PdfGoogleFonts.notoSansGujaratiRegular();
+      _cachedFonts = InvoicePdfFonts(
+        base: base,
+        bold: bold,
+        fallback: [devanagari, gujarati],
+      );
+    } catch (_) {
+      // Offline / fetch failed → fall back to the built-in PDF fonts.
+      _cachedFonts = const InvoicePdfFonts();
+    }
+    return _cachedFonts!;
+  }
+
   Future<void> _print(Invoice invoice) async {
     if (_busy) return;
     final l10n = AppLocalizations.of(context)!;
     setState(() => _busy = true);
     try {
-      final payload = await _repo.getPdf(invoice.id);
+      final pdf = await _renderPdf(invoice);
       await Printing.layoutPdf(
-        name: payload.fileName,
-        onLayout: (_) async => payload.bytes,
+        name: pdf.fileName,
+        onLayout: (_) async => pdf.bytes,
       );
     } catch (_) {
       if (mounted) AppToast.error(context, l10n.errorFailedGenerateInvoicePdf);
@@ -148,8 +182,8 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _busy = true);
     try {
-      final payload = await _repo.getPdf(invoice.id);
-      await Printing.sharePdf(bytes: payload.bytes, filename: payload.fileName);
+      final pdf = await _renderPdf(invoice);
+      await Printing.sharePdf(bytes: pdf.bytes, filename: pdf.fileName);
       if (mounted) AppToast.success(context, l10n.billingInvoicePdfReady);
     } catch (_) {
       if (mounted) AppToast.error(context, l10n.errorFailedGenerateInvoicePdf);

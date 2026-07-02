@@ -273,13 +273,17 @@ class PrintableShop {
     required this.name,
     required this.phone,
     required this.gstin,
+    required this.pan,
     required this.address,
+    required this.logoUrl,
   });
 
   final String? name;
   final String? phone;
   final String? gstin;
+  final String? pan;
   final String? address;
+  final String? logoUrl;
 
   factory PrintableShop.fromJson(Map<String, dynamic> json) {
     final address = [
@@ -292,7 +296,9 @@ class PrintableShop {
       name: _s(json['name']),
       phone: _s(json['phone']),
       gstin: _s(json['gstin']),
+      pan: _s(json['pan']),
       address: address.isEmpty ? null : address,
+      logoUrl: _s(json['logoUrl']),
     );
   }
 }
