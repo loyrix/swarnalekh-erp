@@ -158,23 +158,32 @@ class _RatesScreenState extends State<RatesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            // Wrap so the title + date controls never overflow on a phone:
+            // they sit on one line when wide and stack when narrow.
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              alignment: WrapAlignment.spaceBetween,
+              runSpacing: AppSpacing.sm,
               children: [
                 Text(
                   l10n.ratesTitle,
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() => _selectedDate = DateTime.now());
-                    _loadRates();
-                  },
-                  icon: const Icon(Icons.today_rounded, size: 16),
-                  label: Text(l10n.commonToday),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() => _selectedDate = DateTime.now());
+                        _loadRates();
+                      },
+                      icon: const Icon(Icons.today_rounded, size: 16),
+                      label: Text(l10n.commonToday),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _buildDateSelector(),
+                  ],
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                _buildDateSelector(),
               ],
             ),
             const SizedBox(height: AppSpacing.md),

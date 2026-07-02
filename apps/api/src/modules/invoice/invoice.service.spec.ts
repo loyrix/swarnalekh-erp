@@ -130,6 +130,56 @@ describe('InvoiceService', () => {
     );
   });
 
+  it('prices a karat-less item from any rate set for its metal', async () => {
+    const { service, tx } = createService();
+    tx.invoice.count.mockResolvedValue(0);
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'item-1',
+      tagNumber: null,
+      itemName: 'test',
+      metalType: 'gold',
+      karat: null, // no karat on the item
+      stockType: 'unique',
+      quantity: 1,
+      status: 'in_stock',
+      grossWeight: decimal(1),
+      netWeight: decimal(1),
+      makingChargesFixed: null,
+      makingChargesPerGram: null,
+      makingChargesPercent: null,
+      stoneValue: decimal(0),
+      wastagePercent: decimal(0),
+      hallmarkNumber: null,
+      huid: null,
+    });
+    // Rate exists only under a specific karat (Gold 22K): a karat-filtered
+    // lookup misses, the metal-wide (no karat filter) lookup must find it.
+    tx.dailyRate.findFirst.mockImplementation(({ where }: any) =>
+      Promise.resolve(
+        'karat' in where ? null : { ratePerGram: decimal(15000) },
+      ),
+    );
+    tx.invoice.create.mockResolvedValue({
+      id: 'invoice-1',
+      grandTotal: decimal(15450),
+      items: [],
+    });
+    tx.payment.create.mockResolvedValue({ id: 'payment-1' });
+
+    await expect(
+      service.createInvoice('tenant-1', 'user-1', {
+        customerName: 'Walk-in',
+        items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+        paymentMode: 'cash',
+      }),
+    ).resolves.toEqual(expect.objectContaining({ id: 'invoice-1' }));
+
+    expect(tx.inventoryItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: { status: 'sold' },
+    });
+  });
+
   it('uses explicit inventory selling price as the billing line price', async () => {
     const { service, tx } = createService();
     tx.invoice.count.mockResolvedValue(0);

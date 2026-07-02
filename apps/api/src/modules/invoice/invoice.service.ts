@@ -194,28 +194,35 @@ export class InvoiceService {
 
       const explicitSellingPricePerPiece = this.toNumber(invItem.sellingPrice);
       const hasExplicitSellingPrice = explicitSellingPricePerPiece > 0;
+      // Empty-string karat is treated as "unspecified".
+      const itemKarat = invItem.karat?.trim() ? invItem.karat.trim() : null;
+      const orderBy = [
+        { rateDate: 'desc' as const },
+        { createdAt: 'desc' as const },
+      ];
+      const findRate = (karat: string | null | undefined) =>
+        tx.dailyRate.findFirst({
+          where: {
+            tenantId,
+            metalType: { equals: invItem.metalType, mode: 'insensitive' },
+            // `undefined` drops the karat filter entirely (match any karat).
+            ...(karat === undefined ? {} : { karat }),
+          },
+          orderBy,
+        });
       const rateRecord = hasExplicitSellingPrice
         ? null
-        : ((await tx.dailyRate.findFirst({
-            where: {
-              tenantId,
-              metalType: { equals: invItem.metalType, mode: 'insensitive' },
-              karat: invItem.karat ?? null,
-            },
-            orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
-          })) ??
-          (await tx.dailyRate.findFirst({
-            where: {
-              tenantId,
-              metalType: { equals: invItem.metalType, mode: 'insensitive' },
-              karat: null,
-            },
-            orderBy: [{ rateDate: 'desc' }, { createdAt: 'desc' }],
-          })));
+        : ((await findRate(itemKarat)) ?? // exact karat (or explicit null)
+          (await findRate(null)) ?? // legacy metal-wide (null karat) rate
+          // Item has no karat → fall back to any rate set for the metal.
+          (itemKarat === null ? await findRate(undefined) : null));
 
       if (!hasExplicitSellingPrice && !rateRecord) {
+        const metalLabel = itemKarat
+          ? `${invItem.metalType} ${itemKarat}`
+          : invItem.metalType;
         throw new BadRequestException(
-          `No rate set for ${invItem.metalType} ${invItem.karat || ''}. Please set rates first.`,
+          `No rate set for ${metalLabel}. Please set rates first.`,
         );
       }
 
