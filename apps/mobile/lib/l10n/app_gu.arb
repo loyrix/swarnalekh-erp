@@ -670,6 +670,14 @@
       }
     }
   },
+  "securityBackupReady": "બેકઅપ તૈયાર: {fileName}",
+  "@securityBackupReady": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
   "securitySearchLogs": "પ્રવૃત્તિ લોગ શોધો",
   "securityFilterArea": "ક્ષેત્ર",
   "securityFilterAllAreas": "બધા ક્ષેત્રો",

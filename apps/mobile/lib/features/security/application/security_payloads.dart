@@ -39,15 +39,6 @@ BackupPayload decodeBackupPayload(Map<String, dynamic> payload) {
   );
 }
 
-List<Map<String, dynamic>> parseActivityLogs(Map<String, dynamic> payload) {
-  final logs = payload['logs'];
-  if (logs is! List) return const [];
-  return logs
-      .whereType<Map>()
-      .map((entry) => Map<String, dynamic>.from(entry))
-      .toList(growable: false);
-}
-
 Map<String, int> _parseCounts(Object? value) {
   if (value is! Map) return const {};
   return value.map((key, count) {

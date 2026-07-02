@@ -23,19 +23,6 @@ void main() {
     expect(payload.counts, {'customers': 2, 'inventoryItems': 3});
   });
 
-  test('parses activity logs from API payload', () {
-    final logs = parseActivityLogs({
-      'logs': [
-        {'action': 'create', 'entityType': 'inventory'},
-        'invalid',
-      ],
-    });
-
-    expect(logs, [
-      {'action': 'create', 'entityType': 'inventory'},
-    ]);
-  });
-
   test('rejects invalid backup payloads', () {
     expect(() => decodeBackupPayload({}), throwsFormatException);
     expect(

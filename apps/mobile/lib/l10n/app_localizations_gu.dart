@@ -1011,6 +1011,11 @@ class AppLocalizationsGu extends AppLocalizations {
   }
 
   @override
+  String securityBackupReady(String fileName) {
+    return 'બેકઅપ તૈયાર: $fileName';
+  }
+
+  @override
   String get securitySearchLogs => 'પ્રવૃત્તિ લોગ શોધો';
 
   @override

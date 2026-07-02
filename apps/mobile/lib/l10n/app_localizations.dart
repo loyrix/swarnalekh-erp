@@ -2062,6 +2062,12 @@ abstract class AppLocalizations {
   /// **'Last export: {date}'**
   String securityLastExport(String date);
 
+  /// No description provided for @securityBackupReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup ready: {fileName}'**
+  String securityBackupReady(String fileName);
+
   /// No description provided for @securitySearchLogs.
   ///
   /// In en, this message translates to:

@@ -1011,6 +1011,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String securityBackupReady(String fileName) {
+    return 'Backup ready: $fileName';
+  }
+
+  @override
   String get securitySearchLogs => 'Search activity logs';
 
   @override

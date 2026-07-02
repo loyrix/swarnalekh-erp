@@ -670,6 +670,14 @@
       }
     }
   },
+  "securityBackupReady": "बैकअप तैयार: {fileName}",
+  "@securityBackupReady": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
   "securitySearchLogs": "गतिविधि लॉग खोजें",
   "securityFilterArea": "क्षेत्र",
   "securityFilterAllAreas": "सभी क्षेत्र",

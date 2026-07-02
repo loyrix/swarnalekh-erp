@@ -1017,6 +1017,11 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String securityBackupReady(String fileName) {
+    return 'बैकअप तैयार: $fileName';
+  }
+
+  @override
   String get securitySearchLogs => 'गतिविधि लॉग खोजें';
 
   @override
