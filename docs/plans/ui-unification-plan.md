@@ -59,7 +59,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 | **C3** | CSV/Excel export — build                                                   | ✅ Done (2026-07-02)                                                     |
 | **C4** | Image storage → Supabase Storage — build                                   | ⬜                                                                       |
 | **C5** | Full-text search — build                                                   | ✅ Done (2026-07-02)                                                     |
-| **V**  | Visual-richness redesign pass (final, post-migration)                      | ⬜                                                                       |
+| **V**  | Visual-richness redesign pass (final, post-migration)                      | ✅ Done (2026-07-02)                                                     |
 
 Legend: ⬜ Not started · 🟡 In progress · ✅ Done (full DoD) · ⏸️ Blocked
 
@@ -227,6 +227,14 @@ Backend first (removes UI-vs-charged drift and oversell):
 
 **Scope:** redesign the shared kit visuals only (no feature-logic changes), then visually QA every screen at 375 / 393 / 768 / 1280. Keep all tests green.
 
+**✅ Done (2026-07-02) — "Trailing value + accent" language (owner-chosen), kit-only, zero call-site churn:**
+
+- **`CompactDataRow`** rewritten: the **first metric becomes a bold right-aligned figure** (glanceable), remaining metrics render inline under the subtitle (bold value + muted label); a **thin status-colored accent bar** runs down the left edge, auto-derived from a `StatusBadge` passed as `trailing` (via new `StatusBadge.effectiveColor`) or an optional `accentColor` — so every screen gained the accent with **no code changes**. Short symbol labels (`₹`) fuse onto their value; word labels get a caption. Tighter type hierarchy. Same height budget (single-metric rows got _shorter_). Accent painted as a `Positioned` stripe in a `Stack` (no `IntrinsicHeight`, no unbounded-height traps).
+- **`AppDetailSheet`** sections now render as a **grouped card with hairline dividers**; emphasized values bumped (15/w800). Richer, clearer, not taller.
+- **`CompactStatStrip`** value hierarchy bump (15/w800).
+- Tests: new `compact_data_row_test.dart` (+4: trailing figure, symbol-fuse, accent derivation, no-accent). flutter 158→162. analyze clean, all screen tests green (fixed two layout traps found via the suite).
+- **Deferred within V:** thumbnails in list rows (needs C4 cloud image URLs first — currently base64-in-DB is stripped from list queries), and a manual visual QA sweep at 375/393/768/1280.
+
 ---
 
 ## Verification commands (per phase, before ✅)
@@ -261,7 +269,8 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 - **C2 DONE (2026-07-02):** rich client-side invoice PDF (`invoice_pdf.dart` `buildInvoicePdf` on the `pdf` pkg — MultiPage table/GST/payments/logo/QR, Noto+Devanagari+Gujarati fonts via PdfGoogleFonts w/ offline fallback); `_print`/`_download` render locally; removed dead `repo.getPdf`; +4 tests; flutter test 145→149.
 - **C3 DONE (2026-07-02):** server CSV export (`csv.util` + `ExportModule` `GET /export/:type`, admin, invoices/inventory/customers/activity; UTF-8 BOM) + admin Export-CSV buttons on 4 screens sharing via `Printing.sharePdf`; api 85→93, flutter test 149→152.
 - **C5 DONE (2026-07-02):** global cross-entity search. Backend `SearchModule` `GET /search?q=` (all app roles; tenant + `deletedAt` scoped; searches customer name/phone/email/city, inventory tag/barcode/name/hallmark/huid, invoice number/customer/phone) with JS relevance ranking (exact ×3 / prefix ×2 / substring ×1) and per-group limit; spec +5 (api 93→98). Mobile: typed `SearchResults`/`CustomerHit`/`InventoryHit`/`InvoiceHit` + `SearchRepository` + `searchResultsProvider.family`, new `/search` screen on the kit (autofocus debounced field, grouped `CompactDataRow` results with counts, start/empty/error/data states, tap → section route), wired into the app-shell top-bar search pill (wide) + search icon (narrow); new l10n en/hi/gu; tests +6 (flutter 152→158). Ships ILIKE now; Postgres `tsvector` GIN index is a documented follow-up.
-- **Next action:** Stage **C4 — image storage → cloud** (needs a storage bucket/creds — partly blocked), or **Stage V** visual-richness pass (final). Await owner "go". (Deferred: B3c Google/Apple.)
+- **V DONE (2026-07-02):** Stage V visual-richness pass — owner chose the **"trailing value + accent"** row language. Kit-only, zero call-site churn: `CompactDataRow` rewritten (first metric → bold trailing figure, others inline, left status-accent auto-derived from a `StatusBadge` trailing via new `StatusBadge.effectiveColor`, symbol labels fuse), `AppDetailSheet` sections → grouped card w/ hairline dividers + emphasized-value bump, `CompactStatStrip` value bump. New `compact_data_row_test.dart` (+4); flutter 158→162; analyze clean. Deferred within V: list-row thumbnails (needs C4 cloud image URLs) + manual visual QA at 375/393/768/1280.
+- **Next action:** Only **C4 — image storage → cloud** remains (needs a storage bucket/creds — blocked on infra) and **B3c — Google/Apple** (needs OAuth creds). All unblocked stages (A, B email/pass, C1–C3, C5, V) are ✅. Suggested: a release cut + `/code-review ultra`, then tackle C4 once a bucket exists.
 - **A2 follow-up (minor):** `inventory_form_page.dart` (821) and `inventory_list_screen.dart` (699) exceed the 400-line target but are cohesive; split further only if they grow. Inventory "Reports" tab (PDF stock-reports) not built — no backend endpoint yet; revisit in reports/hardening.
 - **Deferred nit:** ✅ resolved in B1 — all client-side Dart pricing removed (`billing_pricing_calculations.dart` deleted); the server is the sole pricing source, so dashboard/invoice totals can no longer drift.
 - **Open questions for owner:** none. Awaiting "go" to start B3 (Auth onboarding).

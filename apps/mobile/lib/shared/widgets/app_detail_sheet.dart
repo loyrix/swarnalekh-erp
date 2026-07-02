@@ -146,7 +146,27 @@ class AppDetailSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],
-              ...section.rows.map((r) => _DetailRowTile(row: r)),
+              // Group the section's rows into a single card with hairline
+              // dividers — richer, clearer grouping without taller rows.
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfL(context),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: AppColors.brd(context).withValues(alpha: 0.5),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < section.rows.length; i++) ...[
+                      if (i > 0)
+                        Divider(height: 1, color: AppColors.div(context)),
+                      _DetailRowTile(row: section.rows[i]),
+                    ],
+                  ],
+                ),
+              ),
             ],
             if (actions.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
@@ -192,8 +212,8 @@ class _DetailRowTile extends StatelessWidget {
               row.value,
               textAlign: TextAlign.right,
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: row.emphasize ? FontWeight.w700 : FontWeight.w500,
+                fontSize: row.emphasize ? 15 : 13,
+                fontWeight: row.emphasize ? FontWeight.w800 : FontWeight.w500,
                 color: row.emphasize
                     ? AppColors.primary
                     : AppColors.text1(context),

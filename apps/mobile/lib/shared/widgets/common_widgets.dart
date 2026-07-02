@@ -239,6 +239,10 @@ class StatusBadge extends StatelessWidget {
 
   const StatusBadge({super.key, required this.label, this.color});
 
+  /// The resolved badge color (explicit override, else derived from the label).
+  /// Exposed so containers like [CompactDataRow] can echo it as an accent.
+  Color get effectiveColor => _color;
+
   Color get _color {
     if (color != null) return color!;
     switch (label.toLowerCase()) {

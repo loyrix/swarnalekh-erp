@@ -61,8 +61,9 @@ class CompactStatStrip extends StatelessWidget {
                           Text(
                             stat.value,
                             style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                              height: 1.1,
                               color: AppColors.text1(context),
                             ),
                             maxLines: 1,
