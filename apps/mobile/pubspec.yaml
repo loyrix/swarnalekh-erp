@@ -23,8 +23,6 @@ dependencies:
   dio: ^5.7.0
 
   # Supabase Auth (OTP flow only — all other requests go through NestJS API)
-  supabase_flutter: ^2.8.0
-
   # Serialization
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
@@ -40,6 +38,7 @@ dependencies:
   url_launcher: ^6.3.2
   qr_flutter: ^4.1.0
   fl_chart: ^1.2.0
+  flutter_secure_storage: ^10.3.1
 
 dev_dependencies:
   flutter_test:

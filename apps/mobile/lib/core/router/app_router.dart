@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:swarnbook/core/network/api_client.dart';
-import 'package:swarnbook/features/auth/data/auth_provider.dart';
+import 'package:swarnbook/features/auth/application/auth_controller.dart';
 import 'package:swarnbook/features/auth/presentation/screens/login_screen.dart';
-import 'package:swarnbook/features/auth/presentation/screens/registration_screen.dart';
 import 'package:swarnbook/features/auth/presentation/screens/signup_screen.dart';
 import 'package:swarnbook/shared/layouts/app_shell.dart';
 import 'package:swarnbook/features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -21,49 +19,23 @@ import 'package:swarnbook/features/users/presentation/screens/user_management_sc
 import 'package:swarnbook/l10n/app_localizations.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final session = authState.value?.session;
-
-  if (session != null) {
-    ApiClient().setAuthToken(session.accessToken);
-  } else {
-    ApiClient().clearAuthToken();
-  }
+  final isAuth = ref.watch(
+    authControllerProvider.select((s) => s.isAuthenticated),
+  );
 
   return GoRouter(
     initialLocation: '/dashboard',
-    redirect: (context, state) async {
+    redirect: (context, state) {
       final matchedLocation = state.matchedLocation;
       final isAuthRoute =
-          matchedLocation == '/login' ||
-          matchedLocation == '/signup' ||
-          matchedLocation == '/register';
-      final isRegistrationRoute = matchedLocation == '/register';
-
-      final isAuth = session != null;
+          matchedLocation == '/login' || matchedLocation == '/signup';
 
       if (!isAuth && !isAuthRoute) {
         return '/login';
       }
-
-      if (!isAuth) {
-        return null;
-      }
-
-      final authService = ref.read(authServiceProvider);
-
-      final isRegistered =
-          authService.cachedRegistrationStatus ??
-          await authService.checkRegistration();
-
-      if (!isRegistered && !isRegistrationRoute) {
-        return '/register';
-      }
-
-      if (isRegistered && isAuthRoute) {
+      if (isAuth && isAuthRoute) {
         return '/dashboard';
       }
-
       return null;
     },
     routes: [
@@ -74,16 +46,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/signup',
-        pageBuilder: (context, state) => _fadeTransitionPage(
-          key: state.pageKey,
-          child: const SignupScreen(),
-        ),
-      ),
-      GoRoute(
-        path: '/register',
         pageBuilder: (context, state) => _slideTransitionPage(
           key: state.pageKey,
-          child: const RegistrationScreen(),
+          child: const SignupScreen(),
         ),
       ),
       ShellRoute(

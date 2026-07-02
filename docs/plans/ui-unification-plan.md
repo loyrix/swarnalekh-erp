@@ -25,40 +25,40 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 
 ## Completion matrix (drives the ordering)
 
-| Feature                                                          | API                                                                   | Mobile UI | Tests   | Class         |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------- | --------- | ------- | ------------- |
-| Dashboard                                                        | ✅ bootstrap/stats                                                    | ✅        | ✅      | A (polish)    |
-| Inventory                                                        | ✅ 10 routes                                                          | ✅        | ✅      | A (polish)    |
-| Mortgage (+partial payments)                                     | ✅ 8 routes                                                           | ✅        | ✅      | A (polish)    |
-| Reports                                                          | ✅ overview/export                                                    | ✅        | ✅      | A (polish)    |
-| User Mgmt / Shop Profile / Rates / Customers                     | ✅                                                                    | ✅        | partial | A (polish)    |
-| Billing / Invoice                                                | ✅ `/preview` + `FOR UPDATE` lock + idempotency (server-only pricing) | ✅        | ✅      | ✅ B1 done    |
-| Security (audit/backup/invoice protection)                       | ✅ global audit interceptor + soft-delete-safe `forTenant`            | ✅        | ✅      | ✅ B2 done    |
-| Auth onboarding (email/pass + Google/Apple)                      | 🟡 self-owned `/auth/register`+`/auth/login` (B3a); Google/Apple B3c  | ⏳ B3b    | 🟡      | B (finish)    |
-| Invoice partial-payments                                         | ❌ model only                                                         | ❌        | ❌      | C (scratch)   |
-| Robust PDF / CSV-Excel export / image storage / full-text search | ❌                                                                    | ❌        | ❌      | C (hardening) |
+| Feature                                                          | API                                                                   | Mobile UI           | Tests   | Class         |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------- | ------- | ------------- |
+| Dashboard                                                        | ✅ bootstrap/stats                                                    | ✅                  | ✅      | A (polish)    |
+| Inventory                                                        | ✅ 10 routes                                                          | ✅                  | ✅      | A (polish)    |
+| Mortgage (+partial payments)                                     | ✅ 8 routes                                                           | ✅                  | ✅      | A (polish)    |
+| Reports                                                          | ✅ overview/export                                                    | ✅                  | ✅      | A (polish)    |
+| User Mgmt / Shop Profile / Rates / Customers                     | ✅                                                                    | ✅                  | partial | A (polish)    |
+| Billing / Invoice                                                | ✅ `/preview` + `FOR UPDATE` lock + idempotency (server-only pricing) | ✅                  | ✅      | ✅ B1 done    |
+| Security (audit/backup/invoice protection)                       | ✅ global audit interceptor + soft-delete-safe `forTenant`            | ✅                  | ✅      | ✅ B2 done    |
+| Auth onboarding (email/pass + Google/Apple)                      | 🟡 self-owned `/auth/register`+`/auth/login` (B3a); Google/Apple B3c  | ✅ email/pass (B3b) | ✅      | B (finish)    |
+| Invoice partial-payments                                         | ❌ model only                                                         | ❌                  | ❌      | C (scratch)   |
+| Robust PDF / CSV-Excel export / image storage / full-text search | ❌                                                                    | ❌                  | ❌      | C (hardening) |
 
 ---
 
 ## Progress Overview
 
-| Phase  | Title                                                                      | Status                           |
-| ------ | -------------------------------------------------------------------------- | -------------------------------- |
-| 0      | Foundation: tokens, cleanup, design-system kit + tests                     | ✅ Done (2026-07-01)             |
-| **A1** | Dashboard — polish                                                         | ✅ Done (2026-07-01)             |
-| **A2** | Inventory — polish                                                         | ✅ Done (2026-07-01)             |
-| **A3** | Mortgage — polish                                                          | ✅ Done (2026-07-01)             |
-| **A4** | Reports — polish                                                           | ✅ Done (2026-07-01)             |
-| **A5** | Support screens (User Mgmt, Shop Profile, Rates, Customers) — polish       | ✅ Done (2026-07-01)             |
-| **B1** | Billing/Invoice — finish (server pricing + integrity) + polish             | ✅ Done (2026-07-01)             |
-| **B2** | Security — finish (global audit, backup, invoice protection) + polish      | ✅ Done (2026-07-02)             |
-| **B3** | Auth onboarding — self-owned email/password + Google/Apple (drop Supabase) | 🟡 B3a backend done (2026-07-02) |
-| **C1** | Invoice partial-payments — build                                           | ⬜                               |
-| **C2** | Robust invoice PDF generation — build                                      | ⬜                               |
-| **C3** | CSV/Excel export — build                                                   | ⬜                               |
-| **C4** | Image storage → Supabase Storage — build                                   | ⬜                               |
-| **C5** | Full-text search — build                                                   | ⬜                               |
-| **V**  | Visual-richness redesign pass (final, post-migration)                      | ⬜                               |
+| Phase  | Title                                                                      | Status                                         |
+| ------ | -------------------------------------------------------------------------- | ---------------------------------------------- |
+| 0      | Foundation: tokens, cleanup, design-system kit + tests                     | ✅ Done (2026-07-01)                           |
+| **A1** | Dashboard — polish                                                         | ✅ Done (2026-07-01)                           |
+| **A2** | Inventory — polish                                                         | ✅ Done (2026-07-01)                           |
+| **A3** | Mortgage — polish                                                          | ✅ Done (2026-07-01)                           |
+| **A4** | Reports — polish                                                           | ✅ Done (2026-07-01)                           |
+| **A5** | Support screens (User Mgmt, Shop Profile, Rates, Customers) — polish       | ✅ Done (2026-07-01)                           |
+| **B1** | Billing/Invoice — finish (server pricing + integrity) + polish             | ✅ Done (2026-07-01)                           |
+| **B2** | Security — finish (global audit, backup, invoice protection) + polish      | ✅ Done (2026-07-02)                           |
+| **B3** | Auth onboarding — self-owned email/password + Google/Apple (drop Supabase) | 🟡 B3a+B3b done; B3c Google/Apple (2026-07-02) |
+| **C1** | Invoice partial-payments — build                                           | ⬜                                             |
+| **C2** | Robust invoice PDF generation — build                                      | ⬜                                             |
+| **C3** | CSV/Excel export — build                                                   | ⬜                                             |
+| **C4** | Image storage → Supabase Storage — build                                   | ⬜                                             |
+| **C5** | Full-text search — build                                                   | ⬜                                             |
+| **V**  | Visual-richness redesign pass (final, post-migration)                      | ⬜                                             |
 
 Legend: ⬜ Not started · 🟡 In progress · ✅ Done (full DoD) · ⏸️ Blocked
 
@@ -245,8 +245,9 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 
 ## Resume pointer (update at end of each work session)
 
-- **Current phase:** B3 — Auth onboarding — 🟡 **PIVOT: dropping Supabase, owning auth ourselves.** Owner decision (2026-07-02): normal email/password register+login + Google/Apple OAuth, no Supabase dependency; mobile-OTP deferred to the very end. OAuth creds not ready → Google/Apple scaffolded behind env config; existing users migrated (nullable password, admin-set); password reset = admin-set for now. Phased: **B3a backend (DONE)** → B3b mobile swap → B3c Google/Apple.
-- **B3a DONE (2026-07-02, committed):** the existing `JwtAuthGuard` already verifies HS256 tokens signed with `AUTH_JWT_SECRET` (Supabase JWKS is only the RS256/ES256 fallback), so issuing our own HS256 JWT needed **no guard change**. Added `auth.token.ts` (pure `signAuthToken`, 30-day TTL), `auth.dto.ts` (Register/Login), `auth.service.ts` `register()` (tx creates tenant + owner, bcrypt hash, random `authUserId`) + `login()` (email lookup, bcrypt compare, stamp `lastLoginAt`, reject unknown/no-password/wrong/suspended) + `hashPassword()`; `@Public` `POST /auth/register` + `/auth/login`. Admin-set password: user-management imports AuthModule, `create` hashes optional `password`, new `PATCH /users/:id/password`. Dep `bcryptjs`. Specs auth.token/auth.service/user-management (+password); **api test 68 → 81**, build clean. `AUTH_JWT_SECRET` now REQUIRED (issues + verifies) — `.env.example` comment updated. `/tenant/register` + Supabase JWKS left intact until B3b cleanup.
+- **Current phase:** B3 — Auth onboarding — 🟡 **PIVOT: dropping Supabase, owning auth ourselves.** Owner decision (2026-07-02): email/password register+login + Google/Apple OAuth, no Supabase dependency; mobile-OTP deferred to the very end. OAuth creds not ready → Google/Apple scaffolded behind env config; existing users migrated (nullable password, admin-set); password reset = admin-set for now. Phased: **B3a backend (DONE)** → **B3b mobile swap (DONE)** → B3c Google/Apple + env cleanup.
+- **B3a DONE (2026-07-02, pushed 2924b93):** the existing `JwtAuthGuard` already verifies HS256 tokens signed with `AUTH_JWT_SECRET`/`JWT_SECRET` (Supabase JWKS is only the RS256/ES256 fallback), so issuing our own HS256 JWT needed **no guard change**. Added `auth.token.ts` (pure `signAuthToken`, 30-day TTL), `auth.dto.ts`, `auth.service.ts` `register()`/`login()`/`hashPassword()`; `@Public POST /auth/register`+`/auth/login`. Admin-set password in user-management (`PATCH /users/:id/password` + optional password on create). Dep `bcryptjs`. **api 68 → 81.** Owner confirmed reusing the existing `JWT_SECRET` env (fallback) — no new var needed.
+- **B3b DONE (2026-07-02, committed):** mobile fully off Supabase (only `main.dart` + `auth_provider.dart` used it). New `features/auth/data/models/{auth_user,auth_session}.dart`, `data/auth_repository.dart` (`RegisterRequest`, `login`/`register`), `application/auth_controller.dart` (`Notifier<AuthState>`; JWT in `flutter_secure_storage`, seeds `ApiClient`, login/register/logout). `main.dart` restores token pre-frame via `initialAuthTokenProvider` override (no login flash); removed `Supabase.initialize`. `ApiClient.onUnauthorized` → 401-on-authed-request auto-logout. Router simplified (login/signup only; **`/register` + registration-check removed**). `signup_screen` is now the full register form (shop+owner+email+password). **Deleted** `auth_provider.dart`/`registration_screen.dart`/`otp_screen.dart`; **removed `supabase_flutter`**. Tests `auth_models_test`+`auth_screens_test`. Verified analyze clean, **flutter test 133 → 141**, web build green (needed `flutter clean` — stale web_plugin_registrant referenced Supabase's removed transitive plugins). Leftover: mobile `.env`/`sync_mobile_env.mjs` still pass SUPABASE defines (ignored now) + backend `/tenant/register` unused — clean up in B3c.
 - **Prev — B2 Security ✅ (2026-07-02, pushed b026ccc):** `forTenant` soft-delete hardening (`scopeReadWhere`) + activity-log screen migrated onto kit (524 → ~380). audit interceptor was already global; api 62 → 68, flutter test 133. See git history + memory.
 - **B1 done (2026-07-01, committed+pushed 30595e1):** Billing server pricing (`/invoices/preview`), `FOR UPDATE` lock, idempotency; mobile billing migrated onto kit (screen 2,005 → ~430), client pricing deleted. See git history + memory for detail.
 - **Prev:** A5 Support screens complete; Stage A fully done & pushed (…ba32372). **Customers** (555→163): typed `Customer` + repo + provider, `AppStateView`, `CompactDataRow` rows, form → `AppFormScaffold` route (`customer_form_page`). **User Management** (557→285): `UsersRepository`+provider, `AppStateView`, `CompactDataRow` rows + `ItemActionsMenu`, form → route (`user_form_page`), kept onboarding tip + admin-only guard + deactivate confirm. **Rates** + **Shop Profile/Tenant**: light polish (already clean single-form screens — added real error+retry state via `AppErrorView`, `GoldButton`/app_kit). Verified: mobile analyze clean, `flutter test` = 111 (+8), api unchanged (59).
@@ -254,7 +255,7 @@ no horizontal overflow, forms usable with keyboard open, bottom nav visible, tap
 - **Prev:** A3 Mortgage complete — 1,353 → 344 lines; A2 Inventory — 2,454 → 699; A1 Dashboard — real 7-day sales trend + kit. Screen decomposed **1,353 → 344 lines**: typed `MortgageLoan`/`Ornament`/`Payment`/`Dashboard` + `MortgageRepository` (+`MortgageQuery`) + Riverpod providers; screen now `ConsumerStatefulWidget` on `AppSectionScaffold` (Active/Closed/All) + `AppStateView`; **tall StatCard + 150px metric boxes replaced** with `CompactStatStrip` + `CompactDataRow` loan rows; create loan / collect payment / close loan → full-screen `AppFormScaffold` routes (`mortgage_form_page`/`collect_payment_page`/`close_loan_page`, KYC image + loan-date preserved, shared `mortgage_form_helpers`); loan detail + payment receipts + Collect/Close via `AppDetailSheet` (`mortgage_detail_sheet`). Verified: mobile analyze clean, `flutter test` = 96 (+11), api unchanged (59).
 - **Prev:** A2 Inventory complete (2026-07-01). Screen decomposed **2,454 → 699 lines**; all 3 DataTables → `CompactDataRow`; forms → full-screen routes; OCR strings localized. Screen decomposed **2,454 → 699 lines** across typed model/repo/providers + `inventory_form_page` (full-screen `AppFormScaffold` route, pricing auto-calc + image upload preserved) + `ocr_review_page` (full-screen route, **DataTable removed**, hardcoded OCR strings localized) + `inventory_detail_sheet` (`AppDetailSheet`) + `inventory_format`. Screen now `ConsumerStatefulWidget` on `AppSectionScaffold` + `AppStateView`; **all 3 DataTables replaced with `CompactDataRow`** (mobile & wide); filters in `AppFilterSheet`; search always visible. New l10n (en/hi/gu) for OCR fields + generic validations. Verified: mobile analyze clean, `flutter test` = 85 (+14), api unchanged (59).
 - **Prev:** A1 Dashboard complete (2026-07-01). Delivered: real **7-day salesTrend** in backend `dashboard.getStats` (+ spec; replaced fabricated chart data); typed `DashboardData`/`DashboardStats`/`SalesTrendPoint` + `DashboardRepository` + Riverpod `dashboardProvider`; screen rewritten as `ConsumerWidget` on `AppStateView` (real loading/error+retry/data), unified `CompactStatStrip` (retired tall `_DashboardStatCard`), **localized date** via `intl DateFormat` (removed hardcoded English month/day arrays), cleaned quick actions (removed bogus `/reports?focus=search`). Verified: mobile analyze clean, `flutter test` = 71, `apps/api` test = 59.
-- **Next action:** B3b — mobile auth swap: login/register screens on `POST /auth/login` + `/auth/register`, store our JWT in `flutter_secure_storage`, rework `auth_provider`/router redirects, remove `supabase_flutter`. Then B3c Google/Apple behind config. Await owner "go" before starting B3b.
+- **Next action:** B3c — Google & Apple sign-in on mobile + backend token verifiers, scaffolded behind env config (light up when Google client IDs / Apple service ID are added). Also clean up leftover Supabase env plumbing (mobile `.env`, `sync_mobile_env.mjs`) and the now-unused `/tenant/register`. Await owner "go".
 - **A2 follow-up (minor):** `inventory_form_page.dart` (821) and `inventory_list_screen.dart` (699) exceed the 400-line target but are cohesive; split further only if they grow. Inventory "Reports" tab (PDF stock-reports) not built — no backend endpoint yet; revisit in reports/hardening.
 - **Deferred nit:** ✅ resolved in B1 — all client-side Dart pricing removed (`billing_pricing_calculations.dart` deleted); the server is the sole pricing source, so dashboard/invoice totals can no longer drift.
 - **Open questions for owner:** none. Awaiting "go" to start B3 (Auth onboarding).

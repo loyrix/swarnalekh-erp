@@ -5,7 +5,7 @@ import 'package:swarnbook/core/localization/locale_notifier.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/features/auth/application/app_permissions.dart';
-import 'package:swarnbook/features/auth/data/auth_provider.dart';
+import 'package:swarnbook/features/auth/application/auth_controller.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:swarnbook/shared/widgets/brand_mark.dart';
@@ -98,7 +98,8 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   Future<void> _signOut() async {
-    await (widget.signOut ?? () => ref.read(authServiceProvider).signOut())();
+    await (widget.signOut ??
+        () => ref.read(authControllerProvider.notifier).logout())();
     if (mounted) {
       context.go('/login');
     }

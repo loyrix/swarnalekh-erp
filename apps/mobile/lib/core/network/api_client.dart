@@ -7,6 +7,10 @@ class ApiClient {
   );
   static String? _authToken;
 
+  /// Called when an authenticated request returns 401 (token expired/invalid).
+  /// The auth layer wires this to a logout so the router returns to /login.
+  static void Function()? onUnauthorized;
+
   late final Dio dio;
 
   ApiClient() {
@@ -47,6 +51,13 @@ class ApiClient {
           handler.next(response);
         },
         onError: (error, handler) {
+          // A 401 on an authenticated request means our token is no longer
+          // valid — drop the session (login failures carry no token, so they
+          // don't trigger this).
+          if (error.response?.statusCode == 401 && _authToken != null) {
+            onUnauthorized?.call();
+          }
+
           // Extract message from API error response
           if (error.response?.data is Map) {
             final message = error.response?.data['message'] ?? 'Unknown error';

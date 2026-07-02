@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
-import 'package:swarnbook/features/auth/data/auth_provider.dart';
+import 'package:swarnbook/features/auth/application/auth_controller.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/brand_mark.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
@@ -61,21 +61,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     setState(() => _isLoading = true);
     try {
       await ref
-          .read(authServiceProvider)
-          .signInWithEmail(
-            _emailController.text.trim(),
-            _passwordController.text.trim(),
-          );
-      final isRegistered = await ref
-          .read(authServiceProvider)
-          .checkRegistration();
-      if (mounted) {
-        if (isRegistered) {
-          context.go('/dashboard');
-        } else {
-          context.go('/register');
-        }
-      }
+          .read(authControllerProvider.notifier)
+          .login(_emailController.text.trim(), _passwordController.text.trim());
+      if (mounted) context.go('/dashboard');
     } catch (e) {
       if (mounted) {
         final message = e.toString().replaceAll('Exception: ', '');

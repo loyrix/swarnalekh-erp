@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:swarnbook/core/localization/locale_notifier.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/core/router/app_router.dart';
+import 'package:swarnbook/features/auth/application/auth_controller.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/keyboard_aware.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
-  final supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
-
-  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
-    throw StateError(
-      'Missing Supabase config. Create apps/mobile/.env and build with --dart-define-from-file=.env.',
+  // Restore any saved first-party session before the first frame so the router
+  // knows immediately whether we're signed in.
+  String? savedToken;
+  try {
+    savedToken = await const FlutterSecureStorage().read(
+      key: authTokenStorageKey,
     );
+  } catch (_) {
+    savedToken = null;
   }
 
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
-
-  runApp(const ProviderScope(child: SwarnaLekhApp()));
+  runApp(
+    ProviderScope(
+      overrides: [initialAuthTokenProvider.overrideWithValue(savedToken)],
+      child: const SwarnaLekhApp(),
+    ),
+  );
 }
 
 class SwarnaLekhApp extends ConsumerWidget {

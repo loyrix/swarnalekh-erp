@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
-import 'package:swarnbook/features/auth/data/auth_provider.dart';
+import 'package:swarnbook/features/auth/application/auth_controller.dart';
+import 'package:swarnbook/features/auth/data/auth_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/brand_mark.dart';
 import 'package:swarnbook/shared/widgets/common_widgets.dart';
@@ -18,6 +19,8 @@ class SignupScreen extends ConsumerStatefulWidget {
 
 class _SignupScreenState extends ConsumerState<SignupScreen>
     with SingleTickerProviderStateMixin {
+  final _shopNameController = TextEditingController();
+  final _ownerNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -51,6 +54,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
   @override
   void dispose() {
     _animController.dispose();
+    _shopNameController.dispose();
+    _ownerNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -63,33 +68,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
 
     setState(() => _isLoading = true);
     try {
-      final result = await ref
-          .read(authServiceProvider)
-          .signUpWithEmail(
-            _emailController.text.trim(),
-            _passwordController.text.trim(),
+      await ref
+          .read(authControllerProvider.notifier)
+          .register(
+            RegisterRequest(
+              shopName: _shopNameController.text.trim(),
+              ownerName: _ownerNameController.text.trim(),
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            ),
           );
-
-      if (result.session == null) {
-        if (mounted) {
-          AppToast.error(
-            context,
-            'Email confirmation is enabled in the current auth provider. Verify the email before continuing.',
-          );
-        }
-        return;
-      }
-
-      final isRegistered = await ref
-          .read(authServiceProvider)
-          .checkRegistration();
-      if (mounted) {
-        if (isRegistered) {
-          context.go('/dashboard');
-        } else {
-          context.go('/register');
-        }
-      }
+      if (mounted) context.go('/dashboard');
     } catch (e) {
       if (mounted) {
         final message = e.toString().replaceAll('Exception: ', '');
@@ -177,6 +166,50 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: AppSpacing.xl),
+                            _buildLabel(l10n.registrationShopName),
+                            const SizedBox(height: AppSpacing.sm),
+                            TextFormField(
+                              controller: _shopNameController,
+                              decoration: InputDecoration(
+                                hintText: l10n.registrationShopName,
+                                prefixIcon: Icon(
+                                  Icons.storefront_outlined,
+                                  color: AppColors.text3(context),
+                                  size: 20,
+                                ),
+                              ),
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [
+                                AutofillHints.organizationName,
+                              ],
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? l10n.validationShopNameRequired
+                                  : null,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            _buildLabel(l10n.registrationOwnerName),
+                            const SizedBox(height: AppSpacing.sm),
+                            TextFormField(
+                              controller: _ownerNameController,
+                              decoration: InputDecoration(
+                                hintText: l10n.registrationOwnerName,
+                                prefixIcon: Icon(
+                                  Icons.person_outline_rounded,
+                                  color: AppColors.text3(context),
+                                  size: 20,
+                                ),
+                              ),
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.name],
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? l10n.validationOwnerNameRequired
+                                  : null,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
                             _buildLabel(l10n.authEmailAddress),
                             const SizedBox(height: AppSpacing.sm),
                             TextFormField(
