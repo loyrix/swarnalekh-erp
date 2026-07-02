@@ -45,24 +45,27 @@ Future<void> showInventoryDetail(BuildContext context, InventoryItem item) {
           ),
         ],
       ),
-      AppDetailSection(
-        heading: l10n.inventoryPriceDetails,
-        rows: [
-          AppDetailRow(
-            l10n.inventoryPurchasePrice,
-            inventoryPurchasePriceText(item),
-          ),
-          AppDetailRow(
-            l10n.inventoryFieldSellingPrice,
-            inventoryCurrencyText(item.estimatedSellingPrice),
-            emphasize: true,
-          ),
-          AppDetailRow(
-            l10n.inventoryMakingCharges,
-            inventoryMakingText(l10n, item),
-          ),
-        ],
-      ),
+      // Price details are hidden for in-stock items (their price is only an
+      // estimate until sold); shown for sold/reserved items.
+      if (item.status != 'in_stock')
+        AppDetailSection(
+          heading: l10n.inventoryPriceDetails,
+          rows: [
+            AppDetailRow(
+              l10n.inventoryPurchasePrice,
+              inventoryPurchasePriceText(item),
+            ),
+            AppDetailRow(
+              l10n.inventoryFieldSellingPrice,
+              inventoryCurrencyText(item.estimatedSellingPrice),
+              emphasize: true,
+            ),
+            AppDetailRow(
+              l10n.inventoryMakingCharges,
+              inventoryMakingText(l10n, item),
+            ),
+          ],
+        ),
       AppDetailSection(
         heading: l10n.inventoryStatusInfo,
         rows: [

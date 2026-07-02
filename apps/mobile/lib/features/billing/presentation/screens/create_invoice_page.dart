@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/billing/data/invoice_repository.dart';
@@ -54,6 +55,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   InvoicePreview? _preview;
   bool _isPreviewing = false;
   bool _previewFailed = false;
+  String? _previewError;
 
   @override
   void initState() {
@@ -143,6 +145,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         _preview = null;
         _isPreviewing = false;
         _previewFailed = false;
+        _previewError = null;
       });
       return;
     }
@@ -162,12 +165,16 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         _preview = preview;
         _isPreviewing = false;
         _previewFailed = false;
+        _previewError = null;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
         _isPreviewing = false;
         _previewFailed = true;
+        // Surface the server's reason (e.g. "No rate set for gold 22K…") so the
+        // owner knows what to fix, instead of a generic failure.
+        _previewError = e is DioException ? e.message : null;
       });
     }
   }
@@ -284,6 +291,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           preview: _preview,
           isPreviewing: _isPreviewing,
           previewFailed: _previewFailed,
+          previewError: _previewError,
           amountPaid: _amountPaidValue,
         ),
         children: [
@@ -545,12 +553,14 @@ class _PreviewSummary extends StatelessWidget {
     required this.preview,
     required this.isPreviewing,
     required this.previewFailed,
+    required this.previewError,
     required this.amountPaid,
   });
 
   final InvoicePreview? preview;
   final bool isPreviewing;
   final bool previewFailed;
+  final String? previewError;
   final double amountPaid;
 
   @override
@@ -559,11 +569,31 @@ class _PreviewSummary extends StatelessWidget {
     final p = preview;
 
     if (previewFailed) {
+      final message = (previewError != null && previewError!.trim().isNotEmpty)
+          ? previewError!.trim()
+          : l10n.errorFailedLoadBillingData;
       return _shell(
         context,
-        child: Text(
-          l10n.errorFailedLoadBillingData,
-          style: const TextStyle(color: AppColors.warning),
+        borderColor: AppColors.error,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 18,
+              color: AppColors.error,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -650,14 +680,20 @@ class _PreviewSummary extends StatelessWidget {
     );
   }
 
-  Widget _shell(BuildContext context, {required Widget child}) {
+  Widget _shell(
+    BuildContext context, {
+    required Widget child,
+    Color? borderColor,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surfL(context),
+        color: borderColor != null
+            ? borderColor.withValues(alpha: 0.06)
+            : AppColors.surfL(context),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.brd(context)),
+        border: Border.all(color: borderColor ?? AppColors.brd(context)),
       ),
       child: child,
     );
