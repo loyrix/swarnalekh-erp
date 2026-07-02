@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthService } from '../auth/auth.service';
 import { UserManagementService } from './user-management.service';
 
 describe('UserManagementService', () => {
@@ -12,10 +13,17 @@ describe('UserManagementService', () => {
         update: jest.fn(),
       },
     };
+    const authService = {
+      hashPassword: jest.fn().mockResolvedValue('hashed-password'),
+    };
 
     return {
-      service: new UserManagementService(prisma as unknown as PrismaService),
+      service: new UserManagementService(
+        prisma as unknown as PrismaService,
+        authService as unknown as AuthService,
+      ),
       prisma,
+      authService,
     };
   };
 
@@ -90,6 +98,62 @@ describe('UserManagementService', () => {
           phone: '+919999000111',
           role: 'admin',
           isActive: true,
+        }),
+      }),
+    );
+  });
+
+  it('hashes an initial password and assigns a login subject', async () => {
+    const { service, prisma, authService } = createService();
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue(userRow());
+
+    await service.create('tenant-1', {
+      name: 'Asha',
+      email: 'asha@example.com',
+      role: 'staff',
+      password: 'super-secret',
+    });
+
+    expect(authService.hashPassword).toHaveBeenCalledWith('super-secret');
+    const data = prisma.user.create.mock.calls[0][0].data;
+    expect(data.passwordHash).toBe('hashed-password');
+    expect(typeof data.authUserId).toBe('string');
+  });
+
+  it('does not set a password subject when none is provided', async () => {
+    const { service, prisma, authService } = createService();
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue(userRow());
+
+    await service.create('tenant-1', {
+      name: 'Asha',
+      email: 'asha@example.com',
+      role: 'staff',
+    });
+
+    expect(authService.hashPassword).not.toHaveBeenCalled();
+    const data = prisma.user.create.mock.calls[0][0].data;
+    expect(data.passwordHash).toBeUndefined();
+    expect(data.authUserId).toBeUndefined();
+  });
+
+  it('sets/resets a password and keeps an existing login subject', async () => {
+    const { service, prisma, authService } = createService();
+    prisma.user.findFirst.mockResolvedValue(
+      userRow({ id: 'user-1', authUserId: 'existing-subject' }),
+    );
+    prisma.user.update.mockResolvedValue(userRow({ id: 'user-1' }));
+
+    await service.setPassword('tenant-1', 'user-1', 'new-password');
+
+    expect(authService.hashPassword).toHaveBeenCalledWith('new-password');
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          passwordHash: 'hashed-password',
+          authUserId: 'existing-subject',
         }),
       }),
     );

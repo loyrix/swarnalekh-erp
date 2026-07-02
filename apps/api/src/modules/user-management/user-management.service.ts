@@ -5,7 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AuthService } from '../auth/auth.service.js';
 import {
   CreateManagedUserDto,
   ManagedUserQueryDto,
@@ -28,7 +30,10 @@ type ManagedUser = Prisma.UserGetPayload<{ select: typeof managedUserSelect }>;
 
 @Injectable()
 export class UserManagementService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
+  ) {}
 
   async findAll(tenantId: string, query: ManagedUserQueryDto = {}) {
     const search = query.search?.trim();
@@ -60,6 +65,10 @@ export class UserManagementService {
     await this.ensureEmailAvailable(email);
     await this.ensureTenantPhoneAvailable(tenantId, phone);
 
+    const passwordHash = dto.password
+      ? await this.authService.hashPassword(dto.password)
+      : undefined;
+
     const user = await this.prisma.user.create({
       data: {
         tenantId,
@@ -68,6 +77,25 @@ export class UserManagementService {
         phone,
         role: dto.role,
         isActive: true,
+        // A login-capable user needs a stable subject for the JWT.
+        ...(passwordHash ? { passwordHash, authUserId: randomUUID() } : {}),
+      },
+      select: managedUserSelect,
+    });
+
+    return this.toResponse(user);
+  }
+
+  /** Owner/admin sets or resets a shop user's login password. */
+  async setPassword(tenantId: string, id: string, password: string) {
+    const existing = await this.findTenantUser(tenantId, id);
+    const passwordHash = await this.authService.hashPassword(password);
+
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        passwordHash,
+        authUserId: existing.authUserId ?? randomUUID(),
       },
       select: managedUserSelect,
     });

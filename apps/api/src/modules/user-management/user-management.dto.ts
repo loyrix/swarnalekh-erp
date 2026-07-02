@@ -32,6 +32,25 @@ export class CreateManagedUserDto {
   @ApiProperty({ example: 'staff', enum: MANAGED_ROLES })
   @IsIn(MANAGED_ROLES)
   role: (typeof MANAGED_ROLES)[number];
+
+  @ApiPropertyOptional({
+    example: 'a-strong-password',
+    minLength: 8,
+    description: 'Initial login password. Owner/admin can reset it later.',
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  @MaxLength(72)
+  password?: string;
+}
+
+export class SetUserPasswordDto {
+  @ApiProperty({ example: 'a-strong-password', minLength: 8 })
+  @IsString()
+  @MinLength(8)
+  @MaxLength(72)
+  password: string;
 }
 
 export class UpdateManagedUserDto {

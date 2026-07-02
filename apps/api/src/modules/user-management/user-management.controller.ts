@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -19,6 +20,7 @@ import { ADMIN_ROLES, Roles } from '../../common/decorators/roles.decorator.js';
 import {
   CreateManagedUserDto,
   ManagedUserQueryDto,
+  SetUserPasswordDto,
   UpdateManagedUserDto,
 } from './user-management.dto.js';
 import { UserManagementService } from './user-management.service.js';
@@ -55,6 +57,20 @@ export class UserManagementController {
       req.appUser.id,
       id,
       dto,
+    );
+  }
+
+  @Patch(':id/password')
+  @ApiOperation({ summary: "Set or reset a shop user's login password" })
+  async setPassword(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() dto: SetUserPasswordDto,
+  ) {
+    return this.userManagementService.setPassword(
+      req.tenantId,
+      id,
+      dto.password,
     );
   }
 
