@@ -91,25 +91,26 @@ class _DashboardContent extends StatelessWidget {
         icon: Icons.trending_up_rounded,
         label: l10n.dashboardMonthlyRevenue,
         value: _formatMoney(s.monthlyRevenue),
-        color: AppColors.success,
+        color: AppColors.primary,
       ),
       (
         icon: Icons.account_balance_wallet_rounded,
         label: l10n.dashboardPendingInterest,
         value: _formatMoney(s.pendingMortgageInterest),
+        // Amber is a genuine "needs attention" cue (interest owed).
         color: AppColors.warning,
       ),
       (
         icon: Icons.account_balance_rounded,
         label: l10n.dashboardActiveLoans,
         value: '${s.activeLoans}',
-        color: AppColors.info,
+        color: AppColors.primary,
       ),
       (
         icon: Icons.point_of_sale_rounded,
         label: l10n.dashboardTodaysSales,
         value: _formatMoney(s.todaysSales),
-        color: AppColors.success,
+        color: AppColors.primary,
       ),
       (
         icon: Icons.receipt_long_rounded,
@@ -121,7 +122,7 @@ class _DashboardContent extends StatelessWidget {
         icon: Icons.shopping_bag_rounded,
         label: l10n.dashboardSoldProducts,
         value: '${s.soldProductsThisMonth}',
-        color: AppColors.info,
+        color: AppColors.primary,
       ),
     ];
   }
@@ -161,21 +162,22 @@ class _WelcomeBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppColors.isDark(context)
             ? const LinearGradient(
-                colors: [Color(0xFF1A1533), Color(0xFF261E42)],
+                colors: [Color(0xFF1C1810), Color(0xFF262013)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Color(0xFFF9F6F0), Color(0xFFEAE4D3)],
+                colors: [Color(0xFFFBF8F1), Color(0xFFF0E7D2)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
           color: AppColors.primary.withValues(
-            alpha: AppColors.isDark(context) ? 0.15 : 0.3,
+            alpha: AppColors.isDark(context) ? 0.22 : 0.3,
           ),
         ),
+        boxShadow: AppShadows.soft(context),
       ),
       child: Row(
         children: [
@@ -254,7 +256,6 @@ class _QuickActions extends StatelessWidget {
         context,
         Icons.receipt_long_rounded,
         l10n.dashboardNewBill,
-        AppColors.success,
         () => context.go('/billing'),
       ),
       if (canManage)
@@ -262,7 +263,6 @@ class _QuickActions extends StatelessWidget {
           context,
           Icons.add_box_rounded,
           l10n.inventoryAddItem,
-          AppColors.info,
           () => context.go('/inventory'),
         ),
       if (canManage)
@@ -270,21 +270,25 @@ class _QuickActions extends StatelessWidget {
           context,
           Icons.account_balance_rounded,
           l10n.dashboardAddMortgage,
-          AppColors.warning,
           () => context.go('/mortgage'),
+        ),
+      if (canManage)
+        _chip(
+          context,
+          Icons.sell_rounded,
+          l10n.dashboardSetRates,
+          () => context.go('/rates'),
         ),
       _chip(
         context,
         Icons.search_rounded,
         l10n.dashboardSearchProduct,
-        AppColors.primary,
-        () => context.go('/inventory'),
+        () => context.go('/search'),
       ),
       _chip(
         context,
         Icons.person_search_rounded,
         l10n.dashboardSearchCustomer,
-        AppColors.info,
         () => context.go('/customers'),
       ),
     ];
@@ -292,12 +296,7 @@ class _QuickActions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.dashboardQuickActions,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(color: AppColors.text2(context)),
-        ),
+        SectionHeader(title: l10n.dashboardQuickActions),
         const SizedBox(height: AppSpacing.sm),
         Wrap(spacing: 8, runSpacing: 8, children: actions),
       ],
@@ -308,32 +307,38 @@ class _QuickActions extends StatelessWidget {
     BuildContext context,
     IconData icon,
     String label,
-    Color color,
     VoidCallback onTap,
   ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.text1(context),
-              ),
+    // Uniform gold action chips — one brand accent, not a rainbow.
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.full),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.25),
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text1(context),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -371,17 +376,31 @@ class _SalesTrendChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            height: 240,
-            child: maxTotal <= 0
-                ? Center(
-                    child: Text(
-                      l10n.dashboardNoRecentSales,
-                      style: TextStyle(color: AppColors.text3(context)),
-                    ),
-                  )
-                : _buildChart(context, locale, maxTotal),
-          ),
+          if (maxTotal <= 0)
+            // Compact empty state — no giant dead box.
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.show_chart_rounded,
+                    size: 18,
+                    color: AppColors.text3(context),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    l10n.dashboardNoRecentSales,
+                    style: TextStyle(color: AppColors.text3(context)),
+                  ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              height: 240,
+              child: _buildChart(context, locale, maxTotal),
+            ),
         ],
       ),
     );

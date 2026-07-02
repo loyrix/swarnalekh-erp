@@ -461,6 +461,10 @@ class _AppShellState extends ConsumerState<AppShell> {
                 context.go('/user-management');
                 return;
               }
+              if (value == _ProfileAction.rates) {
+                context.go('/rates');
+                return;
+              }
               if (value == _ProfileAction.langEn) {
                 setAppLocale(const Locale('en'));
                 return;
@@ -496,6 +500,17 @@ class _AppShellState extends ConsumerState<AppShell> {
                       const Icon(Icons.security_rounded, size: 18),
                       const SizedBox(width: 10),
                       Text(l10n.appShellSecurity),
+                    ],
+                  ),
+                ),
+              if (isAdminRole(_role))
+                PopupMenuItem<_ProfileAction>(
+                  value: _ProfileAction.rates,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.sell_rounded, size: 18),
+                      const SizedBox(width: 10),
+                      Text(l10n.ratesTitle),
                     ],
                   ),
                 ),
@@ -689,6 +704,7 @@ enum _ProfileAction {
   profile,
   security,
   users,
+  rates,
   language,
   langEn,
   langHi,
