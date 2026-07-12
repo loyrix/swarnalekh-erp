@@ -10,10 +10,12 @@ import {
   calculateMortgagePayable,
 } from '@swarnbook/business-logic';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { resolveDateRange } from '../../common/date-range.util.js';
 import {
   CloseMortgageLoanDto,
   CollectMortgagePaymentDto,
   CreateMortgageLoanDto,
+  MortgageDashboardQueryDto,
 } from './mortgage.dto.js';
 
 @Injectable()
@@ -46,13 +48,15 @@ export class MortgageService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async getDashboard(tenantId: string) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endOfToday = new Date(today);
-    endOfToday.setHours(23, 59, 59, 999);
+  async getDashboard(tenantId: string, query: MortgageDashboardQueryDto = {}) {
+    // Collections respect the selected period (default: today).
+    const range = resolveDateRange(query.period, {
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      defaultPeriod: 'today',
+    });
 
-    const [activeLoans, closedLoans, todaysPayments] = await Promise.all([
+    const [activeLoans, closedLoans, collectionPayments] = await Promise.all([
       this.prisma.mortgageLoan.findMany({
         where: { tenantId, status: 'active', deletedAt: null },
       }),
@@ -62,7 +66,7 @@ export class MortgageService {
       this.prisma.mortgagePayment.findMany({
         where: {
           tenantId,
-          paymentDate: { gte: today, lte: endOfToday },
+          ...(range ? { paymentDate: range } : {}),
         },
         select: { amount: true },
       }),
@@ -86,7 +90,7 @@ export class MortgageService {
     const overdueLoans = activeSnapshots.filter(
       (snapshot) => this.daysOverdue(snapshot.nextDueDate, new Date()) > 0,
     ).length;
-    const todaysCollections = todaysPayments.reduce(
+    const todaysCollections = collectionPayments.reduce(
       (sum, payment) => sum + this.toNumber(payment.amount),
       0,
     );

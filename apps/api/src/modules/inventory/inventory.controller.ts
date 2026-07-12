@@ -24,6 +24,7 @@ import { InventoryService } from './inventory.service';
 import {
   CreateInventoryDto,
   ImportInventoryDto,
+  InventoryStatsQueryDto,
   UpdateInventoryDto,
 } from './inventory.dto';
 import {
@@ -114,8 +115,11 @@ export class InventoryController {
   @ApiOperation({
     summary: 'Inventory statistics (stock count, weight by metal)',
   })
-  async getStats(@Request() req: any) {
-    return this.inventoryService.getStats(req.tenantId);
+  @ApiQuery({ name: 'period', required: false, example: '6months' })
+  @ApiQuery({ name: 'dateFrom', required: false, example: '2026-01-01' })
+  @ApiQuery({ name: 'dateTo', required: false, example: '2026-06-30' })
+  async getStats(@Request() req: any, @Query() query: InventoryStatsQueryDto) {
+    return this.inventoryService.getStats(req.tenantId, query);
   }
 
   @Get('sold-products')

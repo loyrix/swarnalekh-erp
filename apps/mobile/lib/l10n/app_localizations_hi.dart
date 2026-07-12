@@ -1577,6 +1577,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mortgageTodaysCollections => 'आज का संग्रह';
 
   @override
+  String get mortgageCollections => 'संग्रह';
+
+  @override
   String get mortgageOverdueLoans => 'अतिदेय लोन';
 
   @override
@@ -2120,6 +2123,27 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get billingActionShare => 'शेयर';
+
+  @override
+  String get periodToday => 'आज';
+
+  @override
+  String get periodMonth => 'इस महीने';
+
+  @override
+  String get period3Months => '3 महीने';
+
+  @override
+  String get period6Months => '6 महीने';
+
+  @override
+  String get period12Months => '12 महीने';
+
+  @override
+  String get periodAll => 'सभी समय';
+
+  @override
+  String get periodCustom => 'कस्टम रेंज';
 
   @override
   String get searchGlobalHint => 'ग्राहक, आइटम, बिल खोजें...';

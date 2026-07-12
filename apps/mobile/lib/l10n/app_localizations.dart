@@ -3124,6 +3124,12 @@ abstract class AppLocalizations {
   /// **'Today\'s Collections'**
   String get mortgageTodaysCollections;
 
+  /// No description provided for @mortgageCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get mortgageCollections;
+
   /// No description provided for @mortgageOverdueLoans.
   ///
   /// In en, this message translates to:
@@ -4179,6 +4185,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share'**
   String get billingActionShare;
+
+  /// No description provided for @periodToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get periodToday;
+
+  /// No description provided for @periodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get periodMonth;
+
+  /// No description provided for @period3Months.
+  ///
+  /// In en, this message translates to:
+  /// **'3 Months'**
+  String get period3Months;
+
+  /// No description provided for @period6Months.
+  ///
+  /// In en, this message translates to:
+  /// **'6 Months'**
+  String get period6Months;
+
+  /// No description provided for @period12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'12 Months'**
+  String get period12Months;
+
+  /// No description provided for @periodAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All Time'**
+  String get periodAll;
+
+  /// No description provided for @periodCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Range'**
+  String get periodCustom;
 
   /// No description provided for @searchGlobalHint.
   ///

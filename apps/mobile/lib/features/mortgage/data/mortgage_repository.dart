@@ -36,8 +36,11 @@ class MortgageRepository {
 
   final ApiClient _api = ApiClient();
 
-  Future<MortgageDashboard> getDashboard() async {
-    final response = await _api.dio.get('/mortgages/dashboard');
+  Future<MortgageDashboard> getDashboard({Map<String, dynamic>? query}) async {
+    final response = await _api.dio.get(
+      '/mortgages/dashboard',
+      queryParameters: query,
+    );
     final payload = response.data as Map<String, dynamic>? ?? const {};
     return MortgageDashboard.fromJson(payload);
   }

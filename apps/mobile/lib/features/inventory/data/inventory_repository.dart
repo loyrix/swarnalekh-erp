@@ -71,6 +71,17 @@ class InventoryRepository {
     return InventoryOverview.fromJson(payload);
   }
 
+  /// Lightweight stats only — used to re-fetch the "sold" count for a period
+  /// without reloading the whole overview.
+  Future<InventoryStats> getStats({Map<String, dynamic>? query}) async {
+    final response = await _api.dio.get(
+      '/inventory/stats',
+      queryParameters: query,
+    );
+    final payload = response.data as Map<String, dynamic>? ?? const {};
+    return InventoryStats.fromJson(payload);
+  }
+
   Future<List<SoldProduct>> getSoldProducts(String search) async {
     final response = await _api.dio.get(
       '/inventory/sold-products',

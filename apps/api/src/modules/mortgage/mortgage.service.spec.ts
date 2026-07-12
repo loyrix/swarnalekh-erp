@@ -136,6 +136,27 @@ describe('MortgageService', () => {
       overdueLoans: 0,
       todaysCollections: 3500,
     });
+    // Default period is "today" — the collections query is date-bounded.
+    expect(
+      prisma.mortgagePayment.findMany.mock.calls[0][0].where.paymentDate,
+    ).toEqual(expect.objectContaining({ gte: expect.any(Date) }));
+  });
+
+  it('sums collections across the whole history for period=all', async () => {
+    const { service, prisma } = createService();
+    prisma.mortgageLoan.findMany.mockResolvedValue([]);
+    prisma.mortgageLoan.count.mockResolvedValue(0);
+    prisma.mortgagePayment.findMany.mockResolvedValue([
+      { amount: decimal(2000) },
+      { amount: decimal(1500) },
+    ]);
+
+    const result = await service.getDashboard('tenant-1', { period: 'all' });
+    expect(result.todaysCollections).toBe(3500);
+    // No date filter for all-time.
+    expect(
+      prisma.mortgagePayment.findMany.mock.calls[0][0].where.paymentDate,
+    ).toBeUndefined();
   });
 
   it('filters and maps mortgage loan search results', async () => {

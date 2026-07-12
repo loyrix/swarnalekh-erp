@@ -9,10 +9,12 @@ import { ConfigService } from '@nestjs/config';
 import { calculateItemPrice } from '@swarnbook/business-logic';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { resolveDateRange } from '../../common/date-range.util';
 import {
   CreateInventoryDto,
   ImportInventoryDto,
   ImportInventoryRowDto,
+  InventoryStatsQueryDto,
   UpdateInventoryDto,
 } from './inventory.dto';
 
@@ -233,9 +235,14 @@ export class InventoryService {
     });
   }
 
-  async getStats(tenantId: string) {
+  async getStats(tenantId: string, query: InventoryStatsQueryDto = {}) {
     const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // "Sold" respects the selected period (default: this month).
+    const soldRange = resolveDateRange(query.period, {
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      defaultPeriod: 'month',
+    });
     const unsoldCutoff = new Date(now);
     unsoldCutoff.setDate(unsoldCutoff.getDate() - 90);
 
@@ -272,9 +279,12 @@ export class InventoryService {
     const totalDiamondStock = inStockItems.filter(
       (item) => item.hasStones || this.toNumber(item.stoneValue) > 0,
     ).length;
-    const soldThisMonth = soldItems.filter(
-      (item) => item.updatedAt >= monthStart,
-    ).length;
+    const soldThisMonth = soldItems.filter((item) => {
+      if (!soldRange) return true; // all-time
+      if (soldRange.gte && item.updatedAt < soldRange.gte) return false;
+      if (soldRange.lte && item.updatedAt > soldRange.lte) return false;
+      return true;
+    }).length;
     const highValueProducts = inStockItems.filter(
       (item) => this.purchaseValue(item) >= 500000,
     ).length;

@@ -15,8 +15,10 @@ import 'package:swarnbook/features/mortgage/presentation/screens/collect_payment
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_form_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/widgets/mortgage_detail_sheet.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/stat_period.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/stat_period_selector.dart';
 
 class MortgageScreen extends ConsumerStatefulWidget {
   const MortgageScreen({super.key});
@@ -33,6 +35,7 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
   MortgageQuery _query = const MortgageQuery();
   String _section = 'active';
   bool _canManage = false;
+  StatPeriod _collectionsPeriod = StatPeriod.today;
 
   @override
   void initState() {
@@ -72,13 +75,13 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
   }
 
   Future<void> _refresh() async {
-    ref.invalidate(mortgageDashboardProvider);
+    ref.invalidate(mortgageDashboardProvider(_collectionsPeriod));
     ref.invalidate(mortgageLoansProvider(_query));
     await ref.read(mortgageLoansProvider(_query).future);
   }
 
   void _invalidate() {
-    ref.invalidate(mortgageDashboardProvider);
+    ref.invalidate(mortgageDashboardProvider(_collectionsPeriod));
     ref.invalidate(mortgageLoansProvider(_query));
   }
 
@@ -147,7 +150,9 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final dashboard = ref.watch(mortgageDashboardProvider).valueOrNull;
+    final dashboard = ref
+        .watch(mortgageDashboardProvider(_collectionsPeriod))
+        .valueOrNull;
 
     return AppSectionScaffold(
       header: _Header(
@@ -156,6 +161,9 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         searchController: _searchController,
         onSearch: _onSearchChanged,
         onAdd: _openCreate,
+        collectionsPeriod: _collectionsPeriod,
+        onCollectionsPeriodChanged: (p) =>
+            setState(() => _collectionsPeriod = p),
       ),
       sections: [
         SectionItem(
@@ -272,6 +280,8 @@ class _Header extends StatelessWidget {
     required this.searchController,
     required this.onSearch,
     required this.onAdd,
+    required this.collectionsPeriod,
+    required this.onCollectionsPeriodChanged,
   });
 
   final MortgageDashboard? dashboard;
@@ -279,6 +289,8 @@ class _Header extends StatelessWidget {
   final TextEditingController searchController;
   final ValueChanged<String> onSearch;
   final VoidCallback onAdd;
+  final StatPeriod collectionsPeriod;
+  final ValueChanged<StatPeriod> onCollectionsPeriodChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -287,7 +299,27 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (d != null)
+        if (d != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${l10n.mortgageCollections} · ${StatPeriodSelector.labelFor(context, collectionsPeriod)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.text3(context),
+                  ),
+                ),
+                StatPeriodSelector(
+                  value: collectionsPeriod,
+                  onChanged: onCollectionsPeriodChanged,
+                ),
+              ],
+            ),
+          ),
           CompactStatStrip(
             stats: [
               (
@@ -311,12 +343,13 @@ class _Header extends StatelessWidget {
               ),
               (
                 icon: Icons.currency_rupee_rounded,
-                label: l10n.mortgageTodaysCollections,
+                label: l10n.mortgageCollections,
                 value: mortgageMoney(d.todaysCollections),
                 color: AppColors.primary,
               ),
             ],
           ),
+        ],
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [

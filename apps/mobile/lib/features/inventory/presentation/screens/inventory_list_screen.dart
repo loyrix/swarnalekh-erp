@@ -16,8 +16,10 @@ import 'package:swarnbook/features/inventory/presentation/screens/ocr_review_pag
 import 'package:swarnbook/features/inventory/presentation/widgets/inventory_detail_sheet.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/application/data_export.dart';
+import 'package:swarnbook/shared/application/stat_period.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/stat_period_selector.dart';
 
 class InventoryListScreen extends ConsumerStatefulWidget {
   const InventoryListScreen({super.key});
@@ -37,6 +39,7 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
   String _section = 'view';
   bool _canManage = false;
   bool _isOcrUploading = false;
+  StatPeriod _soldPeriod = StatPeriod.month;
 
   @override
   void initState() {
@@ -388,10 +391,19 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
       onRetry: () => ref.invalidate(inventoryOverviewProvider(_query)),
       data: (overview) {
         final l10n = AppLocalizations.of(context)!;
+        // The "sold" count follows the selected period; other figures are
+        // period-neutral. Falls back to the overview stats while loading.
+        final periodStats =
+            ref.watch(inventoryStatsProvider(_soldPeriod)).valueOrNull ??
+            overview.stats;
         return ListView(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           children: [
-            _StatsStrip(stats: overview.stats),
+            _StatsStrip(
+              stats: periodStats,
+              soldPeriod: _soldPeriod,
+              onSoldPeriodChanged: (p) => setState(() => _soldPeriod = p),
+            ),
             _AlertsRow(stats: overview.stats),
             _searchRow(l10n.inventorySearchHintStock),
             if (overview.items.isEmpty)
@@ -544,9 +556,15 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
 // ===========================================================================
 
 class _StatsStrip extends StatelessWidget {
-  const _StatsStrip({required this.stats});
+  const _StatsStrip({
+    required this.stats,
+    required this.soldPeriod,
+    required this.onSoldPeriodChanged,
+  });
 
   final InventoryStats? stats;
+  final StatPeriod soldPeriod;
+  final ValueChanged<StatPeriod> onSoldPeriodChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -559,31 +577,56 @@ class _StatsStrip extends StatelessWidget {
         AppSpacing.sm,
         AppSpacing.sm,
       ),
-      child: CompactStatStrip(
-        stats: [
-          (
-            icon: Icons.scale_rounded,
-            label: l10n.inventoryTotalGoldWeight,
-            value: inventoryWeightText(stats!.totalGoldWeight),
-            color: AppColors.gold,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${l10n.inventorySoldProducts} · ${StatPeriodSelector.labelFor(context, soldPeriod)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.text3(context),
+                  ),
+                ),
+                StatPeriodSelector(
+                  value: soldPeriod,
+                  onChanged: onSoldPeriodChanged,
+                ),
+              ],
+            ),
           ),
-          (
-            icon: Icons.scale_outlined,
-            label: l10n.inventoryTotalSilverWeight,
-            value: inventoryWeightText(stats!.totalSilverWeight),
-            color: AppColors.silver,
-          ),
-          (
-            icon: Icons.inventory_2_rounded,
-            label: l10n.inventoryTotalProducts,
-            value: '${stats!.totalProducts}',
-            color: AppColors.primary,
-          ),
-          (
-            icon: Icons.shopping_bag_rounded,
-            label: l10n.inventorySoldProducts,
-            value: '${stats!.soldThisMonth}',
-            color: AppColors.primary,
+          CompactStatStrip(
+            stats: [
+              (
+                icon: Icons.scale_rounded,
+                label: l10n.inventoryTotalGoldWeight,
+                value: inventoryWeightText(stats!.totalGoldWeight),
+                color: AppColors.gold,
+              ),
+              (
+                icon: Icons.scale_outlined,
+                label: l10n.inventoryTotalSilverWeight,
+                value: inventoryWeightText(stats!.totalSilverWeight),
+                color: AppColors.silver,
+              ),
+              (
+                icon: Icons.inventory_2_rounded,
+                label: l10n.inventoryTotalProducts,
+                value: '${stats!.totalProducts}',
+                color: AppColors.primary,
+              ),
+              (
+                icon: Icons.shopping_bag_rounded,
+                label: l10n.inventorySoldProducts,
+                value: '${stats!.soldThisMonth}',
+                color: AppColors.primary,
+              ),
+            ],
           ),
         ],
       ),

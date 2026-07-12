@@ -38,7 +38,7 @@ void main() {
           const Scaffold(body: MortgageScreen()),
           overrides: [
             mortgageDashboardProvider.overrideWith(
-              (ref) async => MortgageDashboard.empty,
+              (ref, period) async => MortgageDashboard.empty,
             ),
             mortgageLoansProvider.overrideWith((ref, query) async => [_loan()]),
           ],
@@ -57,7 +57,7 @@ void main() {
           const Scaffold(body: MortgageScreen()),
           overrides: [
             mortgageDashboardProvider.overrideWith(
-              (ref) async => MortgageDashboard.empty,
+              (ref, period) async => MortgageDashboard.empty,
             ),
             mortgageLoansProvider.overrideWith((ref, query) async => []),
           ],

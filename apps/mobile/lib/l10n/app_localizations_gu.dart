@@ -1571,6 +1571,9 @@ class AppLocalizationsGu extends AppLocalizations {
   String get mortgageTodaysCollections => 'આજનો સંગ્રહ';
 
   @override
+  String get mortgageCollections => 'સંગ્રહ';
+
+  @override
   String get mortgageOverdueLoans => 'વિલંબિત લોન';
 
   @override
@@ -2113,6 +2116,27 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get billingActionShare => 'શેર';
+
+  @override
+  String get periodToday => 'આજે';
+
+  @override
+  String get periodMonth => 'આ મહિને';
+
+  @override
+  String get period3Months => '3 મહિના';
+
+  @override
+  String get period6Months => '6 મહિના';
+
+  @override
+  String get period12Months => '12 મહિના';
+
+  @override
+  String get periodAll => 'બધો સમય';
+
+  @override
+  String get periodCustom => 'કસ્ટમ રેન્જ';
 
   @override
   String get searchGlobalHint => 'ગ્રાહકો, વસ્તુઓ, બિલ શોધો...';

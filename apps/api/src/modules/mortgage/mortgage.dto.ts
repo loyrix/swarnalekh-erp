@@ -15,6 +15,26 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+export class MortgageDashboardQueryDto {
+  @ApiPropertyOptional({
+    description: 'Collections window',
+    enum: ['today', 'month', '3months', '6months', '12months', 'all', 'custom'],
+  })
+  @IsOptional()
+  @IsString()
+  period?: string;
+
+  @ApiPropertyOptional({ example: '2026-01-01' })
+  @IsOptional()
+  @IsString()
+  dateFrom?: string;
+
+  @ApiPropertyOptional({ example: '2026-06-30' })
+  @IsOptional()
+  @IsString()
+  dateTo?: string;
+}
+
 export class CreateMortgageOrnamentDto {
   @ApiProperty({ example: 'Bangles' })
   @IsString()

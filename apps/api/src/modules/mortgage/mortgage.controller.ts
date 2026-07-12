@@ -18,6 +18,7 @@ import {
   CloseMortgageLoanDto,
   CollectMortgagePaymentDto,
   CreateMortgageLoanDto,
+  MortgageDashboardQueryDto,
 } from './mortgage.dto.js';
 import { MortgageService } from './mortgage.service.js';
 import {
@@ -35,8 +36,14 @@ export class MortgageController {
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Mortgage dashboard summary for the tenant' })
-  async getDashboard(@Request() req: any) {
-    return this.mortgageService.getDashboard(req.tenantId);
+  @ApiQuery({ name: 'period', required: false, example: '6months' })
+  @ApiQuery({ name: 'dateFrom', required: false, example: '2026-01-01' })
+  @ApiQuery({ name: 'dateTo', required: false, example: '2026-06-30' })
+  async getDashboard(
+    @Request() req: any,
+    @Query() query: MortgageDashboardQueryDto,
+  ) {
+    return this.mortgageService.getDashboard(req.tenantId, query);
   }
 
   @Get()

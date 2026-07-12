@@ -1570,6 +1570,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mortgageTodaysCollections => 'Today\'s Collections';
 
   @override
+  String get mortgageCollections => 'Collections';
+
+  @override
   String get mortgageOverdueLoans => 'Overdue Loans';
 
   @override
@@ -2112,6 +2115,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get billingActionShare => 'Share';
+
+  @override
+  String get periodToday => 'Today';
+
+  @override
+  String get periodMonth => 'This Month';
+
+  @override
+  String get period3Months => '3 Months';
+
+  @override
+  String get period6Months => '6 Months';
+
+  @override
+  String get period12Months => '12 Months';
+
+  @override
+  String get periodAll => 'All Time';
+
+  @override
+  String get periodCustom => 'Custom Range';
 
   @override
   String get searchGlobalHint => 'Search customers, items, invoices...';
