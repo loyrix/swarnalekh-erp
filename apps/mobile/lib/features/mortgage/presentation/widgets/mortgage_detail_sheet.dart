@@ -16,13 +16,22 @@ Future<void> showMortgageDetail(
 }) {
   final l10n = AppLocalizations.of(context)!;
 
+  // Tenure runs to the closing date for a closed loan, else to now.
+  final tenure = mortgageTenure(
+    loan.loanDate,
+    asOf: loan.isActive ? null : DateTime.tryParse(loan.closedAt ?? ''),
+  );
+
   final loanRows = <AppDetailRow>[
     AppDetailRow(l10n.reportsLoanAmount, mortgageMoney(loan.principalAmount)),
+    AppDetailRow(l10n.mortgageLoanDate, mortgageDate(loan.loanDate)),
+    AppDetailRow(l10n.mortgageTenure, tenure),
     if (loan.isActive) ...[
       AppDetailRow(
         l10n.mortgageOutstanding,
         mortgageMoney(loan.outstandingPrincipal),
       ),
+      AppDetailRow(l10n.mortgageInterestMonths, '${loan.interestMonths}'),
       AppDetailRow(
         l10n.mortgagePendingInterest,
         mortgageMoney(loan.pendingInterestAmount),

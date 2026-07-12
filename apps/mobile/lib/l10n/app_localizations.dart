@@ -3232,6 +3232,24 @@ abstract class AppLocalizations {
   /// **'Next Due'**
   String get mortgageNextDue;
 
+  /// No description provided for @mortgageLoanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Date *'**
+  String get mortgageLoanDate;
+
+  /// No description provided for @mortgageTenure.
+  ///
+  /// In en, this message translates to:
+  /// **'Tenure'**
+  String get mortgageTenure;
+
+  /// No description provided for @mortgageInterestMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Months'**
+  String get mortgageInterestMonths;
+
   /// No description provided for @mortgageOrnaments.
   ///
   /// In en, this message translates to:
@@ -3375,12 +3393,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Monthly Interest Rate % *'**
   String get mortgageMonthlyInterestRate;
-
-  /// No description provided for @mortgageLoanDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Loan Date *'**
-  String get mortgageLoanDate;
 
   /// No description provided for @mortgageSaveLoan.
   ///

@@ -130,7 +130,9 @@ describe('MortgageService', () => {
       closedLoans: 1,
       totalLoanAmount: 150000,
       outstandingPrincipal: 150000,
-      pendingInterest: 0,
+      // Interest is charged from day one, so both active loans (opened today)
+      // already owe their first month: 1500 each = 3000.
+      pendingInterest: 3000,
       overdueLoans: 0,
       todaysCollections: 3500,
     });

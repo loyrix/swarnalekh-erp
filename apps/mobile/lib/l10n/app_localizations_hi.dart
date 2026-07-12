@@ -1632,6 +1632,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mortgageNextDue => 'अगली नियत तारीख';
 
   @override
+  String get mortgageLoanDate => 'लोन तिथि *';
+
+  @override
+  String get mortgageTenure => 'अवधि';
+
+  @override
+  String get mortgageInterestMonths => 'ब्याज महीने';
+
+  @override
   String get mortgageOrnaments => 'आभूषण';
 
   @override
@@ -1702,9 +1711,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get mortgageMonthlyInterestRate => 'मासिक ब्याज दर % *';
-
-  @override
-  String get mortgageLoanDate => 'लोन तिथि *';
 
   @override
   String get mortgageSaveLoan => 'लोन सहेजें';

@@ -12,6 +12,8 @@ class MortgageLoan {
     required this.totalPayableAmount,
     required this.totalInterestPaid,
     required this.interestRateMonthly,
+    required this.interestMonths,
+    required this.loanDate,
     required this.nextDueDate,
     required this.closedAt,
     required this.aadhaarNumber,
@@ -34,6 +36,12 @@ class MortgageLoan {
   final double totalPayableAmount;
   final double totalInterestPaid;
   final double interestRateMonthly;
+
+  /// Months of interest charged so far (started month = full month).
+  final int interestMonths;
+
+  /// Date the customer pledged the mortgage (ISO string).
+  final String? loanDate;
   final String? nextDueDate;
   final String? closedAt;
   final String? aadhaarNumber;
@@ -70,6 +78,8 @@ class MortgageLoan {
       totalPayableAmount: _num(json['totalPayableAmount']),
       totalInterestPaid: _num(json['totalInterestPaid']),
       interestRateMonthly: _num(json['interestRateMonthly']),
+      interestMonths: _num(json['interestMonths']).round(),
+      loanDate: _str(json['loanDate']),
       nextDueDate: _str(json['nextDueDate']),
       closedAt: _str(json['closedAt']),
       aadhaarNumber: _str(json['aadhaarNumber']),

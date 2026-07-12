@@ -538,6 +538,8 @@ export class MortgageService {
       totalInterestPaid: this.toNumber(loan.totalInterestPaid),
       totalPrincipalPaid: this.toNumber(loan.totalPrincipalPaid),
       pendingInterestAmount: isClosed ? 0 : snapshot.pendingInterestAmount,
+      // Months of interest charged so far (started month = full month).
+      interestMonths: isClosed ? 0 : snapshot.elapsedMonths,
       outstandingPrincipal: isClosed ? 0 : snapshot.outstandingPrincipal,
       totalPayableAmount: isClosed ? 0 : snapshot.totalPayableAmount,
       nextDueDate,

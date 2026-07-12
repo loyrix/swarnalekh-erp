@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:swarnbook/features/mortgage/data/models/mortgage_loan.dart';
 import 'package:swarnbook/features/mortgage/data/mortgage_repository.dart';
+import 'package:swarnbook/features/mortgage/presentation/mortgage_format.dart';
 
 void main() {
   group('MortgageLoan.fromJson', () {
@@ -54,6 +55,47 @@ void main() {
     test('closed loans report isActive false', () {
       final loan = MortgageLoan.fromJson({'id': 'x', 'status': 'closed'});
       expect(loan.isActive, isFalse);
+    });
+
+    test('parses loanDate and interestMonths', () {
+      final loan = MortgageLoan.fromJson({
+        'id': 'x',
+        'loanDate': '2026-01-10T00:00:00.000Z',
+        'interestMonths': 2,
+      });
+      expect(loan.loanDate, '2026-01-10T00:00:00.000Z');
+      expect(loan.interestMonths, 2);
+    });
+  });
+
+  group('mortgageTenure', () {
+    test('renders elapsed years, months and days compactly', () {
+      final tenure = mortgageTenure(
+        '2025-01-10T00:00:00.000Z',
+        asOf: DateTime.utc(2026, 3, 15),
+      );
+      expect(tenure, '1y 2m 5d');
+    });
+
+    test('drops zero leading parts but always shows something', () {
+      expect(
+        mortgageTenure(
+          '2026-01-10T00:00:00.000Z',
+          asOf: DateTime.utc(2026, 1, 10),
+        ),
+        '0d',
+      );
+      expect(
+        mortgageTenure(
+          '2026-01-10T00:00:00.000Z',
+          asOf: DateTime.utc(2026, 2, 12),
+        ),
+        '1m 2d',
+      );
+    });
+
+    test('returns a dash when the loan date is missing', () {
+      expect(mortgageTenure(null), '-');
     });
   });
 

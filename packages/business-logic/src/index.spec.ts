@@ -90,14 +90,38 @@ describe("business logic", () => {
     });
   });
 
-  it("does not accrue mortgage interest before the first due date", () => {
+  it("charges a full month from day one (any started month counts)", () => {
+    // 29 days in → still within the first month, but a started month is a full
+    // month, so one month's interest is due.
+    const partial = calculateMortgagePayable({
+      principalAmount: 50000,
+      interestRateMonthly: 1.5,
+      loanDate: "2026-01-10T00:00:00.000Z",
+      asOfDate: "2026-02-09T00:00:00.000Z",
+    });
+    expect(partial.elapsedMonths).toBe(1);
+    expect(partial.pendingInterestAmount).toBe(750);
+
+    // A brand-new loan (same day) owes nothing yet.
     expect(
       calculateMortgagePayable({
         principalAmount: 50000,
         interestRateMonthly: 1.5,
         loanDate: "2026-01-10T00:00:00.000Z",
-        asOfDate: "2026-02-09T00:00:00.000Z",
-      }).pendingInterestAmount,
+        asOfDate: "2026-01-10T00:00:00.000Z",
+      }).elapsedMonths,
     ).toBe(0);
+  });
+
+  it("rounds a part-month up to the next full month", () => {
+    // 1 month + 2 days → 2 months of interest.
+    const breakdown = calculateMortgagePayable({
+      principalAmount: 100000,
+      interestRateMonthly: 2,
+      loanDate: "2026-01-10T00:00:00.000Z",
+      asOfDate: "2026-02-12T00:00:00.000Z",
+    });
+    expect(breakdown.elapsedMonths).toBe(2);
+    expect(breakdown.accruedInterestAmount).toBe(4000);
   });
 });

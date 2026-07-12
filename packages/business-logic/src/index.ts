@@ -157,6 +157,8 @@ export function addLoanMonths(date: Date | string, months: number): Date {
   return result;
 }
 
+/** Completed whole months between the two dates (floor). Used for tenure and
+ * the next-due-date anniversary. */
 export function calculateElapsedLoanMonths(
   loanDate: Date | string,
   asOfDate: Date | string = new Date(),
@@ -176,6 +178,23 @@ export function calculateElapsedLoanMonths(
   return Math.max(0, months);
 }
 
+/** Months to CHARGE interest for: any started month counts as a full month
+ * (rounded up), including the first — so a loan even 1 day old owes 1 month and
+ * 1 month + 2 days owes 2 months. */
+export function calculateChargeableLoanMonths(
+  loanDate: Date | string,
+  asOfDate: Date | string = new Date(),
+): number {
+  const start = normalizeDate(loanDate);
+  const asOf = normalizeDate(asOfDate);
+  if (asOf.getTime() <= start.getTime()) return 0;
+
+  const completed = calculateElapsedLoanMonths(start, asOf);
+  const anniversary = addLoanMonths(start, completed);
+  // Any time past the last completed-month anniversary starts a new month.
+  return asOf.getTime() > anniversary.getTime() ? completed + 1 : completed;
+}
+
 export function calculateMortgagePayable(
   input: MortgagePayableInput,
 ): MortgagePayableBreakdown {
@@ -185,10 +204,11 @@ export function calculateMortgagePayable(
   const principalPaid = round2(
     Math.min(principalAmount, Math.max(0, input.principalPaid ?? 0)),
   );
-  const elapsedMonths = calculateElapsedLoanMonths(
-    input.loanDate,
-    input.asOfDate ?? new Date(),
-  );
+  const asOf = input.asOfDate ?? new Date();
+  const completedMonths = calculateElapsedLoanMonths(input.loanDate, asOf);
+  // Interest is billed per started month (rounded up), so `elapsedMonths` here
+  // is the number of months charged.
+  const elapsedMonths = calculateChargeableLoanMonths(input.loanDate, asOf);
   const monthlyInterestAmount = calculateMortgageMonthlyInterest(
     principalAmount,
     interestRateMonthly,
@@ -210,7 +230,7 @@ export function calculateMortgagePayable(
     principalPaid,
     outstandingPrincipal,
     totalPayableAmount: round2(outstandingPrincipal + pendingInterestAmount),
-    nextDueDate: addLoanMonths(input.loanDate, elapsedMonths + 1),
+    nextDueDate: addLoanMonths(input.loanDate, completedMonths + 1),
   };
 }
 
