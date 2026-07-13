@@ -20,6 +20,7 @@ import { SecurityModule } from './modules/security/security.module.js';
 import { UserManagementModule } from './modules/user-management/user-management.module.js';
 import { ExportModule } from './modules/export/export.module.js';
 import { SearchModule } from './modules/search/search.module.js';
+import { CategoryModule } from './modules/category/category.module.js';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { SearchModule } from './modules/search/search.module.js';
     DashboardModule,
     ExportModule,
     SearchModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [

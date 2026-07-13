@@ -14,6 +14,10 @@ describe('InventoryService', () => {
         create: jest.fn(),
         update: jest.fn(),
       },
+      category: {
+        findFirst: jest.fn(),
+        update: jest.fn(),
+      },
     };
     const prisma = {
       $transaction: jest.fn((callback) => callback(tx)),
@@ -330,8 +334,8 @@ describe('InventoryService', () => {
   });
 
   it('saves product image payloads when creating inventory', async () => {
-    const { service, prisma } = createService();
-    prisma.inventoryItem.create.mockResolvedValue({ id: 'item-1' });
+    const { service, tx } = createService();
+    tx.inventoryItem.create.mockResolvedValue({ id: 'item-1' });
 
     await service.create('tenant-1', {
       itemName: 'Gold Ring',
@@ -343,13 +347,118 @@ describe('InventoryService', () => {
       photoUrls: ['data:image/jpeg;base64,abcd'],
     });
 
-    expect(prisma.inventoryItem.create).toHaveBeenCalledWith(
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           tenantId: 'tenant-1',
           sellingPrice: 54900,
           photos: ['data:image/jpeg;base64,abcd'],
         }),
+      }),
+    );
+  });
+
+  it('assigns the next category tag when creating without a tag number', async () => {
+    const { service, prisma, tx } = createService();
+    prisma.category.findFirst.mockResolvedValue({ id: 'cat-ring' });
+    tx.category.findFirst.mockResolvedValue({ prefix: 'RG' });
+    tx.category.update.mockResolvedValue({ prefix: 'RG', nextSequence: 6 });
+    tx.inventoryItem.findFirst.mockResolvedValue(null); // no clash
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: 'item-1', ...data }),
+    );
+
+    await service.create('tenant-1', {
+      itemName: 'Gold Ring',
+      categoryName: 'Ring',
+      metalType: 'gold',
+      grossWeight: 10,
+      netWeight: 9,
+    });
+
+    expect(tx.category.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'cat-ring' },
+        data: { nextSequence: { increment: 1 } },
+      }),
+    );
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tagNumber: 'RG-05' }),
+      }),
+    );
+  });
+
+  it('skips tag numbers already taken by legacy manual tags', async () => {
+    const { service, prisma, tx } = createService();
+    prisma.category.findFirst.mockResolvedValue({ id: 'cat-ring' });
+    tx.category.findFirst.mockResolvedValue({ prefix: 'RG' });
+    tx.category.update
+      .mockResolvedValueOnce({ prefix: 'RG', nextSequence: 2 })
+      .mockResolvedValueOnce({ prefix: 'RG', nextSequence: 3 });
+    tx.inventoryItem.findFirst
+      .mockResolvedValueOnce({ id: 'legacy' }) // RG-01 taken manually
+      .mockResolvedValueOnce(null);
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: 'item-1', ...data }),
+    );
+
+    await service.create('tenant-1', {
+      itemName: 'Gold Ring',
+      categoryName: 'Ring',
+      metalType: 'gold',
+      grossWeight: 10,
+      netWeight: 9,
+    });
+
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tagNumber: 'RG-02' }),
+      }),
+    );
+  });
+
+  it('keeps a caller-provided tag number instead of generating one', async () => {
+    const { service, prisma, tx } = createService();
+    prisma.category.findFirst.mockResolvedValue({ id: 'cat-ring' });
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: 'item-1', ...data }),
+    );
+
+    await service.create('tenant-1', {
+      itemName: 'Gold Ring',
+      categoryName: 'Ring',
+      tagNumber: 'OLD-77',
+      metalType: 'gold',
+      grossWeight: 10,
+      netWeight: 9,
+    });
+
+    expect(tx.category.update).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tagNumber: 'OLD-77' }),
+      }),
+    );
+  });
+
+  it('creates without a tag when the item has no category', async () => {
+    const { service, tx } = createService();
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: 'item-1', ...data }),
+    );
+
+    await service.create('tenant-1', {
+      itemName: 'Loose Item',
+      metalType: 'gold',
+      grossWeight: 5,
+      netWeight: 5,
+    });
+
+    expect(tx.category.update).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tagNumber: undefined }),
       }),
     );
   });

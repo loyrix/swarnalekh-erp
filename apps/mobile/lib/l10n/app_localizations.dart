@@ -2020,6 +2020,138 @@ abstract class AppLocalizations {
   /// **'User Management'**
   String get pageUserManagement;
 
+  /// No description provided for @pageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get pageCategories;
+
+  /// No description provided for @categoryAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Category'**
+  String get categoryAddTitle;
+
+  /// No description provided for @categoryEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Category'**
+  String get categoryEditTitle;
+
+  /// No description provided for @categoryFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Name'**
+  String get categoryFieldName;
+
+  /// No description provided for @categoryFieldPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag Prefix'**
+  String get categoryFieldPrefix;
+
+  /// No description provided for @categoryPrefixHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'2–6 letters, e.g. RG → tags RG-01, RG-02…'**
+  String get categoryPrefixHelp;
+
+  /// No description provided for @categoryFieldMinStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Min Stock'**
+  String get categoryFieldMinStock;
+
+  /// No description provided for @categoryMinStockHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert when in-stock count falls to this level'**
+  String get categoryMinStockHelp;
+
+  /// No description provided for @categorySearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search categories…'**
+  String get categorySearchHint;
+
+  /// No description provided for @categoryNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories found'**
+  String get categoryNoResults;
+
+  /// No description provided for @categoryNoPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'No tag prefix yet'**
+  String get categoryNoPrefix;
+
+  /// No description provided for @categoryTagPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags like {tag}'**
+  String categoryTagPreview(String tag);
+
+  /// No description provided for @categoryInStock.
+  ///
+  /// In en, this message translates to:
+  /// **'In Stock'**
+  String get categoryInStock;
+
+  /// No description provided for @categoryStatusInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get categoryStatusInactive;
+
+  /// No description provided for @categoryStatusLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Stock'**
+  String get categoryStatusLow;
+
+  /// No description provided for @categoryDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Category'**
+  String get categoryDeleteTitle;
+
+  /// No description provided for @categoryDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"? Only empty categories can be deleted.'**
+  String categoryDeleteConfirm(String name);
+
+  /// No description provided for @categoryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Category deleted'**
+  String get categoryDeleted;
+
+  /// No description provided for @errorFailedSaveCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save category'**
+  String get errorFailedSaveCategory;
+
+  /// No description provided for @errorFailedDeleteCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete category'**
+  String get errorFailedDeleteCategory;
+
+  /// No description provided for @validationCategoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a category name'**
+  String get validationCategoryName;
+
+  /// No description provided for @validationCategoryPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefix needs at least 2 letters'**
+  String get validationCategoryPrefix;
+
   /// No description provided for @errorFailedLoadActivityLogs.
   ///
   /// In en, this message translates to:

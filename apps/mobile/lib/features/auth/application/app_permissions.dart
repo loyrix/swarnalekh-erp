@@ -22,6 +22,7 @@ const Set<String> kAdminOnlyRoutes = {
   '/security',
   '/user-management',
   '/shop-profile',
+  '/categories',
 };
 
 /// Pure guard: true when a user with [role] should be redirected away from

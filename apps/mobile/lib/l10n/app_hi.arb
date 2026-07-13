@@ -660,6 +660,42 @@
   "commonErrorBody": "हम इसे लोड नहीं कर सके। कृपया पुनः प्रयास करें।",
   "pageSecurity": "सुरक्षा",
   "pageUserManagement": "यूज़र मैनेजमेंट",
+  "pageCategories": "श्रेणियाँ",
+  "categoryAddTitle": "श्रेणी जोड़ें",
+  "categoryEditTitle": "श्रेणी संपादित करें",
+  "categoryFieldName": "श्रेणी का नाम",
+  "categoryFieldPrefix": "टैग प्रीफ़िक्स",
+  "categoryPrefixHelp": "2–6 अक्षर, जैसे RG → टैग RG-01, RG-02…",
+  "categoryFieldMinStock": "न्यूनतम स्टॉक",
+  "categoryMinStockHelp": "स्टॉक इस स्तर तक गिरने पर अलर्ट मिलेगा",
+  "categorySearchHint": "श्रेणियाँ खोजें…",
+  "categoryNoResults": "कोई श्रेणी नहीं मिली",
+  "categoryNoPrefix": "अभी कोई टैग प्रीफ़िक्स नहीं",
+  "categoryTagPreview": "टैग जैसे {tag}",
+  "@categoryTagPreview": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryInStock": "स्टॉक में",
+  "categoryStatusInactive": "निष्क्रिय",
+  "categoryStatusLow": "कम स्टॉक",
+  "categoryDeleteTitle": "श्रेणी हटाएँ",
+  "categoryDeleteConfirm": "\"{name}\" हटाएँ? केवल खाली श्रेणियाँ ही हटाई जा सकती हैं।",
+  "@categoryDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryDeleted": "श्रेणी हटा दी गई",
+  "errorFailedSaveCategory": "श्रेणी सहेजी नहीं जा सकी",
+  "errorFailedDeleteCategory": "श्रेणी हटाई नहीं जा सकी",
+  "validationCategoryName": "श्रेणी का नाम दर्ज करें",
+  "validationCategoryPrefix": "प्रीफ़िक्स में कम से कम 2 अक्षर चाहिए",
   "errorFailedLoadActivityLogs": "गतिविधि लॉग लोड नहीं हो सके",
   "errorFailedGenerateBackup": "बैकअप जनरेट नहीं हो सका",
   "errorFailedLoadUsers": "उपयोगकर्ता लोड नहीं हो सके",

@@ -80,9 +80,53 @@ export class InventoryService {
 
   async create(tenantId: string, dto: CreateInventoryDto) {
     const categoryId = await this.resolveCategoryId(tenantId, dto);
-    return this.prisma.inventoryItem.create({
-      data: this.toInventoryCreateData(tenantId, { ...dto, categoryId }),
+    return this.prisma.$transaction(async (tx) => {
+      const tagNumber =
+        this.cleanString(dto.tagNumber) ??
+        (categoryId
+          ? await this.nextCategoryTag(tx, tenantId, categoryId)
+          : undefined);
+      return tx.inventoryItem.create({
+        data: this.toInventoryCreateData(tenantId, {
+          ...dto,
+          categoryId,
+          tagNumber,
+        }),
+      });
     });
+  }
+
+  /// Hands out the next RG-01-style tag for the item's category. The atomic
+  /// nextSequence increment row-locks the category, so concurrent creates
+  /// serialize and never share a number; the clash loop only skips numbers
+  /// already taken by manually-entered legacy tags.
+  private async nextCategoryTag(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    categoryId: string,
+  ): Promise<string | undefined> {
+    const category = await tx.category.findFirst({
+      where: { id: categoryId, tenantId },
+      select: { prefix: true },
+    });
+    if (!category?.prefix) return undefined;
+
+    for (;;) {
+      const bumped = await tx.category.update({
+        where: { id: categoryId },
+        data: { nextSequence: { increment: 1 } },
+        select: { prefix: true, nextSequence: true },
+      });
+      const sequence = bumped.nextSequence - 1;
+      const tagNumber = `${bumped.prefix}-${sequence
+        .toString()
+        .padStart(2, '0')}`;
+      const clash = await tx.inventoryItem.findFirst({
+        where: { tenantId, tagNumber },
+        select: { id: true },
+      });
+      if (!clash) return tagNumber;
+    }
   }
 
   async update(tenantId: string, id: string, dto: UpdateInventoryDto) {

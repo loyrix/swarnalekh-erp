@@ -341,6 +341,42 @@
   "commonErrorBody": "We couldn't load this. Please try again.",
   "pageSecurity": "Security",
   "pageUserManagement": "User Management",
+  "pageCategories": "Categories",
+  "categoryAddTitle": "Add Category",
+  "categoryEditTitle": "Edit Category",
+  "categoryFieldName": "Category Name",
+  "categoryFieldPrefix": "Tag Prefix",
+  "categoryPrefixHelp": "2–6 letters, e.g. RG → tags RG-01, RG-02…",
+  "categoryFieldMinStock": "Min Stock",
+  "categoryMinStockHelp": "Alert when in-stock count falls to this level",
+  "categorySearchHint": "Search categories…",
+  "categoryNoResults": "No categories found",
+  "categoryNoPrefix": "No tag prefix yet",
+  "categoryTagPreview": "Tags like {tag}",
+  "@categoryTagPreview": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryInStock": "In Stock",
+  "categoryStatusInactive": "Inactive",
+  "categoryStatusLow": "Low Stock",
+  "categoryDeleteTitle": "Delete Category",
+  "categoryDeleteConfirm": "Delete \"{name}\"? Only empty categories can be deleted.",
+  "@categoryDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryDeleted": "Category deleted",
+  "errorFailedSaveCategory": "Failed to save category",
+  "errorFailedDeleteCategory": "Failed to delete category",
+  "validationCategoryName": "Enter a category name",
+  "validationCategoryPrefix": "Prefix needs at least 2 letters",
   "errorFailedLoadActivityLogs": "Failed to load activity logs",
   "errorFailedGenerateBackup": "Failed to generate backup",
   "errorFailedLoadUsers": "Failed to load users",

@@ -988,6 +988,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pageUserManagement => 'User Management';
 
   @override
+  String get pageCategories => 'Categories';
+
+  @override
+  String get categoryAddTitle => 'Add Category';
+
+  @override
+  String get categoryEditTitle => 'Edit Category';
+
+  @override
+  String get categoryFieldName => 'Category Name';
+
+  @override
+  String get categoryFieldPrefix => 'Tag Prefix';
+
+  @override
+  String get categoryPrefixHelp => '2–6 letters, e.g. RG → tags RG-01, RG-02…';
+
+  @override
+  String get categoryFieldMinStock => 'Min Stock';
+
+  @override
+  String get categoryMinStockHelp =>
+      'Alert when in-stock count falls to this level';
+
+  @override
+  String get categorySearchHint => 'Search categories…';
+
+  @override
+  String get categoryNoResults => 'No categories found';
+
+  @override
+  String get categoryNoPrefix => 'No tag prefix yet';
+
+  @override
+  String categoryTagPreview(String tag) {
+    return 'Tags like $tag';
+  }
+
+  @override
+  String get categoryInStock => 'In Stock';
+
+  @override
+  String get categoryStatusInactive => 'Inactive';
+
+  @override
+  String get categoryStatusLow => 'Low Stock';
+
+  @override
+  String get categoryDeleteTitle => 'Delete Category';
+
+  @override
+  String categoryDeleteConfirm(String name) {
+    return 'Delete \"$name\"? Only empty categories can be deleted.';
+  }
+
+  @override
+  String get categoryDeleted => 'Category deleted';
+
+  @override
+  String get errorFailedSaveCategory => 'Failed to save category';
+
+  @override
+  String get errorFailedDeleteCategory => 'Failed to delete category';
+
+  @override
+  String get validationCategoryName => 'Enter a category name';
+
+  @override
+  String get validationCategoryPrefix => 'Prefix needs at least 2 letters';
+
+  @override
   String get errorFailedLoadActivityLogs => 'Failed to load activity logs';
 
   @override

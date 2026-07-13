@@ -988,6 +988,77 @@ class AppLocalizationsGu extends AppLocalizations {
   String get pageUserManagement => 'યુઝર મેનેજમેન્ટ';
 
   @override
+  String get pageCategories => 'શ્રેણીઓ';
+
+  @override
+  String get categoryAddTitle => 'શ્રેણી ઉમેરો';
+
+  @override
+  String get categoryEditTitle => 'શ્રેણી સંપાદિત કરો';
+
+  @override
+  String get categoryFieldName => 'શ્રેણીનું નામ';
+
+  @override
+  String get categoryFieldPrefix => 'ટૅગ પ્રીફિક્સ';
+
+  @override
+  String get categoryPrefixHelp => '2–6 અક્ષરો, દા.ત. RG → ટૅગ RG-01, RG-02…';
+
+  @override
+  String get categoryFieldMinStock => 'ન્યૂનતમ સ્ટોક';
+
+  @override
+  String get categoryMinStockHelp => 'સ્ટોક આ સ્તરે પહોંચે ત્યારે ચેતવણી મળશે';
+
+  @override
+  String get categorySearchHint => 'શ્રેણીઓ શોધો…';
+
+  @override
+  String get categoryNoResults => 'કોઈ શ્રેણી મળી નથી';
+
+  @override
+  String get categoryNoPrefix => 'હજી કોઈ ટૅગ પ્રીફિક્સ નથી';
+
+  @override
+  String categoryTagPreview(String tag) {
+    return 'ટૅગ જેમ કે $tag';
+  }
+
+  @override
+  String get categoryInStock => 'સ્ટોકમાં';
+
+  @override
+  String get categoryStatusInactive => 'નિષ્ક્રિય';
+
+  @override
+  String get categoryStatusLow => 'ઓછો સ્ટોક';
+
+  @override
+  String get categoryDeleteTitle => 'શ્રેણી કાઢી નાખો';
+
+  @override
+  String categoryDeleteConfirm(String name) {
+    return '\"$name\" કાઢી નાખવી? માત્ર ખાલી શ્રેણીઓ જ કાઢી શકાય છે.';
+  }
+
+  @override
+  String get categoryDeleted => 'શ્રેણી કાઢી નાખી';
+
+  @override
+  String get errorFailedSaveCategory => 'શ્રેણી સાચવી શકાઈ નહીં';
+
+  @override
+  String get errorFailedDeleteCategory => 'શ્રેણી કાઢી શકાઈ નહીં';
+
+  @override
+  String get validationCategoryName => 'શ્રેણીનું નામ દાખલ કરો';
+
+  @override
+  String get validationCategoryPrefix =>
+      'પ્રીફિક્સમાં ઓછામાં ઓછા 2 અક્ષરો જોઈએ';
+
+  @override
   String get errorFailedLoadActivityLogs => 'પ્રવૃત્તિ લોગ લોડ ન થઈ શક્યા';
 
   @override

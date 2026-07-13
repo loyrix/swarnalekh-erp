@@ -16,6 +16,7 @@ import 'package:swarnbook/features/reports/presentation/screens/reports_screen.d
 import 'package:swarnbook/features/search/presentation/screens/search_screen.dart';
 import 'package:swarnbook/features/security/presentation/screens/security_screen.dart';
 import 'package:swarnbook/features/tenant/presentation/screens/tenant_profile_screen.dart';
+import 'package:swarnbook/features/categories/presentation/screens/categories_screen.dart';
 import 'package:swarnbook/features/users/presentation/screens/user_management_screen.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 
@@ -150,6 +151,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: const UserManagementScreen(),
             ),
           ),
+          GoRoute(
+            path: '/categories',
+            pageBuilder: (context, state) => _fadeTransitionPage(
+              key: state.pageKey,
+              child: const CategoriesScreen(),
+            ),
+          ),
         ],
       ),
     ],
@@ -239,6 +247,7 @@ String _getPageTitle(BuildContext context, String location) {
   if (location.startsWith('/shop-profile')) return l10n.pageShopProfile;
   if (location.startsWith('/security')) return l10n.pageSecurity;
   if (location.startsWith('/user-management')) return l10n.pageUserManagement;
+  if (location.startsWith('/categories')) return l10n.pageCategories;
   if (location.startsWith('/dashboard')) return l10n.navDashboard;
   if (location.startsWith('/customers')) return l10n.navCustomers;
   if (location.startsWith('/inventory')) return l10n.navInventory;

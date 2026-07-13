@@ -660,6 +660,42 @@
   "commonErrorBody": "અમે આ લોડ કરી શક્યા નહીં. કૃપા કરીને ફરી પ્રયાસ કરો.",
   "pageSecurity": "સુરક્ષા",
   "pageUserManagement": "યુઝર મેનેજમેન્ટ",
+  "pageCategories": "શ્રેણીઓ",
+  "categoryAddTitle": "શ્રેણી ઉમેરો",
+  "categoryEditTitle": "શ્રેણી સંપાદિત કરો",
+  "categoryFieldName": "શ્રેણીનું નામ",
+  "categoryFieldPrefix": "ટૅગ પ્રીફિક્સ",
+  "categoryPrefixHelp": "2–6 અક્ષરો, દા.ત. RG → ટૅગ RG-01, RG-02…",
+  "categoryFieldMinStock": "ન્યૂનતમ સ્ટોક",
+  "categoryMinStockHelp": "સ્ટોક આ સ્તરે પહોંચે ત્યારે ચેતવણી મળશે",
+  "categorySearchHint": "શ્રેણીઓ શોધો…",
+  "categoryNoResults": "કોઈ શ્રેણી મળી નથી",
+  "categoryNoPrefix": "હજી કોઈ ટૅગ પ્રીફિક્સ નથી",
+  "categoryTagPreview": "ટૅગ જેમ કે {tag}",
+  "@categoryTagPreview": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryInStock": "સ્ટોકમાં",
+  "categoryStatusInactive": "નિષ્ક્રિય",
+  "categoryStatusLow": "ઓછો સ્ટોક",
+  "categoryDeleteTitle": "શ્રેણી કાઢી નાખો",
+  "categoryDeleteConfirm": "\"{name}\" કાઢી નાખવી? માત્ર ખાલી શ્રેણીઓ જ કાઢી શકાય છે.",
+  "@categoryDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryDeleted": "શ્રેણી કાઢી નાખી",
+  "errorFailedSaveCategory": "શ્રેણી સાચવી શકાઈ નહીં",
+  "errorFailedDeleteCategory": "શ્રેણી કાઢી શકાઈ નહીં",
+  "validationCategoryName": "શ્રેણીનું નામ દાખલ કરો",
+  "validationCategoryPrefix": "પ્રીફિક્સમાં ઓછામાં ઓછા 2 અક્ષરો જોઈએ",
   "errorFailedLoadActivityLogs": "પ્રવૃત્તિ લોગ લોડ ન થઈ શક્યા",
   "errorFailedGenerateBackup": "બેકઅપ જનરેટ થઈ શક્યું નહીં",
   "errorFailedLoadUsers": "વપરાશકર્તાઓ લોડ ન થઈ શક્યા",

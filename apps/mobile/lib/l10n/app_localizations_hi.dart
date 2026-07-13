@@ -992,6 +992,77 @@ class AppLocalizationsHi extends AppLocalizations {
   String get pageUserManagement => 'यूज़र मैनेजमेंट';
 
   @override
+  String get pageCategories => 'श्रेणियाँ';
+
+  @override
+  String get categoryAddTitle => 'श्रेणी जोड़ें';
+
+  @override
+  String get categoryEditTitle => 'श्रेणी संपादित करें';
+
+  @override
+  String get categoryFieldName => 'श्रेणी का नाम';
+
+  @override
+  String get categoryFieldPrefix => 'टैग प्रीफ़िक्स';
+
+  @override
+  String get categoryPrefixHelp => '2–6 अक्षर, जैसे RG → टैग RG-01, RG-02…';
+
+  @override
+  String get categoryFieldMinStock => 'न्यूनतम स्टॉक';
+
+  @override
+  String get categoryMinStockHelp => 'स्टॉक इस स्तर तक गिरने पर अलर्ट मिलेगा';
+
+  @override
+  String get categorySearchHint => 'श्रेणियाँ खोजें…';
+
+  @override
+  String get categoryNoResults => 'कोई श्रेणी नहीं मिली';
+
+  @override
+  String get categoryNoPrefix => 'अभी कोई टैग प्रीफ़िक्स नहीं';
+
+  @override
+  String categoryTagPreview(String tag) {
+    return 'टैग जैसे $tag';
+  }
+
+  @override
+  String get categoryInStock => 'स्टॉक में';
+
+  @override
+  String get categoryStatusInactive => 'निष्क्रिय';
+
+  @override
+  String get categoryStatusLow => 'कम स्टॉक';
+
+  @override
+  String get categoryDeleteTitle => 'श्रेणी हटाएँ';
+
+  @override
+  String categoryDeleteConfirm(String name) {
+    return '\"$name\" हटाएँ? केवल खाली श्रेणियाँ ही हटाई जा सकती हैं।';
+  }
+
+  @override
+  String get categoryDeleted => 'श्रेणी हटा दी गई';
+
+  @override
+  String get errorFailedSaveCategory => 'श्रेणी सहेजी नहीं जा सकी';
+
+  @override
+  String get errorFailedDeleteCategory => 'श्रेणी हटाई नहीं जा सकी';
+
+  @override
+  String get validationCategoryName => 'श्रेणी का नाम दर्ज करें';
+
+  @override
+  String get validationCategoryPrefix =>
+      'प्रीफ़िक्स में कम से कम 2 अक्षर चाहिए';
+
+  @override
   String get errorFailedLoadActivityLogs => 'गतिविधि लॉग लोड नहीं हो सके';
 
   @override
