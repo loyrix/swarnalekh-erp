@@ -40,6 +40,7 @@ class DashboardStats {
     required this.totalBillsGenerated,
     required this.soldProductsThisMonth,
     required this.salesTrend,
+    this.categoryStockAlerts = const [],
   });
 
   final double totalGoldStock;
@@ -52,6 +53,9 @@ class DashboardStats {
   final int totalBillsGenerated;
   final int soldProductsThisMonth;
   final List<SalesTrendPoint> salesTrend;
+
+  /// Categories at/below their minimum-stock threshold (or emptied out).
+  final List<CategoryStockAlert> categoryStockAlerts;
 
   static double _num(dynamic value) {
     if (value == null) return 0;
@@ -77,6 +81,44 @@ class DashboardStats {
       totalBillsGenerated: _int(json['totalBillsGenerated']),
       soldProductsThisMonth: _int(json['soldProductsThisMonth']),
       salesTrend: trend,
+      categoryStockAlerts:
+          (json['categoryStockAlerts'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(CategoryStockAlert.fromJson)
+              .toList(),
+    );
+  }
+}
+
+/// One category needing a restock (Dashboard out-of-stock tile).
+class CategoryStockAlert {
+  const CategoryStockAlert({
+    required this.id,
+    required this.name,
+    required this.prefix,
+    required this.inStockCount,
+    required this.minStockThreshold,
+    required this.isOut,
+  });
+
+  final String id;
+  final String name;
+  final String? prefix;
+  final int inStockCount;
+  final int minStockThreshold;
+
+  /// true = nothing left (out of stock); false = at/below threshold (low).
+  final bool isOut;
+
+  factory CategoryStockAlert.fromJson(Map<String, dynamic> json) {
+    final prefix = json['prefix']?.toString().trim() ?? '';
+    return CategoryStockAlert(
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      prefix: prefix.isEmpty ? null : prefix,
+      inStockCount: DashboardStats._int(json['inStockCount']),
+      minStockThreshold: DashboardStats._int(json['minStockThreshold']),
+      isOut: json['severity']?.toString() == 'out',
     );
   }
 }

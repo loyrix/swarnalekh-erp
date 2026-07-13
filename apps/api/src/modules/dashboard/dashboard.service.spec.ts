@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CategoryService } from '../category/category.service';
 import { DashboardService } from './dashboard.service';
 
 const decimal = (value: number) => new Prisma.Decimal(value);
@@ -38,9 +39,17 @@ describe('DashboardService', () => {
       },
     };
 
+    const categoryService = {
+      stockAlerts: jest.fn().mockResolvedValue([]),
+    };
+
     return {
-      service: new DashboardService(prisma as unknown as PrismaService),
+      service: new DashboardService(
+        prisma as unknown as PrismaService,
+        categoryService as unknown as CategoryService,
+      ),
       prisma,
+      categoryService,
     };
   };
 
@@ -129,6 +138,7 @@ describe('DashboardService', () => {
       activeMortgagePrincipal: 100000,
       soldProductsThisMonth: 5,
       salesTrend: expect.any(Array),
+      categoryStockAlerts: [],
     });
     expect(prisma.inventoryItem.findMany).toHaveBeenCalledWith(
       expect.objectContaining({

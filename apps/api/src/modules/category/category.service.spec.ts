@@ -123,6 +123,63 @@ describe('CategoryService', () => {
     ).rejects.toThrow(NotFoundException);
   });
 
+  it('raises stock alerts only for breached thresholds or emptied categories', async () => {
+    const { service, prisma } = createService();
+    const rows = [
+      // Threshold breached → low.
+      {
+        id: 'c1',
+        name: 'Ring',
+        prefix: 'RG',
+        minStockThreshold: 3,
+        active: true,
+      },
+      // Had items, none left → out.
+      {
+        id: 'c2',
+        name: 'Chain',
+        prefix: 'CN',
+        minStockThreshold: 0,
+        active: true,
+      },
+      // Untouched seeded category → quiet.
+      {
+        id: 'c3',
+        name: 'Kada',
+        prefix: 'KD',
+        minStockThreshold: 0,
+        active: true,
+      },
+      // Inactive → quiet even when empty.
+      {
+        id: 'c4',
+        name: 'Haar',
+        prefix: 'HR',
+        minStockThreshold: 5,
+        active: false,
+      },
+    ];
+    prisma.category.findMany
+      .mockResolvedValueOnce(rows) // ensureSeeded scan
+      .mockResolvedValueOnce([]) // leftover scan
+      .mockResolvedValueOnce(rows); // list read
+    prisma.inventoryItem.groupBy
+      .mockResolvedValueOnce([
+        { categoryId: 'c1', _count: { _all: 2 } }, // in stock (≤ 3)
+      ])
+      .mockResolvedValueOnce([
+        { categoryId: 'c1', _count: { _all: 6 } },
+        { categoryId: 'c2', _count: { _all: 4 } }, // all sold
+      ]);
+
+    const alerts = await service.stockAlerts(tenantId);
+
+    expect(alerts).toEqual([
+      expect.objectContaining({ id: 'c1', severity: 'low', inStockCount: 2 }),
+      expect.objectContaining({ id: 'c2', severity: 'out', inStockCount: 0 }),
+    ]);
+  });
+
   it('reports in-stock and total counts per category', async () => {
     const { service, prisma } = createService();
     const rows = [

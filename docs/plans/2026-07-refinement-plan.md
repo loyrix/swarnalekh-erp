@@ -5,7 +5,7 @@
 >
 > Workflow: same rules as [ui-unification-plan.md](ui-unification-plan.md) — phase-by-phase, each phase 100% end-to-end (typed models, 4 UI states, l10n en/hi/gu, tests, analyze/test green) before the next. **Do not start a phase until owner says go.**
 >
-> **Resume pointer: R0–R4 COMPLETE (R3 fd378c8, R4 d1d90ae). No new migrations in R3/R4. Next up = R5 Dashboard (awaiting owner go).**
+> **Resume pointer: ALL PHASES R0–R5 COMPLETE (R5 56760b5, committed not yet pushed). No migrations since R1. One deferred item: global branch selector context (branches aren't modeled — items carry free-text `location`; needs an owner decision on branch as an entity before any UX). Plan finished otherwise.**
 
 ## Phase overview & ordering
 
@@ -18,7 +18,7 @@ Ordering follows the shared-foundation-first rule: theme tokens (R0) and the cat
 | R2    | Add Inventory form rework (req §1)                                                      | R1                  | ✅ done 2026-07-13 |
 | R3    | HUID receipts rework (req §2)                                                           | R1                  | ✅ done 2026-07-13 |
 | R4    | View Inventory + Sold Products rework (req §3–4)                                        | R1 (categories), R0 | ✅ done 2026-07-13 |
-| R5    | Dashboard rework (req §5 + out-of-stock tile)                                           | R1 (thresholds), R0 | ⬜ not started     |
+| R5    | Dashboard rework (req §5 + out-of-stock tile)                                           | R1 (thresholds), R0 | ✅ done 2026-07-13 |
 
 ---
 
@@ -91,6 +91,9 @@ Backend + minimal settings UI that R2–R5 all depend on.
 - Relationship to [ui-unification-plan.md](ui-unification-plan.md): C4 (Supabase image storage) and C5 (full-text search) remain parked; R0 effectively replaces/absorbs "Stage V visual richness" as the visual pass, in the Onyx Champagne theme.
 
 ## Status log
+
+- 2026-07-13 — **R5 COMPLETE (56760b5).** Backend: `CategoryService.stockAlerts(tenantId)` — active categories alert when threshold breached (`minStockThreshold > 0 && inStock <= threshold`, severity `low`) or emptied out (`itemCount > 0 && inStock == 0`, severity `out`); untouched seeded categories never alert so new shops start quiet. Dashboard payload gains `categoryStockAlerts` (DashboardModule imports CategoryModule). +1 category spec, dashboard spec updated — **api 126**. Mobile: dashboard reordered — **overview stat strip above the sales-trend graph** (req §5.1); new `_StockAlertsCard` (error tint if any category is fully out, warning tint otherwise) → tap opens AppDetailSheet split into Out-of-stock / Low-stock sections with "In stock: X · Min: Y" rows; card hidden when nothing alerts. `CategoryStockAlert` model on `DashboardStats`. l10n +4 keys ×3. Tests: +1 parsing, +2 widget (card+sheet tap-through, hidden-when-quiet) — **flutter 190, analyze clean, web build green.**
+- 2026-07-13 — **DEFERRED: global branch selector context** (from req §1.4 "branch picked on dashboard"). Branches are not modeled anywhere — inventory carries a free-text `location`. A dashboard-level branch context needs a Branch entity + per-module filtering; owner decision required on whether to build branch management. The per-item Branch field is already removed (R2), so nothing is blocked.
 
 - 2026-07-13 — **R4 COMPLETE (d1d90ae).** Backend: `getStats` sold-in-period now counts invoice items by **invoice date** (+ manual no-invoice flips by updatedAt) — the updatedAt-proxy bug is gone; stats add `karatBreakdown` (per metal → karat/count/weight, sorted); `getSoldProducts` accepts `period` presets (bare dates = custom) via shared `resolveDateRange` and returns tag/category/karat/netWeight per row (invoice-linked via relation, manual directly). +2 specs, updated stats/sold mocks — **api 125**. Mobile: `InventoryQuery` gains categoryId/dateFrom/dateTo; new `SoldQuery` (search+StatPeriod) keys `soldProductsProvider`; `StatPeriod.resolveRange/toDateQueryParameters` added; `CompactStatStrip` gains per-tile `onTaps`. Screen: ONE filter sheet (metal chips, time-range via StatPeriodSelector, status, category dropdown, branch), quick Gold/Silver chips on the list, sold-period widget REMOVED from stock tab (stats strip = 3 tappable tiles: gold→karat sheet, silver→purity sheet, products→metal counts via AppDetailSheet), out-of-stock alert chip removed (Dashboard R5), Sold tab gains its own period selector + rich rows (tag • category • karat / invoice • date • customer / price • net • payment). `inventoryStatsProvider` + repo `getStats` deleted (dead after consolidation). l10n +6 keys ×3. Tests: +3 model, +2 widget (tap-through karat sheet, quick chips) — **flutter 187, analyze clean, web build green.** Open question resolved: the consolidated time filter DOES filter the in-stock list (created date).
 

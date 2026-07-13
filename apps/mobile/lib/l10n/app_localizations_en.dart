@@ -939,6 +939,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryPiecesSuffix => 'pcs';
 
   @override
+  String get dashboardStockAlertsTitle => 'Out of Stock';
+
+  @override
+  String dashboardStockAlertsSubtitle(int count) {
+    return '$count categories need restocking';
+  }
+
+  @override
+  String get dashboardStockAlertOut => 'Out of stock';
+
+  @override
+  String get dashboardStockAlertLow => 'Low stock';
+
+  @override
+  String dashboardStockAlertCounts(int inStock, int minStock) {
+    return 'In stock: $inStock · Min: $minStock';
+  }
+
+  @override
   String get inventoryMilligrams => 'Milligrams';
 
   @override

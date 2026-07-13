@@ -318,6 +318,28 @@
   "inventoryGoldByKarat": "કેરેટ પ્રમાણે સોનું",
   "inventorySilverByPurity": "શુદ્ધતા પ્રમાણે ચાંદી",
   "inventoryPiecesSuffix": "નંગ",
+  "dashboardStockAlertsTitle": "સ્ટોક ખલાસ",
+  "dashboardStockAlertsSubtitle": "{count} શ્રેણીઓમાં રીસ્ટોકની જરૂર છે",
+  "@dashboardStockAlertsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardStockAlertOut": "સ્ટોક ખલાસ",
+  "dashboardStockAlertLow": "ઓછો સ્ટોક",
+  "dashboardStockAlertCounts": "સ્ટોકમાં: {inStock} · ન્યૂનતમ: {minStock}",
+  "@dashboardStockAlertCounts": {
+    "placeholders": {
+      "inStock": {
+        "type": "int"
+      },
+      "minStock": {
+        "type": "int"
+      }
+    }
+  },
   "inventoryMilligrams": "મિલિગ્રામ",
   "inventoryMakingModePerGram": "પ્રતિ ગ્રામ",
   "inventoryMakingModeFixed": "ફિક્સ્ડ",

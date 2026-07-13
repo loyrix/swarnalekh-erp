@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { calculateMortgagePayable } from '@swarnbook/business-logic';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { CategoryService } from '../category/category.service.js';
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly categoryService: CategoryService,
+  ) {}
 
   private toNumber(value: unknown): number {
     if (value == null) return 0;
@@ -186,6 +190,8 @@ export class DashboardService {
     const soldProductsThisMonth = monthlySoldItemsObj._sum.quantity ?? 0;
 
     const salesTrend = this.buildSalesTrend(weeklyInvoices, weekStart);
+    const categoryStockAlerts =
+      await this.categoryService.stockAlerts(tenantId);
 
     return {
       totalGoldStock: this.round(totalGoldStock, 3),
@@ -199,6 +205,7 @@ export class DashboardService {
       activeMortgagePrincipal: this.round(activeMortgagePrincipal),
       soldProductsThisMonth,
       salesTrend,
+      categoryStockAlerts,
     };
   }
 

@@ -318,6 +318,28 @@
   "inventoryGoldByKarat": "कैरेट के अनुसार सोना",
   "inventorySilverByPurity": "शुद्धता के अनुसार चांदी",
   "inventoryPiecesSuffix": "नग",
+  "dashboardStockAlertsTitle": "स्टॉक खत्म",
+  "dashboardStockAlertsSubtitle": "{count} श्रेणियों में रीस्टॉक की ज़रूरत है",
+  "@dashboardStockAlertsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardStockAlertOut": "स्टॉक खत्म",
+  "dashboardStockAlertLow": "कम स्टॉक",
+  "dashboardStockAlertCounts": "स्टॉक में: {inStock} · न्यूनतम: {minStock}",
+  "@dashboardStockAlertCounts": {
+    "placeholders": {
+      "inStock": {
+        "type": "int"
+      },
+      "minStock": {
+        "type": "int"
+      }
+    }
+  },
   "inventoryMilligrams": "मिलिग्राम",
   "inventoryMakingModePerGram": "प्रति ग्राम",
   "inventoryMakingModeFixed": "फिक्स्ड",

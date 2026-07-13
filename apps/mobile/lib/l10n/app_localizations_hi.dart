@@ -942,6 +942,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get inventoryPiecesSuffix => 'नग';
 
   @override
+  String get dashboardStockAlertsTitle => 'स्टॉक खत्म';
+
+  @override
+  String dashboardStockAlertsSubtitle(int count) {
+    return '$count श्रेणियों में रीस्टॉक की ज़रूरत है';
+  }
+
+  @override
+  String get dashboardStockAlertOut => 'स्टॉक खत्म';
+
+  @override
+  String get dashboardStockAlertLow => 'कम स्टॉक';
+
+  @override
+  String dashboardStockAlertCounts(int inStock, int minStock) {
+    return 'स्टॉक में: $inStock · न्यूनतम: $minStock';
+  }
+
+  @override
   String get inventoryMilligrams => 'मिलिग्राम';
 
   @override

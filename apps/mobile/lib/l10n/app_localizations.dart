@@ -1924,6 +1924,36 @@ abstract class AppLocalizations {
   /// **'pcs'**
   String get inventoryPiecesSuffix;
 
+  /// No description provided for @dashboardStockAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Stock'**
+  String get dashboardStockAlertsTitle;
+
+  /// No description provided for @dashboardStockAlertsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} categories need restocking'**
+  String dashboardStockAlertsSubtitle(int count);
+
+  /// No description provided for @dashboardStockAlertOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of stock'**
+  String get dashboardStockAlertOut;
+
+  /// No description provided for @dashboardStockAlertLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
+  String get dashboardStockAlertLow;
+
+  /// No description provided for @dashboardStockAlertCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'In stock: {inStock} · Min: {minStock}'**
+  String dashboardStockAlertCounts(int inStock, int minStock);
+
   /// No description provided for @inventoryMilligrams.
   ///
   /// In en, this message translates to:

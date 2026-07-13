@@ -79,6 +79,31 @@ export class CategoryService {
     }));
   }
 
+  /// Categories needing attention on the Dashboard (req §3.2 / R5).
+  /// A category alerts when it is active AND either its owner-set threshold
+  /// is breached (threshold > 0, in-stock at/below it) or it has stock
+  /// history but nothing left (out of stock). Untouched seeded categories
+  /// (no items, no threshold) never alert — a new shop starts quiet.
+  async stockAlerts(tenantId: string) {
+    const categories = await this.list(tenantId);
+    return categories
+      .filter((category) => category.active)
+      .filter(
+        (category) =>
+          (category.minStockThreshold > 0 &&
+            category.inStockCount <= category.minStockThreshold) ||
+          (category.itemCount > 0 && category.inStockCount === 0),
+      )
+      .map((category) => ({
+        id: category.id,
+        name: category.name,
+        prefix: category.prefix,
+        inStockCount: category.inStockCount,
+        minStockThreshold: category.minStockThreshold,
+        severity: category.inStockCount === 0 ? 'out' : 'low',
+      }));
+  }
+
   async create(tenantId: string, dto: CreateCategoryDto) {
     const name = dto.name.trim();
     if (!name) throw new ConflictException('Category name is required');

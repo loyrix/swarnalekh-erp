@@ -938,6 +938,25 @@ class AppLocalizationsGu extends AppLocalizations {
   String get inventoryPiecesSuffix => 'નંગ';
 
   @override
+  String get dashboardStockAlertsTitle => 'સ્ટોક ખલાસ';
+
+  @override
+  String dashboardStockAlertsSubtitle(int count) {
+    return '$count શ્રેણીઓમાં રીસ્ટોકની જરૂર છે';
+  }
+
+  @override
+  String get dashboardStockAlertOut => 'સ્ટોક ખલાસ';
+
+  @override
+  String get dashboardStockAlertLow => 'ઓછો સ્ટોક';
+
+  @override
+  String dashboardStockAlertCounts(int inStock, int minStock) {
+    return 'સ્ટોકમાં: $inStock · ન્યૂનતમ: $minStock';
+  }
+
+  @override
   String get inventoryMilligrams => 'મિલિગ્રામ';
 
   @override

@@ -9,11 +9,15 @@ import 'package:swarnbook/features/dashboard/data/models/dashboard_data.dart';
 import 'package:swarnbook/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 
-DashboardData _fixture({String role = 'owner'}) => DashboardData(
+DashboardData _fixture({
+  String role = 'owner',
+  List<CategoryStockAlert> stockAlerts = const [],
+}) => DashboardData(
   userName: 'Asha',
   role: role,
   shopName: 'Kundan Jewellers',
-  stats: const DashboardStats(
+  stats: DashboardStats(
+    categoryStockAlerts: stockAlerts,
     totalGoldStock: 21,
     totalSilverStock: 150,
     totalInventoryValue: 139250,
@@ -81,6 +85,81 @@ void main() {
       expect(data.stats.totalGoldStock, 0);
       expect(data.stats.activeLoans, 0);
       expect(data.stats.salesTrend, isEmpty);
+    });
+  });
+
+  group('Stock alerts', () {
+    test('parses categoryStockAlerts from the stats payload', () {
+      final stats = DashboardStats.fromJson(const {
+        'categoryStockAlerts': [
+          {
+            'id': 'c1',
+            'name': 'Ring',
+            'prefix': 'RG',
+            'inStockCount': 0,
+            'minStockThreshold': 2,
+            'severity': 'out',
+          },
+        ],
+      });
+      final alert = stats.categoryStockAlerts.single;
+      expect(alert.name, 'Ring');
+      expect(alert.prefix, 'RG');
+      expect(alert.isOut, isTrue);
+      expect(alert.minStockThreshold, 2);
+    });
+
+    testWidgets('shows the alert card and opens the category breakdown', (
+      tester,
+    ) async {
+      final data = _fixture(
+        stockAlerts: const [
+          CategoryStockAlert(
+            id: 'c1',
+            name: 'Ring',
+            prefix: 'RG',
+            inStockCount: 0,
+            minStockThreshold: 2,
+            isOut: true,
+          ),
+          CategoryStockAlert(
+            id: 'c2',
+            name: 'Chain',
+            prefix: 'CN',
+            inStockCount: 1,
+            minStockThreshold: 3,
+            isOut: false,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        _host([dashboardProvider.overrideWith((ref) async => data)]),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+
+      expect(find.text('2 categories need restocking'), findsOneWidget);
+
+      await tester.tap(find.text('2 categories need restocking'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Ring (RG)'), findsOneWidget);
+      expect(find.text('Chain (CN)'), findsOneWidget);
+      expect(find.text('In stock: 1 · Min: 3'), findsOneWidget);
+    });
+
+    testWidgets('hides the alert card when nothing needs restocking', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host([dashboardProvider.overrideWith((ref) async => _fixture())]),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+
+      expect(find.textContaining('restocking'), findsNothing);
     });
   });
 

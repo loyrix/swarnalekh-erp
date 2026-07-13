@@ -318,6 +318,28 @@
   "inventoryGoldByKarat": "Gold by Karat",
   "inventorySilverByPurity": "Silver by Purity",
   "inventoryPiecesSuffix": "pcs",
+  "dashboardStockAlertsTitle": "Out of Stock",
+  "dashboardStockAlertsSubtitle": "{count} categories need restocking",
+  "@dashboardStockAlertsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardStockAlertOut": "Out of stock",
+  "dashboardStockAlertLow": "Low stock",
+  "dashboardStockAlertCounts": "In stock: {inStock} · Min: {minStock}",
+  "@dashboardStockAlertCounts": {
+    "placeholders": {
+      "inStock": {
+        "type": "int"
+      },
+      "minStock": {
+        "type": "int"
+      }
+    }
+  },
   "inventoryMilligrams": "Milligrams",
   "inventoryMakingModePerGram": "Per Gram",
   "inventoryMakingModeFixed": "Fixed",

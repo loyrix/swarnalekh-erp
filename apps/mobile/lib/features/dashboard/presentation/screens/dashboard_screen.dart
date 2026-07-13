@@ -49,14 +49,23 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         StaggeredSection(index: 1, child: _QuickActions(role: data.role)),
         const SizedBox(height: AppSpacing.lg),
+        // Overview before the trend graph (req §5.1) — the numbers are what
+        // the owner checks first.
         StaggeredSection(
           index: 2,
-          child: _SalesTrendChart(points: data.stats.salesTrend),
+          child: CompactStatStrip(stats: _stats(context, data.stats, isWide)),
         ),
+        if (data.stats.categoryStockAlerts.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.lg),
+          StaggeredSection(
+            index: 3,
+            child: _StockAlertsCard(alerts: data.stats.categoryStockAlerts),
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
         StaggeredSection(
-          index: 3,
-          child: CompactStatStrip(stats: _stats(context, data.stats, isWide)),
+          index: 4,
+          child: _SalesTrendChart(points: data.stats.salesTrend),
         ),
       ],
     );
@@ -125,6 +134,114 @@ class _DashboardContent extends StatelessWidget {
         color: AppColors.primary,
       ),
     ];
+  }
+}
+
+// ==========================================================================
+// STOCK ALERTS (out of stock / low stock by category threshold — req §3.2)
+// ==========================================================================
+
+class _StockAlertsCard extends StatelessWidget {
+  const _StockAlertsCard({required this.alerts});
+
+  final List<CategoryStockAlert> alerts;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final outCount = alerts.where((a) => a.isOut).length;
+    final color = outCount > 0 ? AppColors.error : AppColors.warning;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        onTap: () => _showAlerts(context, l10n),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: color.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.production_quantity_limits_rounded, color: color),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.dashboardStockAlertsTitle,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    Text(
+                      l10n.dashboardStockAlertsSubtitle(alerts.length),
+                      style: TextStyle(
+                        color: AppColors.text2(context),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.text3(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAlerts(BuildContext context, AppLocalizations l10n) {
+    final out = alerts.where((a) => a.isOut).toList();
+    final low = alerts.where((a) => !a.isOut).toList();
+    AppDetailSheet.show(
+      context,
+      title: l10n.dashboardStockAlertsTitle,
+      sections: [
+        if (out.isNotEmpty)
+          AppDetailSection(
+            heading: l10n.dashboardStockAlertOut,
+            rows: [
+              for (final alert in out)
+                AppDetailRow(
+                  alert.prefix == null
+                      ? alert.name
+                      : '${alert.name} (${alert.prefix})',
+                  l10n.dashboardStockAlertCounts(
+                    alert.inStockCount,
+                    alert.minStockThreshold,
+                  ),
+                ),
+            ],
+          ),
+        if (low.isNotEmpty)
+          AppDetailSection(
+            heading: l10n.dashboardStockAlertLow,
+            rows: [
+              for (final alert in low)
+                AppDetailRow(
+                  alert.prefix == null
+                      ? alert.name
+                      : '${alert.name} (${alert.prefix})',
+                  l10n.dashboardStockAlertCounts(
+                    alert.inStockCount,
+                    alert.minStockThreshold,
+                  ),
+                ),
+            ],
+          ),
+      ],
+    );
   }
 }
 
