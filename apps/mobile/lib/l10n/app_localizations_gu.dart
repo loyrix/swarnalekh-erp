@@ -899,6 +899,30 @@ class AppLocalizationsGu extends AppLocalizations {
   String get inventoryGrams => 'ગ્રામ';
 
   @override
+  String get inventoryGramsSuffix => 'g';
+
+  @override
+  String get inventoryTagAutoHint =>
+      'ટૅગ નંબર શ્રેણીમાંથી આપમેળે બને છે (દા.ત. RG-01)';
+
+  @override
+  String get inventoryTakePhoto => 'ફોટો લો';
+
+  @override
+  String get inventoryNetWeightHint =>
+      'આપમેળે ગણતરી: કુલ વજનમાંથી સ્ટોન વજન બાદ કરીને';
+
+  @override
+  String get validationCategoryRequired => 'શ્રેણી પસંદ કરો';
+
+  @override
+  String get validationStoneExceedsGross =>
+      'સ્ટોન વજન કુલ વજન કરતાં ઓછું હોવું જોઈએ';
+
+  @override
+  String get commonLoading => 'લોડ થઈ રહ્યું છે…';
+
+  @override
   String get inventoryMilligrams => 'મિલિગ્રામ';
 
   @override
@@ -1896,9 +1920,6 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get inventoryReadingHuid => 'HUID રસીદ વાંચી રહ્યું છે...';
-
-  @override
-  String get inventoryTakePhoto => 'ફોટો લો';
 
   @override
   String get inventoryChooseFromGallery => 'ગેલેરીમાંથી પસંદ કરો';

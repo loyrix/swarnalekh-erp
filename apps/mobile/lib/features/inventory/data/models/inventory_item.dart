@@ -8,6 +8,7 @@ class InventoryItem {
     required this.itemName,
     required this.tagNumber,
     required this.designNumber,
+    this.categoryId,
     required this.categoryName,
     required this.metalType,
     required this.stockType,
@@ -33,6 +34,7 @@ class InventoryItem {
   final String? itemName;
   final String? tagNumber;
   final String? designNumber;
+  final String? categoryId;
   final String? categoryName;
   final String metalType;
   final String stockType;
@@ -89,6 +91,9 @@ class InventoryItem {
       tagNumber: _strOrNull(json['tagNumber']),
       designNumber:
           _strOrNull(json['designNumber']) ?? _strOrNull(json['barcode']),
+      categoryId:
+          _strOrNull(json['categoryId']) ??
+          (json['category'] is Map ? _strOrNull(json['category']['id']) : null),
       categoryName: _strOrNull(category),
       metalType: (json['metalType'] ?? 'gold').toString(),
       stockType: (json['stockType'] ?? 'unique').toString(),

@@ -903,6 +903,30 @@ class AppLocalizationsHi extends AppLocalizations {
   String get inventoryGrams => 'ग्राम';
 
   @override
+  String get inventoryGramsSuffix => 'g';
+
+  @override
+  String get inventoryTagAutoHint =>
+      'टैग नंबर श्रेणी से अपने-आप बनता है (जैसे RG-01)';
+
+  @override
+  String get inventoryTakePhoto => 'फोटो लें';
+
+  @override
+  String get inventoryNetWeightHint =>
+      'अपने-आप गणना: सकल वज़न में से स्टोन वज़न घटाकर';
+
+  @override
+  String get validationCategoryRequired => 'श्रेणी चुनें';
+
+  @override
+  String get validationStoneExceedsGross =>
+      'स्टोन वज़न सकल वज़न से कम होना चाहिए';
+
+  @override
+  String get commonLoading => 'लोड हो रहा है…';
+
+  @override
   String get inventoryMilligrams => 'मिलिग्राम';
 
   @override
@@ -1902,9 +1926,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get inventoryReadingHuid => 'HUID रसीद पढ़ी जा रही है...';
-
-  @override
-  String get inventoryTakePhoto => 'फोटो लें';
 
   @override
   String get inventoryChooseFromGallery => 'गैलरी से चुनें';

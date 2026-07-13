@@ -26,8 +26,10 @@ String inventoryPurityText(InventoryItem item) {
   return '—';
 }
 
+// Tag number is the item's identity (RG-01…); legacy design numbers only
+// surface when an old item never got a tag.
 String inventoryDesignTag(InventoryItem item) =>
-    item.designNumber ?? item.tagNumber ?? '—';
+    item.tagNumber ?? item.designNumber ?? '—';
 
 String inventoryShortDate(String? value) {
   if (value == null || value.isEmpty) return '—';

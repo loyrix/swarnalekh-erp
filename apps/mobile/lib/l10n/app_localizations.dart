@@ -1852,6 +1852,48 @@ abstract class AppLocalizations {
   /// **'Grams'**
   String get inventoryGrams;
 
+  /// No description provided for @inventoryGramsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'g'**
+  String get inventoryGramsSuffix;
+
+  /// No description provided for @inventoryTagAutoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag number is auto-generated from the category (e.g. RG-01)'**
+  String get inventoryTagAutoHint;
+
+  /// No description provided for @inventoryTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get inventoryTakePhoto;
+
+  /// No description provided for @inventoryNetWeightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-calculated: gross weight minus stone weight'**
+  String get inventoryNetWeightHint;
+
+  /// No description provided for @validationCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a category'**
+  String get validationCategoryRequired;
+
+  /// No description provided for @validationStoneExceedsGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Stone weight must be less than gross weight'**
+  String get validationStoneExceedsGross;
+
+  /// No description provided for @commonLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get commonLoading;
+
   /// No description provided for @inventoryMilligrams.
   ///
   /// In en, this message translates to:
@@ -3759,12 +3801,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reading HUID receipt...'**
   String get inventoryReadingHuid;
-
-  /// No description provided for @inventoryTakePhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Take photo'**
-  String get inventoryTakePhoto;
 
   /// No description provided for @inventoryChooseFromGallery.
   ///

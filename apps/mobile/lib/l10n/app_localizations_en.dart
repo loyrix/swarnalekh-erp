@@ -900,6 +900,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryGrams => 'Grams';
 
   @override
+  String get inventoryGramsSuffix => 'g';
+
+  @override
+  String get inventoryTagAutoHint =>
+      'Tag number is auto-generated from the category (e.g. RG-01)';
+
+  @override
+  String get inventoryTakePhoto => 'Take photo';
+
+  @override
+  String get inventoryNetWeightHint =>
+      'Auto-calculated: gross weight minus stone weight';
+
+  @override
+  String get validationCategoryRequired => 'Select a category';
+
+  @override
+  String get validationStoneExceedsGross =>
+      'Stone weight must be less than gross weight';
+
+  @override
+  String get commonLoading => 'Loading…';
+
+  @override
   String get inventoryMilligrams => 'Milligrams';
 
   @override
@@ -1896,9 +1920,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryReadingHuid => 'Reading HUID receipt...';
-
-  @override
-  String get inventoryTakePhoto => 'Take photo';
 
   @override
   String get inventoryChooseFromGallery => 'Choose from gallery';

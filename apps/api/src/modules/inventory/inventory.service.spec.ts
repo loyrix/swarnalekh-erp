@@ -442,6 +442,21 @@ describe('InventoryService', () => {
     );
   });
 
+  it('rejects a categoryId that belongs to another tenant', async () => {
+    const { service, prisma } = createService();
+    prisma.category.findFirst.mockResolvedValue(null); // not owned
+
+    await expect(
+      service.create('tenant-1', {
+        itemName: 'Gold Ring',
+        categoryId: 'foreign-cat',
+        metalType: 'gold',
+        grossWeight: 10,
+        netWeight: 9,
+      }),
+    ).rejects.toThrow('Unknown category');
+  });
+
   it('creates without a tag when the item has no category', async () => {
     const { service, tx } = createService();
     tx.inventoryItem.create.mockImplementation(({ data }) =>

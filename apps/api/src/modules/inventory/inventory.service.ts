@@ -701,7 +701,15 @@ export class InventoryService {
   }
 
   private async resolveCategoryId(tenantId: string, dto: CreateInventoryDto) {
-    if (dto.categoryId) return dto.categoryId;
+    if (dto.categoryId) {
+      // Never trust a client-supplied id across tenants.
+      const owned = await this.prisma.category.findFirst({
+        where: { id: dto.categoryId, tenantId },
+        select: { id: true },
+      });
+      if (!owned) throw new BadRequestException('Unknown category');
+      return dto.categoryId;
+    }
     const categoryName = this.cleanString(dto.categoryName);
     if (!categoryName) return undefined;
 

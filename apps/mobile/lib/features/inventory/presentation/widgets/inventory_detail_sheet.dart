@@ -18,14 +18,9 @@ Future<void> showInventoryDetail(BuildContext context, InventoryItem item) {
         heading: l10n.inventoryProductInfo,
         rows: [
           AppDetailRow(l10n.inventoryProductName, item.itemName ?? '—'),
-          AppDetailRow(l10n.inventoryProductCode, item.tagNumber ?? '—'),
-          AppDetailRow(
-            l10n.inventoryFieldDesignNumber,
-            inventoryDesignTag(item),
-          ),
+          AppDetailRow(l10n.inventoryFieldTagNumber, inventoryDesignTag(item)),
           AppDetailRow(l10n.inventoryFieldCategory, item.categoryName ?? '—'),
           AppDetailRow(l10n.inventoryColumnPurity, inventoryPurityText(item)),
-          AppDetailRow(l10n.inventoryFieldBranch, item.location ?? '—'),
         ],
       ),
       AppDetailSection(

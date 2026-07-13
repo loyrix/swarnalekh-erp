@@ -2,15 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
+import 'package:swarnbook/features/categories/application/categories_providers.dart';
+import 'package:swarnbook/features/categories/data/models/shop_category.dart';
 import 'package:swarnbook/features/inventory/application/inventory_providers.dart';
 import 'package:swarnbook/features/inventory/data/models/inventory_item.dart';
 import 'package:swarnbook/features/inventory/presentation/screens/inventory_form_page.dart';
 import 'package:swarnbook/features/inventory/presentation/screens/inventory_list_screen.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 
+final _categories = [
+  ShopCategory.fromJson(const {
+    'id': 'cat-ring',
+    'name': 'Ring',
+    'prefix': 'RG',
+    'minStockThreshold': 0,
+    'active': true,
+  }),
+  ShopCategory.fromJson(const {
+    'id': 'cat-chain',
+    'name': 'Chain',
+    'prefix': 'CN',
+    'minStockThreshold': 0,
+    'active': true,
+  }),
+];
+
 Widget _host(Widget home, {List<Override> overrides = const []}) =>
     ProviderScope(
-      overrides: overrides,
+      overrides: [
+        categoriesProvider.overrideWith((ref) async => _categories),
+        ...overrides,
+      ],
       child: MaterialApp(
         theme: buildLightTheme(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -22,6 +44,8 @@ Widget _host(Widget home, {List<Override> overrides = const []}) =>
 InventoryItem _item() => InventoryItem.fromJson({
   'id': 'i1',
   'itemName': 'Gold Ring',
+  'tagNumber': 'RG-07',
+  'categoryId': 'cat-ring',
   'metalType': 'gold',
   'karat': '22K',
   'grossWeight': 5.0,
@@ -47,16 +71,18 @@ void main() {
       expect(find.byType(InventoryFormPage), findsOneWidget);
     });
 
-    testWidgets('prefills fields from a typed item in edit mode', (
+    testWidgets('prefills name, tag, and category in edit mode', (
       tester,
     ) async {
       await tester.pumpWidget(_host(InventoryFormPage(item: _item())));
       await tester.pump();
 
       expect(find.text('Gold Ring'), findsOneWidget); // name prefilled
+      expect(find.text('RG-07'), findsOneWidget); // read-only tag shown
+      expect(find.text('Ring (RG)'), findsOneWidget); // category preselected
     });
 
-    testWidgets('requires a karat before saving (dynamic pricing needs it)', (
+    testWidgets('requires a karat and a category before saving', (
       tester,
     ) async {
       await tester.pumpWidget(_host(const InventoryFormPage()));
@@ -67,7 +93,39 @@ void main() {
 
       // Karat is mandatory so every item can be priced from the daily rate.
       expect(find.text('Karat / purity is required'), findsOneWidget);
+      // Category is mandatory: it drives the auto-generated tag number.
+      expect(find.text('Select a category'), findsOneWidget);
       expect(find.byType(InventoryFormPage), findsOneWidget);
+    });
+
+    testWidgets('auto-calculates net weight as gross minus stone', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const InventoryFormPage()));
+      await tester.pump();
+
+      final gross = find.widgetWithText(TextFormField, 'Gross Weight *');
+      final stone = find.widgetWithText(TextFormField, 'Stone Weight (g)');
+      await tester.enterText(gross, '10.5');
+      await tester.enterText(stone, '2.25');
+      await tester.pump();
+
+      expect(find.text('8.25'), findsOneWidget); // derived net weight
+    });
+
+    testWidgets('has no design number, price, or branch fields', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const InventoryFormPage()));
+      await tester.pump();
+
+      expect(find.text('Design Number'), findsNothing);
+      expect(find.textContaining('Selling Price'), findsNothing);
+      expect(find.textContaining('Purchase'), findsNothing);
+      expect(find.textContaining('Making'), findsNothing);
+      expect(find.textContaining('Branch'), findsNothing);
+      expect(find.textContaining('Milligrams'), findsNothing);
+      expect(find.textContaining('Image URL'), findsNothing);
     });
   });
 
