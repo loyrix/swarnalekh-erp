@@ -1,0 +1,259 @@
+<title>Swarnalekh — Emerald Durbar</title>
+<style>
+  :root {
+    --bg:#E9EFE9; --surface:#FBFDF9; --surface-2:#EFF4ED; --border:#D5DFD2; --line:#E3EAE0;
+    --text:#122620; --muted:#4B615A; --faint:#889A90;
+    --accent:#177A5A; --accent-ink:#0F5A42; --accent-bright:#2AA178; --accent-tint:rgba(23,122,90,.10); --accent-line:rgba(23,122,90,.24); --on-accent:#FFFFFF;
+    --gold:#A9791F; --gold-2:#C79A3E; --gold-tint:rgba(169,121,31,.12);
+    --silver:#8A94A0; --platinum:#4E8F86; --diamond:#4E86D6; --rose:#C07862;
+    --ok:#2F9A5F; --info:#3F72D6; --warn:#C67D18; --danger:#CB463F;
+    --shadow:0 1px 2px rgba(20,40,30,.05),0 8px 24px rgba(20,40,30,.06); --glow:none;
+    --serif:"Palatino Linotype","Book Antiqua",Palatino,"Iowan Old Style",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --r-lg:18px; --r-md:13px; --r-sm:10px; --r-pill:999px;
+  }
+  @media (prefers-color-scheme: dark){ :root{ color-scheme:dark;
+    --bg:#08110D; --surface:#0F1813; --surface-2:#15211B; --border:#22332B; --line:#182420;
+    --text:#EAF3ED; --muted:#98B0A4; --faint:#647A70;
+    --accent:#3BBE8E; --accent-ink:#59D0A5; --accent-bright:#59D0A5; --accent-tint:rgba(59,190,142,.14); --accent-line:rgba(59,190,142,.3); --on-accent:#05140E;
+    --gold:#CFA451; --gold-2:#E1C079; --gold-tint:rgba(207,164,81,.14);
+    --silver:#AEB6C1; --platinum:#6FB8AC; --diamond:#7FB0EE; --rose:#D89279;
+    --ok:#4BBE7C; --info:#6D9BF2; --warn:#E4A23C; --danger:#E5605A;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.45); --glow:0 0 40px rgba(59,190,142,.08);
+  }}
+  :root[data-theme="light"]{ color-scheme:light;
+    --bg:#E9EFE9;--surface:#FBFDF9;--surface-2:#EFF4ED;--border:#D5DFD2;--line:#E3EAE0;--text:#122620;--muted:#4B615A;--faint:#889A90;
+    --accent:#177A5A;--accent-ink:#0F5A42;--accent-bright:#2AA178;--accent-tint:rgba(23,122,90,.10);--accent-line:rgba(23,122,90,.24);--on-accent:#FFFFFF;
+    --gold:#A9791F;--gold-2:#C79A3E;--gold-tint:rgba(169,121,31,.12);--silver:#8A94A0;--platinum:#4E8F86;--diamond:#4E86D6;--rose:#C07862;
+    --ok:#2F9A5F;--info:#3F72D6;--warn:#C67D18;--danger:#CB463F;--shadow:0 1px 2px rgba(20,40,30,.05),0 8px 24px rgba(20,40,30,.06);--glow:none;
+  }
+  :root[data-theme="dark"]{ color-scheme:dark;
+    --bg:#08110D;--surface:#0F1813;--surface-2:#15211B;--border:#22332B;--line:#182420;--text:#EAF3ED;--muted:#98B0A4;--faint:#647A70;
+    --accent:#3BBE8E;--accent-ink:#59D0A5;--accent-bright:#59D0A5;--accent-tint:rgba(59,190,142,.14);--accent-line:rgba(59,190,142,.3);--on-accent:#05140E;
+    --gold:#CFA451;--gold-2:#E1C079;--gold-tint:rgba(207,164,81,.14);--silver:#AEB6C1;--platinum:#6FB8AC;--diamond:#7FB0EE;--rose:#D89279;
+    --ok:#4BBE7C;--info:#6D9BF2;--warn:#E4A23C;--danger:#E5605A;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.45);--glow:0 0 40px rgba(59,190,142,.08);
+  }
+  /* SHARED BASE ↓ (identical across the concept set) */
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(1100px 480px at 82% -8%,var(--accent-tint),transparent 60%);}
+  .wrap{max-width:1220px;margin:0 auto;padding:0 22px 64px}
+  .tnum{font-variant-numeric:tabular-nums}
+  header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .bar{max-width:1220px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;gap:16px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .mark{width:38px;height:38px;border-radius:var(--r-sm);display:grid;place-items:center;background:linear-gradient(150deg,var(--accent-bright),var(--accent));box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 40%,transparent);flex:none;color:var(--on-accent)}
+  .mark svg{width:21px;height:21px}
+  .brand h1{font-family:var(--serif);font-size:21px;letter-spacing:.3px;margin:0;line-height:1;color:var(--text);font-weight:600}
+  .brand .shop{font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.2px}
+  .spacer{flex:1}
+  .search{display:flex;align-items:center;gap:9px;height:38px;padding:0 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-pill);color:var(--faint);font-size:13px;min-width:220px}
+  .iconbtn{width:38px;height:38px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:.18s}
+  .iconbtn:hover{color:var(--accent);border-color:var(--accent-line)}
+  .iconbtn svg{width:18px;height:18px}
+  .avatar{width:38px;height:38px;border-radius:999px;flex:none;background:linear-gradient(150deg,var(--accent-bright),var(--accent));color:var(--on-accent);font-weight:700;font-size:13px;display:grid;place-items:center;font-family:var(--serif)}
+  .hero{margin-top:26px;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--accent-line);background:var(--surface);box-shadow:var(--shadow);position:relative}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 88% 120%,var(--accent-tint),transparent 62%),linear-gradient(120deg,color-mix(in srgb,var(--accent) 7%,var(--surface)),var(--surface) 55%)}
+  .hero-in{position:relative;padding:26px 28px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .greet{flex:1;min-width:260px}
+  .eyebrow{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-ink);font-weight:700;display:flex;align-items:center;gap:8px}
+  .eyebrow::before{content:"";width:16px;height:2px;background:var(--accent);border-radius:2px}
+  .greet h2{font-family:var(--serif);font-weight:600;font-size:27px;margin:12px 0 3px;letter-spacing:.2px}
+  .greet .date{color:var(--muted);font-size:13px}
+  .headline{text-align:right;min-width:220px}
+  .headline .k{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .headline .v{font-family:var(--serif);font-size:44px;font-weight:600;letter-spacing:.5px;line-height:1.05;margin:6px 0}
+  .delta{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent);padding:4px 10px;border-radius:var(--r-pill)}
+  .row-label{display:flex;align-items:center;justify-content:space-between;margin:30px 2px 13px}
+  .row-label .t{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .row-label .t::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--accent)}
+  .pill-select{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent-tint);border:1px solid var(--accent-line);padding:5px 11px;border-radius:var(--r-pill);cursor:pointer}
+  .pill-select svg{width:13px;height:13px}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .18s,border-color .18s}
+  .kpi:hover{transform:translateY(-2px);border-color:var(--accent-line)}
+  .kpi .tile{width:34px;height:34px;border-radius:var(--r-sm);display:grid;place-items:center;margin-bottom:12px}
+  .kpi .tile svg{width:18px;height:18px}
+  .kpi .v{font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:.3px;line-height:1}
+  .kpi .v small{font-size:13px;color:var(--muted);font-family:var(--sans);font-weight:600;margin-left:2px}
+  .kpi .k{font-size:11.5px;color:var(--muted);margin-top:6px;font-weight:500}
+  .tint-accent{background:var(--accent-tint);color:var(--accent)}
+  .tint-gold{background:var(--gold-tint);color:var(--gold)}
+  .tint-silver{background:color-mix(in srgb,var(--silver) 16%,transparent);color:var(--silver)}
+  .tint-warn{background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)}
+  .tint-danger{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
+  .tint-info{background:color-mix(in srgb,var(--info) 15%,transparent);color:var(--info)}
+  .split{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;align-items:start}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+  .card-h{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 4px}
+  .card-h h3{font-family:var(--serif);font-size:17px;font-weight:600;margin:0;letter-spacing:.2px}
+  .card-h .sub{font-size:12px;color:var(--faint);margin-top:2px}
+  .card-pad{padding:16px 18px}
+  .chart-wrap{padding:8px 12px 14px}
+  canvas{width:100%;height:190px;display:block}
+  .legendrow{display:flex;gap:18px;padding:0 18px 16px;flex-wrap:wrap}
+  .legendrow .li{font-size:12px;color:var(--muted);display:flex;align-items:baseline;gap:7px}
+  .legendrow .li b{font-family:var(--serif);font-size:16px;color:var(--text);font-weight:600}
+  .list{display:flex;flex-direction:column}
+  .lrow{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line);position:relative;transition:background .15s}
+  .lrow:first-child{border-top:none}
+  .lrow:hover{background:var(--surface-2)}
+  .lrow .accent{position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px}
+  .gem{width:40px;height:40px;border-radius:var(--r-sm);flex:none;display:grid;place-items:center;font-weight:700;font-family:var(--serif);font-size:15px}
+  .lrow .main{flex:1;min-width:0}
+  .lrow .main .ttl{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lrow .main .meta{font-size:11.5px;color:var(--faint);margin-top:2px}
+  .lrow .amt{text-align:right;flex:none}
+  .lrow .amt .n{font-family:var(--serif);font-size:16px;font-weight:600}
+  .status{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:var(--r-pill);margin-top:4px;text-transform:uppercase}
+  .s-paid{color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
+  .s-due{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+  .s-part{color:var(--info);background:color-mix(in srgb,var(--info) 15%,transparent)}
+  .s-over{color:var(--danger);background:color-mix(in srgb,var(--danger) 15%,transparent)}
+  .m-gold{background:var(--gold-tint);color:var(--gold)}
+  .m-silver{background:color-mix(in srgb,var(--silver) 18%,transparent);color:var(--silver)}
+  .m-platinum{background:color-mix(in srgb,var(--platinum) 18%,transparent);color:var(--platinum)}
+  .m-diamond{background:color-mix(in srgb,var(--diamond) 18%,transparent);color:var(--diamond)}
+  .a-gold{background:var(--gold)} .a-silver{background:var(--silver)} .a-platinum{background:var(--platinum)} .a-diamond{background:var(--diamond)}
+  .side{display:flex;flex-direction:column;gap:18px}
+  .rate{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-top:1px solid var(--line)}
+  .rate:first-of-type{border-top:none}
+  .rate .lbl{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500}
+  .dot{width:9px;height:9px;border-radius:50%}
+  .rate .val{display:flex;align-items:baseline;gap:8px}
+  .rate .val .n{font-family:var(--serif);font-size:16px;font-weight:600}
+  .trend{font-size:11px;font-weight:700}
+  .up{color:var(--ok)} .down{color:var(--danger)}
+  .mixbar{height:12px;border-radius:var(--r-pill);overflow:hidden;display:flex;margin:4px 0 14px}
+  .mixbar span{height:100%}
+  .mixleg{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px}
+  .mixleg .li{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .mixleg .li b{margin-left:auto;color:var(--text);font-family:var(--serif);font-weight:600;font-size:13.5px}
+  .qa{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:var(--r-pill);border:1px solid var(--accent-line);background:var(--accent-tint);color:var(--accent-ink);font-weight:600;font-size:13px;cursor:pointer;transition:.16s}
+  .chip:hover{background:color-mix(in srgb,var(--accent) 18%,transparent);transform:translateY(-1px)}
+  .chip.solid{background:linear-gradient(150deg,var(--accent-bright),var(--accent));color:var(--on-accent);border-color:transparent;box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+  .chip svg{width:15px;height:15px}
+  footer{text-align:center;color:var(--faint);font-size:12px;margin-top:40px}
+  footer b{color:var(--accent-ink);font-family:var(--serif);font-weight:600;letter-spacing:.3px}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .anim{animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
+  @media (prefers-reduced-motion: reduce){.anim{animation:none}.kpi:hover,.chip:hover,.lrow:hover{transform:none}}
+  @media (max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.split{grid-template-columns:1fr}.headline{text-align:left}.search{display:none}}
+  @media (max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+</style>
+
+<header><div class="bar">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 8l3-3h8l3 3-7 11L5 8z" fill="currentColor" fill-opacity=".16"/><path d="M5 8h14M9.5 5L8 8l4 11 4-11-1.5-3M5 8l7 11 7-11" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></div>
+    <div><h1>Swarnalekh</h1><div class="shop">Rajmahal Jewellers · Jaipur</div></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="search" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Search bills, items, customers…</div>
+  <button class="iconbtn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme"><svg id="themeIcon" viewBox="0 0 24 24" fill="none"><path d="M21 12.8A8 8 0 1 1 11.2 3a6.2 6.2 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></button>
+  <button class="iconbtn" title="Notifications" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7"/></svg></button>
+  <div class="avatar" title="Rajesh">RJ</div>
+</div></header>
+
+<div class="wrap">
+  <section class="hero anim"><div class="hero-in">
+    <div class="greet"><div class="eyebrow">Good afternoon</div><h2>Namaste, Rajesh</h2><div class="date">Thursday, 12 February 2026 · Gold 22K ₹7,320/g</div></div>
+    <div class="headline"><div class="k">Today's Sales</div><div class="v tnum">₹4,87,650</div><span class="delta">▲ 12.4% vs yesterday</span></div>
+  </div></section>
+
+  <div class="row-label"><div class="t">At a glance</div>
+    <div class="pill-select"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="2"/></svg>This Month <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+  </div>
+  <section class="kpis">
+    <div class="kpi anim" style="animation-delay:.03s"><div class="tile tint-accent"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16M6 20l2-9 4 4 3-7 3 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="v tnum">₹38.2<small>L</small></div><div class="k">Monthly Revenue</div></div>
+    <div class="kpi anim" style="animation-delay:.06s"><div class="tile tint-gold"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 15.7 7 18.2l1-5.5-4-3.9L9.5 8 12 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="v tnum">1,240<small>g</small></div><div class="k">Gold in Stock</div></div>
+    <div class="kpi anim" style="animation-delay:.09s"><div class="tile tint-silver"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.7"/></svg></div><div class="v tnum">8.64<small>kg</small></div><div class="k">Silver in Stock</div></div>
+    <div class="kpi anim" style="animation-delay:.12s"><div class="tile tint-info"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 9h18" stroke="currentColor" stroke-width="1.7"/></svg></div><div class="v tnum">312</div><div class="k">Bills This Month</div></div>
+    <div class="kpi anim" style="animation-delay:.15s"><div class="tile tint-warn"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.7"/></svg></div><div class="v tnum">₹42,300</div><div class="k">Pending Interest</div></div>
+    <div class="kpi anim" style="animation-delay:.18s"><div class="tile tint-danger"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div><div class="v tnum">3</div><div class="k">Low-Stock Items</div></div>
+  </section>
+
+  <div class="split" style="margin-top:22px">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <section class="card anim" style="animation-delay:.1s">
+        <div class="card-h"><div><h3>Sales &amp; Collections</h3><div class="sub">Last 7 days · in ₹ lakh</div></div><div class="pill-select">Weekly <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div></div>
+        <div class="chart-wrap"><canvas id="spark" width="900" height="380" role="img" aria-label="Seven-day sales trend rising to 4.9 lakh"></canvas></div>
+        <div class="legendrow"><div class="li"><span style="width:9px;height:9px;border-radius:50%;background:var(--accent)"></span>Retail sales <b class="tnum">₹24.1L</b></div><div class="li"><span style="width:9px;height:9px;border-radius:50%;background:var(--platinum)"></span>Loan collections <b class="tnum">₹6.8L</b></div><div class="li" style="margin-left:auto">Peak · <b class="tnum">Sat ₹5.4L</b></div></div>
+      </section>
+      <section class="card anim" style="animation-delay:.14s">
+        <div class="card-h"><div><h3>Recent Bills</h3><div class="sub">Today · 12 Feb 2026</div></div><div class="pill-select">View all <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div></div>
+        <div class="list">
+          <div class="lrow"><span class="accent a-diamond"></span><div class="gem m-diamond">◆</div><div class="main"><div class="ttl">Diamond Solitaire Ring · 0.72ct</div><div class="meta">SLK-2026-0148 · Meera Nair · 4:12 PM</div></div><div class="amt"><div class="n tnum">₹2,45,000</div><span class="status s-paid">Paid</span></div></div>
+          <div class="lrow"><span class="accent a-gold"></span><div class="gem m-gold">22K</div><div class="main"><div class="ttl">Gold Bangles — Set of 4</div><div class="meta">SLK-2026-0147 · Arjun Menon · 3:38 PM</div></div><div class="amt"><div class="n tnum">₹1,86,400</div><span class="status s-due">Due ₹40,000</span></div></div>
+          <div class="lrow"><span class="accent a-gold"></span><div class="gem m-gold">Ku</div><div class="main"><div class="ttl">Antique Kundan Necklace Set</div><div class="meta">SLK-2026-0146 · Priya Shah · 2:05 PM</div></div><div class="amt"><div class="n tnum">₹5,12,000</div><span class="status s-paid">Paid</span></div></div>
+          <div class="lrow"><span class="accent a-platinum"></span><div class="gem m-platinum">Pt</div><div class="main"><div class="ttl">Platinum Wedding Band — Pair</div><div class="meta">SLK-2026-0145 · Kavya Reddy · 1:20 PM</div></div><div class="amt"><div class="n tnum">₹96,500</div><span class="status s-part">Part-paid</span></div></div>
+          <div class="lrow"><span class="accent a-silver"></span><div class="gem m-silver">Ag</div><div class="main"><div class="ttl">Silver Payal &amp; Toe-rings</div><div class="meta">SLK-2026-0144 · Rohan Iyer · 12:47 PM</div></div><div class="amt"><div class="n tnum">₹18,200</div><span class="status s-paid">Paid</span></div></div>
+        </div>
+      </section>
+    </div>
+    <aside class="side">
+      <section class="card card-pad anim" style="animation-delay:.12s">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><h3 style="font-family:var(--serif);font-size:17px;margin:0;font-weight:600">Today's Rates</h3><span style="font-size:11px;color:var(--faint)">per gram</span></div>
+        <div class="rate"><div class="lbl"><span class="dot" style="background:var(--gold)"></span>Gold · 22K</div><div class="val"><span class="n tnum">₹7,320</span><span class="trend up">▲ 0.4%</span></div></div>
+        <div class="rate"><div class="lbl"><span class="dot" style="background:var(--gold-2)"></span>Gold · 18K</div><div class="val"><span class="n tnum">₹5,990</span><span class="trend up">▲ 0.4%</span></div></div>
+        <div class="rate"><div class="lbl"><span class="dot" style="background:var(--silver)"></span>Silver · Fine</div><div class="val"><span class="n tnum">₹92</span><span class="trend down">▼ 0.9%</span></div></div>
+        <div class="rate"><div class="lbl"><span class="dot" style="background:var(--platinum)"></span>Platinum · 950</div><div class="val"><span class="n tnum">₹3,180</span><span class="trend up">▲ 0.2%</span></div></div>
+      </section>
+      <section class="card card-pad anim" style="animation-delay:.16s">
+        <h3 style="font-family:var(--serif);font-size:17px;margin:0 0 12px;font-weight:600">Stock by Metal</h3>
+        <div class="mixbar"><span style="width:64%;background:var(--gold)"></span><span style="width:19%;background:var(--silver)"></span><span style="width:11%;background:var(--diamond)"></span><span style="width:6%;background:var(--platinum)"></span></div>
+        <div class="mixleg"><div class="li"><span class="dot" style="background:var(--gold)"></span>Gold <b class="tnum">64%</b></div><div class="li"><span class="dot" style="background:var(--silver)"></span>Silver <b class="tnum">19%</b></div><div class="li"><span class="dot" style="background:var(--diamond)"></span>Diamond <b class="tnum">11%</b></div><div class="li"><span class="dot" style="background:var(--platinum)"></span>Platinum <b class="tnum">6%</b></div></div>
+      </section>
+      <section class="card anim" style="animation-delay:.2s">
+        <div class="card-h"><div><h3>Gold Loans</h3><div class="sub">Due this week</div></div><span class="status s-over" style="margin:0">2 overdue</span></div>
+        <div class="list">
+          <div class="lrow" style="padding-left:18px"><div class="gem m-gold" style="width:34px;height:34px;font-size:12px">GL</div><div class="main"><div class="ttl">Sunita Deshpande</div><div class="meta">ML-2026-014 · 3 mo · 2%/mo</div></div><div class="amt"><div class="n tnum">₹12,000</div><span class="status s-over">Overdue 4d</span></div></div>
+          <div class="lrow" style="padding-left:18px"><div class="gem m-gold" style="width:34px;height:34px;font-size:12px">GL</div><div class="main"><div class="ttl">Imran Qureshi</div><div class="meta">ML-2026-021 · 1 mo · 1.8%/mo</div></div><div class="amt"><div class="n tnum">₹5,400</div><span class="status s-due">Due tomorrow</span></div></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="row-label"><div class="t">Quick actions</div></div>
+  <div class="qa anim" style="animation-delay:.1s">
+    <button class="chip solid"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>New Bill</button>
+    <button class="chip"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="2"/><path d="M12 9v6M9 12h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add Item</button>
+    <button class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16M6 10h12v10H6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 10V7a3 3 0 0 1 6 0v3" stroke="currentColor" stroke-width="2"/></svg>New Gold Loan</button>
+    <button class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Set Rates</button>
+    <button class="chip"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Search</button>
+  </div>
+  <footer>Concept A · <b>Emerald Durbar</b> — royal green ground, gold jewellery accents. Status &amp; metal colours preserved for scanning.</footer>
+</div>
+
+<script>
+  const root=document.documentElement,btn=document.getElementById('themeBtn'),icon=document.getElementById('themeIcon');
+  const sun='<circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>';
+  const moon='<path d="M21 12.8A8 8 0 1 1 11.2 3a6.2 6.2 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>';
+  function isDark(){const t=root.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;}
+  function syncIcon(){icon.innerHTML=isDark()?sun:moon;}
+  btn.addEventListener('click',()=>{root.setAttribute('data-theme',isDark()?'light':'dark');syncIcon();requestAnimationFrame(drawChart);});
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{syncIcon();drawChart();});
+  syncIcon();
+  const cv=document.getElementById('spark');
+  function css(v){return getComputedStyle(root).getPropertyValue(v).trim();}
+  function hexA(c,a){c=c.trim();if(c.startsWith('#')){const n=parseInt(c.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}return c;}
+  function drawChart(){
+    const ctx=cv.getContext('2d'),dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+    const data=[2.9,3.4,3.1,4.2,5.4,4.0,4.88],days=['Fri','Sat','Sun','Mon','Tue','Wed','Thu'],pad={l:8,r:8,t:16,b:26},max=6,min=0;
+    const x=i=>pad.l+(w-pad.l-pad.r)*(i/(data.length-1)),y=v=>pad.t+(h-pad.t-pad.b)*(1-(v-min)/(max-min));
+    ctx.strokeStyle=css('--line');ctx.lineWidth=1;ctx.fillStyle=css('--faint');ctx.font='11px '+css('--sans');
+    for(let g=0;g<=3;g++){const gy=pad.t+(h-pad.t-pad.b)*(g/3);ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(w-pad.r,gy);ctx.stroke();}
+    ctx.textAlign='center';days.forEach((d,i)=>ctx.fillText(d,x(i),h-8));
+    const ac=css('--accent'),grad=ctx.createLinearGradient(0,pad.t,0,h-pad.b);grad.addColorStop(0,hexA(ac,.34));grad.addColorStop(1,hexA(ac,0));
+    ctx.beginPath();ctx.moveTo(x(0),y(data[0]));for(let i=1;i<data.length;i++){const xc=(x(i-1)+x(i))/2;ctx.bezierCurveTo(xc,y(data[i-1]),xc,y(data[i]),x(i),y(data[i]));}
+    ctx.lineTo(x(data.length-1),h-pad.b);ctx.lineTo(x(0),h-pad.b);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+    ctx.beginPath();ctx.moveTo(x(0),y(data[0]));for(let i=1;i<data.length;i++){const xc=(x(i-1)+x(i))/2;ctx.bezierCurveTo(xc,y(data[i-1]),xc,y(data[i]),x(i),y(data[i]));}
+    ctx.strokeStyle=ac;ctx.lineWidth=2.4;ctx.lineJoin='round';ctx.stroke();
+    const ex=x(data.length-1),ey=y(data[data.length-1]);
+    ctx.beginPath();ctx.arc(ex,ey,8,0,7);ctx.fillStyle=hexA(ac,.18);ctx.fill();
+    ctx.beginPath();ctx.arc(ex,ey,4.2,0,7);ctx.fillStyle=ac;ctx.fill();ctx.strokeStyle=css('--surface');ctx.lineWidth=2;ctx.stroke();
+  }
+  window.addEventListener('resize',drawChart);drawChart();
+</script>
