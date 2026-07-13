@@ -5,7 +5,7 @@
 >
 > Workflow: same rules as [ui-unification-plan.md](ui-unification-plan.md) — phase-by-phase, each phase 100% end-to-end (typed models, 4 UI states, l10n en/hi/gu, tests, analyze/test green) before the next. **Do not start a phase until owner says go.**
 >
-> **Resume pointer: R0 + R1 COMPLETE, committed (210b7ec theme, 7b49033 categories). Next up = R2 Add Inventory rework (awaiting owner go).**
+> **Resume pointer: R0–R2 COMPLETE, pushed to origin/main (210b7ec theme, 7b49033 categories, 07809d1 docs, b132ea7 add-stock form; migrations verified applied before push). Next up = R3 HUID receipts (awaiting owner go).**
 
 ## Phase overview & ordering
 
@@ -15,7 +15,7 @@ Ordering follows the shared-foundation-first rule: theme tokens (R0) and the cat
 | ----- | --------------------------------------------------------------------------------------- | ------------------- | ------------------ |
 | R0    | Onyx Champagne theme migration (tokens + kit)                                           | —                   | ✅ done 2026-07-13 |
 | R1    | Category master + per-shop tag sequences + min-stock thresholds (backend + settings UI) | —                   | ✅ done 2026-07-13 |
-| R2    | Add Inventory form rework (req §1)                                                      | R1                  | ⬜ not started     |
+| R2    | Add Inventory form rework (req §1)                                                      | R1                  | ✅ done 2026-07-13 |
 | R3    | HUID receipts rework (req §2)                                                           | R1                  | ⬜ not started     |
 | R4    | View Inventory + Sold Products rework (req §3–4)                                        | R1 (categories), R0 | ⬜ not started     |
 | R5    | Dashboard rework (req §5 + out-of-stock tile)                                           | R1 (thresholds), R0 | ⬜ not started     |
@@ -91,6 +91,8 @@ Backend + minimal settings UI that R2–R5 all depend on.
 - Relationship to [ui-unification-plan.md](ui-unification-plan.md): C4 (Supabase image storage) and C5 (full-text search) remain parked; R0 effectively replaces/absorbs "Stage V visual richness" as the visual pass, in the Onyx Champagne theme.
 
 ## Status log
+
+- 2026-07-13 — **R2 COMPLETE (b132ea7).** Form (`inventory_form_page.dart`, now ConsumerStatefulWidget): Design Number field REMOVED (barcode no longer written); free-text category → **required dropdown** from `categoriesProvider` showing "Ring (RG)" with loading/error fallbacks + auto-tag helper text; editable tag field → read-only tag display (edit mode only; server generates on create, update never sends tagNumber). Weights: gm/mg split GONE → single decimal-gram fields (regex formatter, ≤7 int + ≤5 dp), blank by default, net = gross − stone derived read-only; stone ≥ gross blocked. Price Details section (purchase rate, making mode/value, selling price, auto-calc summary) REMOVED — items price dynamically at bill time; edit-mode omission leaves stored pricing untouched (undefined keys skip in Prisma). Branch/location field REMOVED. Image: compact row (56px thumb + gallery + **camera** + remove), URL input gone. Model: `InventoryItem.categoryId` added; `inventoryDesignTag()` now tag-first; detail sheet drops Design Number + Branch rows. API hardening: `resolveCategoryId` rejects foreign `categoryId` (tenant check, +1 spec). l10n ×3 (tag hint, take photo, net hint, category/stone validations, g suffix). Verified: **api 118, flutter 178, analyze clean, web build green.** l10n keys for removed fields (design number, mg, price) left in ARBs — OCR page still uses some until R3.
 
 - 2026-07-13 — Plan created from requirements walkthrough §0–§5. No phase started.
 - 2026-07-13 — **R0 COMPLETE.** All tokens swapped in `core/theme/app_theme.dart`: champagne accent set (static `primary` `#C6A25E`, light-mode `colorScheme.primary` → `primaryDark` `#9C7C3E`, on-accent ink text both modes), Onyx neutrals light+dark, status colours retuned (single static values readable on both modes), metals (silver slate `#959DA8`, platinum teal `#63A39A`, rose `#C27F69`), radii squared to 5/6/8/10/12, shadows → 1px hairlines (elevated 8px; goldGlow kept only for the solid primary action per concept), tonal-tile `secondaryContainer` retinted both modes, light focused-input border uses `primaryDark`. Typography: **google_fonts (Inter/Outfit) removed entirely** (dep dropped from pubspec) → platform sans, semibold headings, `FontFeature.tabularFigures()` on all text styles. Stray old-palette hardcodes retuned: login/signup background gradients, dashboard hero gradient, error_toast dark surface, shimmer base colours (brand_mark near-black kept). Verified: `flutter analyze` clean, `flutter test` 171/171 green, `flutter build web` green. On-device visual pass in both modes = owner review. NOT committed yet.

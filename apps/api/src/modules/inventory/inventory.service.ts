@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -20,14 +21,13 @@ import {
 
 type OcrDraftRow = {
   itemName: string;
-  tagNumber: string | null;
   huid: string | null;
-  hallmarkNumber: string | null;
   metalType: string;
   karat: string | null;
   grossWeight: number | null;
   netWeight: number | null;
-  quantity: number;
+  stoneWeight: number | null;
+  category: string | null;
   warnings: string[];
 };
 
@@ -204,8 +204,11 @@ export class InventoryService {
           text: [
             'Extract inventory rows from this Indian jewellery HUID or hallmark receipt.',
             'Return JSON only, with this exact shape:',
-            '{"rows":[{"itemName":"string","tagNumber":"string|null","huid":"string|null","hallmarkNumber":"string|null","metalType":"gold|silver","karat":"string|null","grossWeight":0,"netWeight":0,"quantity":1}]}',
-            'Use grams for weights as numbers. Normalize 22KT/22ct to 22K. Always return tagNumber as null because SwarnaLekh generates tags. Never copy HUID into tagNumber. If a field is missing, use null except quantity, which should default to 1. Do not invent HUIDs or weights.',
+            '{"rows":[{"itemName":"string","huid":"string|null","metalType":"gold|silver","karat":"string|null","grossWeight":0,"netWeight":0,"stoneWeight":0,"category":"string|null"}]}',
+            'Use grams for weights as numbers. Normalize 22KT/22ct to 22K.',
+            'stoneWeight is the stone/wastage deduction in grams; null when the receipt shows none.',
+            'category is the ornament type when identifiable, one of: Ring, Chain, Mangalsutra, Necklace, Bangle, Bracelet, Earrings, Pendant, Anklet, Nose Pin, Kada, Haar, Maang Tikka, Toe Ring, Coin, Locket, Studs, Choker, Waist Chain, Armlet; otherwise null.',
+            'If a field is missing, use null. Do not invent HUIDs or weights.',
           ].join(' '),
         },
         {
@@ -234,6 +237,26 @@ export class InventoryService {
 
   async importItems(tenantId: string, dto: ImportInventoryDto) {
     return this.prisma.$transaction(async (tx) => {
+      this.validateImportRows(dto.rows);
+      await this.assertNoDuplicateHuids(tx, tenantId, dto.rows);
+
+      // Rows with a category get RG-01-style tags; category-less rows fall
+      // back to the legacy flat INV-#### sequence.
+      const categoryIds = [
+        ...new Set(
+          dto.rows.map((row) => row.categoryId).filter(Boolean) as string[],
+        ),
+      ];
+      if (categoryIds.length > 0) {
+        const owned = await tx.category.findMany({
+          where: { id: { in: categoryIds }, tenantId },
+          select: { id: true },
+        });
+        if (owned.length !== categoryIds.length) {
+          throw new BadRequestException('Unknown category');
+        }
+      }
+
       const existingTags = await tx.inventoryItem.findMany({
         where: { tenantId, tagNumber: { not: null } },
         select: { tagNumber: true },
@@ -242,14 +265,18 @@ export class InventoryService {
         existingTags.map((item) => item.tagNumber).filter(Boolean) as string[],
       );
       let nextTagNumber = this.getNextInventorySequence(usedTags);
-      this.validateImportRows(dto.rows);
 
       const created = [];
       for (const row of dto.rows) {
-        const tagNumber = this.formatInventoryTag(nextTagNumber++);
-        usedTags.add(tagNumber);
-        while (usedTags.has(this.formatInventoryTag(nextTagNumber))) {
-          nextTagNumber++;
+        let tagNumber = row.categoryId
+          ? await this.nextCategoryTag(tx, tenantId, row.categoryId)
+          : undefined;
+        if (!tagNumber) {
+          tagNumber = this.formatInventoryTag(nextTagNumber++);
+          usedTags.add(tagNumber);
+          while (usedTags.has(this.formatInventoryTag(nextTagNumber))) {
+            nextTagNumber++;
+          }
         }
 
         created.push(
@@ -267,6 +294,44 @@ export class InventoryService {
 
       return { createdCount: created.length, items: created };
     });
+  }
+
+  /// Req §2.2: a HUID that is currently in stock must not be imported again;
+  /// a sold item's HUID may re-enter (buy-back). Also rejects the same HUID
+  /// appearing twice within one import batch.
+  private async assertNoDuplicateHuids(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    rows: ImportInventoryRowDto[],
+  ) {
+    const huids = rows
+      .map((row) => this.cleanString(row.huid))
+      .filter(Boolean) as string[];
+    if (huids.length === 0) return;
+
+    const seen = new Set<string>();
+    for (const huid of huids) {
+      if (seen.has(huid)) {
+        throw new ConflictException(
+          `HUID ${huid} appears more than once in this import`,
+        );
+      }
+      seen.add(huid);
+    }
+
+    const inStock = await tx.inventoryItem.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        status: 'in_stock',
+        huid: { in: huids },
+      },
+      select: { huid: true },
+    });
+    if (inStock.length > 0) {
+      const list = inStock.map((item) => item.huid).join(', ');
+      throw new ConflictException(`HUID already in stock: ${list}`);
+    }
   }
 
   async remove(tenantId: string, id: string) {
@@ -860,10 +925,13 @@ export class InventoryService {
     const metalType = this.normalizeMetalType(raw.metalType);
     const grossWeight = this.toPositiveNumber(raw.grossWeight);
     const netWeight = this.toPositiveNumber(raw.netWeight);
-    const quantity = Math.max(
-      1,
-      Math.floor(this.toPositiveNumber(raw.quantity) ?? 1),
-    );
+    // Surface the deduction explicitly: receipts often carry only gross/net,
+    // and the user should see WHY net is lower (req §2.1).
+    const stoneWeight =
+      this.toPositiveNumber(raw.stoneWeight) ??
+      (grossWeight && netWeight && grossWeight > netWeight
+        ? Number((grossWeight - netWeight).toFixed(3))
+        : null);
     const warnings: string[] = [];
 
     if (!raw.itemName) warnings.push('Missing item name');
@@ -871,19 +939,17 @@ export class InventoryService {
     if (!netWeight) warnings.push('Missing net weight');
     if (grossWeight && netWeight && netWeight > grossWeight)
       warnings.push('Net weight is greater than gross weight');
-    if (!raw.huid && !raw.hallmarkNumber)
-      warnings.push('Missing HUID or hallmark number');
+    if (!raw.huid) warnings.push('Missing HUID');
 
     return {
       itemName,
-      tagNumber: null,
       huid: this.cleanString(raw.huid),
-      hallmarkNumber: this.cleanString(raw.hallmarkNumber),
       metalType,
       karat: this.normalizeKarat(raw.karat),
       grossWeight,
       netWeight,
-      quantity,
+      stoneWeight,
+      category: this.cleanString(raw.category),
       warnings,
     };
   }
@@ -891,14 +957,13 @@ export class InventoryService {
   private emptyOcrRow(index: number, warnings: string[]): OcrDraftRow {
     return {
       itemName: `Receipt Item ${index + 1}`,
-      tagNumber: null,
       huid: null,
-      hallmarkNumber: null,
       metalType: 'gold',
       karat: null,
       grossWeight: null,
       netWeight: null,
-      quantity: 1,
+      stoneWeight: null,
+      category: null,
       warnings,
     };
   }

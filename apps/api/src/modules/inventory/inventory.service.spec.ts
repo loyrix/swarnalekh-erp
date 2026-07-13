@@ -16,6 +16,7 @@ describe('InventoryService', () => {
       },
       category: {
         findFirst: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
         update: jest.fn(),
       },
     };
@@ -440,6 +441,136 @@ describe('InventoryService', () => {
         data: expect.objectContaining({ tagNumber: 'OLD-77' }),
       }),
     );
+  });
+
+  it('blocks importing a HUID that is already in stock', async () => {
+    const { service, tx } = createService();
+    // HUID duplicate scan finds an in-stock item with the same HUID.
+    tx.inventoryItem.findMany.mockResolvedValueOnce([{ huid: 'HUID123456' }]);
+
+    await expect(
+      service.importItems('tenant-1', {
+        rows: [
+          {
+            itemName: 'Gold Ring',
+            huid: 'HUID123456',
+            metalType: 'gold',
+            grossWeight: 4.5,
+            netWeight: 4.2,
+          },
+        ],
+      }),
+    ).rejects.toThrow('HUID already in stock: HUID123456');
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+  });
+
+  it('allows re-importing a HUID whose previous item was sold (buy-back)', async () => {
+    const { service, tx } = createService();
+    // In-stock HUID scan is empty (the old item is sold), tag scan empty.
+    tx.inventoryItem.findMany
+      .mockResolvedValueOnce([]) // huid duplicate check
+      .mockResolvedValueOnce([]); // existing tags
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve(data),
+    );
+
+    const result = await service.importItems('tenant-1', {
+      rows: [
+        {
+          itemName: 'Gold Ring',
+          huid: 'HUID123456',
+          metalType: 'gold',
+          grossWeight: 4.5,
+          netWeight: 4.2,
+        },
+      ],
+    });
+
+    expect(result.createdCount).toBe(1);
+  });
+
+  it('rejects the same HUID twice within one import batch', async () => {
+    const { service, tx } = createService();
+
+    await expect(
+      service.importItems('tenant-1', {
+        rows: [
+          {
+            itemName: 'Ring A',
+            huid: 'HUIDX',
+            metalType: 'gold',
+            grossWeight: 4,
+            netWeight: 4,
+          },
+          {
+            itemName: 'Ring B',
+            huid: 'HUIDX',
+            metalType: 'gold',
+            grossWeight: 5,
+            netWeight: 5,
+          },
+        ],
+      }),
+    ).rejects.toThrow('appears more than once');
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+  });
+
+  it('assigns category tags to imported rows that carry a categoryId', async () => {
+    const { service, tx } = createService();
+    tx.inventoryItem.findMany
+      .mockResolvedValueOnce([]) // huid duplicate check
+      .mockResolvedValueOnce([]); // existing tags
+    tx.category.findMany.mockResolvedValueOnce([{ id: 'cat-ring' }]);
+    tx.category.findFirst.mockResolvedValue({ prefix: 'RG' });
+    tx.category.update.mockResolvedValueOnce({
+      prefix: 'RG',
+      nextSequence: 4,
+    });
+    tx.inventoryItem.findFirst.mockResolvedValue(null); // no tag clash
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve(data),
+    );
+
+    await service.importItems('tenant-1', {
+      rows: [
+        {
+          itemName: 'Gold Ring',
+          huid: 'HUID123456',
+          categoryId: 'cat-ring',
+          metalType: 'gold',
+          grossWeight: 4.5,
+          netWeight: 4.2,
+        },
+      ],
+    });
+
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          tagNumber: 'RG-03',
+          categoryId: 'cat-ring',
+        }),
+      }),
+    );
+  });
+
+  it('rejects an import row with a foreign categoryId', async () => {
+    const { service, tx } = createService();
+    tx.category.findMany.mockResolvedValueOnce([]); // none owned by tenant
+
+    await expect(
+      service.importItems('tenant-1', {
+        rows: [
+          {
+            itemName: 'Gold Ring',
+            categoryId: 'foreign-cat',
+            metalType: 'gold',
+            grossWeight: 4.5,
+            netWeight: 4.2,
+          },
+        ],
+      }),
+    ).rejects.toThrow('Unknown category');
   });
 
   it('rejects a categoryId that belongs to another tenant', async () => {
