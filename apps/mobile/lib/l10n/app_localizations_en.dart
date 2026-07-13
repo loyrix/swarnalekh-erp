@@ -924,6 +924,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonLoading => 'Loading…';
 
   @override
+  String get commonTimeRange => 'Time Range';
+
+  @override
+  String get inventoryMetalBreakdownTitle => 'Products by Metal';
+
+  @override
+  String get inventoryGoldByKarat => 'Gold by Karat';
+
+  @override
+  String get inventorySilverByPurity => 'Silver by Purity';
+
+  @override
+  String get inventoryPiecesSuffix => 'pcs';
+
+  @override
   String get inventoryMilligrams => 'Milligrams';
 
   @override

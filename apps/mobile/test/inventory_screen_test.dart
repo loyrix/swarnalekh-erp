@@ -159,6 +159,75 @@ void main() {
       expect(find.text('Silver Coin'), findsOneWidget);
     });
 
+    testWidgets('taps the gold tile through to the karat breakdown sheet', (
+      tester,
+    ) async {
+      final overview = InventoryOverview(
+        items: [_item()],
+        stats: InventoryStats.fromJson(const {
+          'totalProducts': 1,
+          'totalGoldWeight': 10.5,
+          'metalBreakdown': [
+            {
+              'metalType': 'gold',
+              'count': 1,
+              'quantity': 1,
+              'totalWeight': 10.5,
+            },
+          ],
+          'karatBreakdown': [
+            {
+              'metalType': 'gold',
+              'karats': [
+                {'karat': '22K', 'count': 1, 'totalWeight': 10.5},
+              ],
+            },
+          ],
+        }),
+      );
+
+      await tester.pumpWidget(
+        _host(
+          const Scaffold(body: InventoryListScreen()),
+          overrides: [
+            inventoryOverviewProvider.overrideWith(
+              (ref, query) async => overview,
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      await tester.tap(find.text('Total Gold Weight'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Gold by Karat'), findsOneWidget);
+      expect(find.text('22K'), findsOneWidget);
+    });
+
+    testWidgets('shows quick gold/silver filter chips on the stock tab', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const Scaffold(body: InventoryListScreen()),
+          overrides: [
+            inventoryOverviewProvider.overrideWith(
+              (ref, query) async =>
+                  const InventoryOverview(items: [], stats: null),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('Gold'), findsWidgets);
+      expect(find.text('Silver'), findsWidgets);
+    });
+
     testWidgets('shows the inventory empty state when there are no items', (
       tester,
     ) async {

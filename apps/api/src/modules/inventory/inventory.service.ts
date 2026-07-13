@@ -44,6 +44,7 @@ type InventoryFilters = {
 
 type SoldProductsFilters = {
   search?: string;
+  period?: string;
   dateFrom?: string;
   dateTo?: string;
 };
@@ -359,6 +360,7 @@ export class InventoryService {
       where: { tenantId, deletedAt: null },
       select: {
         metalType: true,
+        karat: true,
         stockType: true,
         quantity: true,
         grossWeight: true,
@@ -371,6 +373,41 @@ export class InventoryService {
         updatedAt: true,
       },
     });
+
+    // Sold-by-period counts from the actual sale date (invoice date), not
+    // the item's updatedAt — editing an item after sale must not move it
+    // between periods. Manual status flips (no invoice) keep updatedAt as
+    // the only date they have.
+    const [soldViaInvoices, soldManually] = await Promise.all([
+      this.prisma.invoiceItem.count({
+        where: {
+          invoice: {
+            tenantId,
+            deletedAt: null,
+            ...(soldRange && {
+              invoiceDate: {
+                ...(soldRange.gte && { gte: soldRange.gte }),
+                ...(soldRange.lte && { lte: soldRange.lte }),
+              },
+            }),
+          },
+        },
+      }),
+      this.prisma.inventoryItem.count({
+        where: {
+          tenantId,
+          deletedAt: null,
+          status: 'sold',
+          invoiceItems: { none: {} },
+          ...(soldRange && {
+            updatedAt: {
+              ...(soldRange.gte && { gte: soldRange.gte }),
+              ...(soldRange.lte && { lte: soldRange.lte }),
+            },
+          }),
+        },
+      }),
+    ]);
 
     const inStockItems = items.filter((item) => item.status === 'in_stock');
     const soldItems = items.filter((item) => item.status === 'sold');
@@ -388,12 +425,7 @@ export class InventoryService {
     const totalDiamondStock = inStockItems.filter(
       (item) => item.hasStones || this.toNumber(item.stoneValue) > 0,
     ).length;
-    const soldThisMonth = soldItems.filter((item) => {
-      if (!soldRange) return true; // all-time
-      if (soldRange.gte && item.updatedAt < soldRange.gte) return false;
-      if (soldRange.lte && item.updatedAt > soldRange.lte) return false;
-      return true;
-    }).length;
+    const soldThisMonth = soldViaInvoices + soldManually;
     const highValueProducts = inStockItems.filter(
       (item) => this.purchaseValue(item) >= 500000,
     ).length;
@@ -406,6 +438,29 @@ export class InventoryService {
         count: metalItems.length,
         quantity: metalItems.reduce((sum, item) => sum + item.quantity, 0),
         totalWeight: this.round(this.sumMetalWeight(metalItems, metalType), 3),
+      };
+    });
+
+    // Per-karat split of the in-stock weight tiles (tap-through detail).
+    const karatBreakdown = ['gold', 'silver'].map((metalType) => {
+      const byKarat = new Map<string, { count: number; weight: number }>();
+      for (const item of inStockItems) {
+        if (item.metalType !== metalType) continue;
+        const karat = item.karat ?? 'Other';
+        const entry = byKarat.get(karat) ?? { count: 0, weight: 0 };
+        entry.count += item.quantity;
+        entry.weight += this.toNumber(item.netWeight) * item.quantity;
+        byKarat.set(karat, entry);
+      }
+      return {
+        metalType,
+        karats: [...byKarat.entries()]
+          .map(([karat, entry]) => ({
+            karat,
+            count: entry.count,
+            totalWeight: this.round(entry.weight, 3),
+          }))
+          .sort((a, b) => b.totalWeight - a.totalWeight),
       };
     });
 
@@ -434,6 +489,7 @@ export class InventoryService {
         ).length,
       },
       metalBreakdown,
+      karatBreakdown,
     };
   }
 
@@ -550,8 +606,15 @@ export class InventoryService {
 
   async getSoldProducts(tenantId: string, filters?: SoldProductsFilters) {
     const search = filters?.search?.trim();
-    const dateFrom = this.parseDate(filters?.dateFrom);
-    const dateTo = this.parseDate(filters?.dateTo, true);
+    // Presets (today/month/…) and custom from/to both resolve to one range,
+    // applied to the invoice date (real sold date). Default: all time.
+    const range = resolveDateRange(this.soldPeriodOf(filters), {
+      dateFrom: filters?.dateFrom,
+      dateTo: filters?.dateTo,
+      defaultPeriod: 'all',
+    });
+    const dateFrom = range?.gte ?? null;
+    const dateTo = range?.lte ?? null;
 
     const [invoices, manualItems] = await Promise.all([
       this.prisma.invoice.findMany({
@@ -572,6 +635,15 @@ export class InventoryService {
               itemTotal: true,
               quantity: true,
               inventoryItemId: true,
+              inventoryItem: {
+                select: {
+                  tagNumber: true,
+                  metalType: true,
+                  karat: true,
+                  netWeight: true,
+                  category: { select: { name: true } },
+                },
+              },
             },
           },
         },
@@ -600,6 +672,10 @@ export class InventoryService {
           id: true,
           itemName: true,
           tagNumber: true,
+          metalType: true,
+          karat: true,
+          netWeight: true,
+          category: { select: { name: true } },
           updatedAt: true,
           sellingPrice: true,
           quantity: true,
@@ -621,6 +697,13 @@ export class InventoryService {
         paymentMethod: invoice.paymentMode,
         quantity: item.quantity,
         inventoryItemId: item.inventoryItemId,
+        tagNumber: item.inventoryItem?.tagNumber ?? null,
+        categoryName: item.inventoryItem?.category?.name ?? null,
+        metalType: item.inventoryItem?.metalType ?? null,
+        karat: item.inventoryItem?.karat ?? null,
+        netWeight: item.inventoryItem
+          ? this.toNumber(item.inventoryItem.netWeight)
+          : null,
       })),
     );
 
@@ -636,6 +719,11 @@ export class InventoryService {
       paymentMethod: '-',
       quantity: item.quantity,
       inventoryItemId: item.id,
+      tagNumber: item.tagNumber,
+      categoryName: item.category?.name ?? null,
+      metalType: item.metalType,
+      karat: item.karat,
+      netWeight: this.toNumber(item.netWeight),
     }));
 
     return [...soldFromInvoices, ...soldManually].sort(
@@ -732,16 +820,25 @@ export class InventoryService {
     };
   }
 
+  /// Bare dateFrom/dateTo without a period (legacy callers) means custom.
+  private soldPeriodOf(filters?: SoldProductsFilters): string | undefined {
+    if (filters?.period) return filters.period;
+    return filters?.dateFrom || filters?.dateTo ? 'custom' : undefined;
+  }
+
   private buildSoldProductsWhere(
     tenantId: string,
     filters?: SoldProductsFilters,
   ): Prisma.InvoiceWhereInput {
     const search = filters?.search?.trim();
     const invoiceDate: Prisma.DateTimeFilter = {};
-    const dateFrom = this.parseDate(filters?.dateFrom);
-    const dateTo = this.parseDate(filters?.dateTo, true);
-    if (dateFrom) invoiceDate.gte = dateFrom;
-    if (dateTo) invoiceDate.lte = dateTo;
+    const range = resolveDateRange(this.soldPeriodOf(filters), {
+      dateFrom: filters?.dateFrom,
+      dateTo: filters?.dateTo,
+      defaultPeriod: 'all',
+    });
+    if (range?.gte) invoiceDate.gte = range.gte;
+    if (range?.lte) invoiceDate.lte = range.lte;
 
     return {
       tenantId,

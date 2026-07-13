@@ -927,6 +927,21 @@ class AppLocalizationsHi extends AppLocalizations {
   String get commonLoading => 'लोड हो रहा है…';
 
   @override
+  String get commonTimeRange => 'समय सीमा';
+
+  @override
+  String get inventoryMetalBreakdownTitle => 'धातु के अनुसार उत्पाद';
+
+  @override
+  String get inventoryGoldByKarat => 'कैरेट के अनुसार सोना';
+
+  @override
+  String get inventorySilverByPurity => 'शुद्धता के अनुसार चांदी';
+
+  @override
+  String get inventoryPiecesSuffix => 'नग';
+
+  @override
   String get inventoryMilligrams => 'मिलिग्राम';
 
   @override

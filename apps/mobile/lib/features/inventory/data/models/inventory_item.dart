@@ -126,6 +126,11 @@ class SoldProduct {
     required this.soldDate,
     required this.sellingPrice,
     required this.paymentMethod,
+    this.tagNumber,
+    this.categoryName,
+    this.metalType,
+    this.karat,
+    this.netWeight,
   });
 
   final String? productName;
@@ -134,6 +139,11 @@ class SoldProduct {
   final String? soldDate;
   final double? sellingPrice;
   final String? paymentMethod;
+  final String? tagNumber;
+  final String? categoryName;
+  final String? metalType;
+  final String? karat;
+  final double? netWeight;
 
   factory SoldProduct.fromJson(Map<String, dynamic> json) {
     return SoldProduct(
@@ -143,6 +153,74 @@ class SoldProduct {
       soldDate: InventoryItem._strOrNull(json['soldDate']),
       sellingPrice: InventoryItem._numOrNull(json['sellingPrice']),
       paymentMethod: InventoryItem._strOrNull(json['paymentMethod']),
+      tagNumber: InventoryItem._strOrNull(json['tagNumber']),
+      categoryName: InventoryItem._strOrNull(json['categoryName']),
+      metalType: InventoryItem._strOrNull(json['metalType']),
+      karat: InventoryItem._strOrNull(json['karat']),
+      netWeight: InventoryItem._numOrNull(json['netWeight']),
+    );
+  }
+}
+
+/// One metal's share of in-stock products (`stats.metalBreakdown`).
+class MetalBreakdown {
+  const MetalBreakdown({
+    required this.metalType,
+    required this.count,
+    required this.quantity,
+    required this.totalWeight,
+  });
+
+  final String metalType;
+  final int count;
+  final int quantity;
+  final double totalWeight;
+
+  factory MetalBreakdown.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic v) => (InventoryItem._numOrNull(v) ?? 0).round();
+    return MetalBreakdown(
+      metalType: (json['metalType'] ?? '').toString(),
+      count: asInt(json['count']),
+      quantity: asInt(json['quantity']),
+      totalWeight: InventoryItem._numOrNull(json['totalWeight']) ?? 0,
+    );
+  }
+}
+
+/// Per-karat split of one metal's in-stock weight (`stats.karatBreakdown`).
+class KaratBreakdown {
+  const KaratBreakdown({required this.metalType, required this.karats});
+
+  final String metalType;
+  final List<KaratSlice> karats;
+
+  factory KaratBreakdown.fromJson(Map<String, dynamic> json) {
+    return KaratBreakdown(
+      metalType: (json['metalType'] ?? '').toString(),
+      karats: (json['karats'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(KaratSlice.fromJson)
+          .toList(),
+    );
+  }
+}
+
+class KaratSlice {
+  const KaratSlice({
+    required this.karat,
+    required this.count,
+    required this.totalWeight,
+  });
+
+  final String karat;
+  final int count;
+  final double totalWeight;
+
+  factory KaratSlice.fromJson(Map<String, dynamic> json) {
+    return KaratSlice(
+      karat: (json['karat'] ?? '—').toString(),
+      count: (InventoryItem._numOrNull(json['count']) ?? 0).round(),
+      totalWeight: InventoryItem._numOrNull(json['totalWeight']) ?? 0,
     );
   }
 }
@@ -159,6 +237,8 @@ class InventoryStats {
     required this.highValueProducts,
     required this.unsoldProducts,
     required this.valuationDate,
+    this.metalBreakdown = const [],
+    this.karatBreakdown = const [],
   });
 
   final double totalGoldWeight;
@@ -170,6 +250,8 @@ class InventoryStats {
   final int highValueProducts;
   final int unsoldProducts;
   final String? valuationDate;
+  final List<MetalBreakdown> metalBreakdown;
+  final List<KaratBreakdown> karatBreakdown;
 
   factory InventoryStats.fromJson(Map<String, dynamic> json) {
     final alerts =
@@ -186,6 +268,14 @@ class InventoryStats {
       highValueProducts: asInt(alerts['highValueProducts']),
       unsoldProducts: asInt(alerts['unsoldProducts']),
       valuationDate: InventoryItem._strOrNull(json['valuationDate']),
+      metalBreakdown: (json['metalBreakdown'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(MetalBreakdown.fromJson)
+          .toList(),
+      karatBreakdown: (json['karatBreakdown'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(KaratBreakdown.fromJson)
+          .toList(),
     );
   }
 }

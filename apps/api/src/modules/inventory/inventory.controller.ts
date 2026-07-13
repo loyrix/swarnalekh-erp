@@ -127,16 +127,19 @@ export class InventoryController {
     summary: 'Sold products with invoice and payment details',
   })
   @ApiQuery({ name: 'search', required: false, example: 'SLK-2026-0001' })
+  @ApiQuery({ name: 'period', required: false, example: 'month' })
   @ApiQuery({ name: 'dateFrom', required: false, example: '2026-06-01' })
   @ApiQuery({ name: 'dateTo', required: false, example: '2026-06-10' })
   async getSoldProducts(
     @Request() req: any,
     @Query('search') search?: string,
+    @Query('period') period?: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return this.inventoryService.getSoldProducts(req.tenantId, {
       search,
+      period,
       dateFrom,
       dateTo,
     });

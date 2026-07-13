@@ -1894,6 +1894,36 @@ abstract class AppLocalizations {
   /// **'Loading…'**
   String get commonLoading;
 
+  /// No description provided for @commonTimeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Range'**
+  String get commonTimeRange;
+
+  /// No description provided for @inventoryMetalBreakdownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Products by Metal'**
+  String get inventoryMetalBreakdownTitle;
+
+  /// No description provided for @inventoryGoldByKarat.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold by Karat'**
+  String get inventoryGoldByKarat;
+
+  /// No description provided for @inventorySilverByPurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver by Purity'**
+  String get inventorySilverByPurity;
+
+  /// No description provided for @inventoryPiecesSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'pcs'**
+  String get inventoryPiecesSuffix;
+
   /// No description provided for @inventoryMilligrams.
   ///
   /// In en, this message translates to:

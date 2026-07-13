@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/auth/application/app_permissions.dart';
+import 'package:swarnbook/features/categories/application/categories_providers.dart';
+import 'package:swarnbook/features/categories/data/models/shop_category.dart';
 import 'package:swarnbook/features/inventory/application/inventory_providers.dart';
 import 'package:swarnbook/features/inventory/data/inventory_repository.dart';
 import 'package:swarnbook/features/inventory/data/models/inventory_item.dart';
@@ -39,7 +41,15 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
   String _section = 'view';
   bool _canManage = false;
   bool _isOcrUploading = false;
+
+  /// Sold tab: sold-date window (lives here, not on the stock tab).
   StatPeriod _soldPeriod = StatPeriod.month;
+
+  /// Stock tab: created-date window picked in the filter sheet.
+  StatPeriod _stockPeriod = const StatPeriod(StatPeriodKind.all);
+
+  SoldQuery get _soldQuery =>
+      SoldQuery(search: _query.search, period: _soldPeriod);
 
   @override
   void initState() {
@@ -89,8 +99,8 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
 
   Future<void> _refresh() async {
     if (_section == 'sold') {
-      ref.invalidate(soldProductsProvider(_query.search));
-      await ref.read(soldProductsProvider(_query.search).future);
+      ref.invalidate(soldProductsProvider(_soldQuery));
+      await ref.read(soldProductsProvider(_soldQuery).future);
     } else {
       ref.invalidate(inventoryOverviewProvider(_query));
       await ref.read(inventoryOverviewProvider(_query).future);
@@ -140,27 +150,39 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
     }
   }
 
+  /// The one place all stock filters live: metal, status, category,
+  /// branch, and time range (req §3.1 consolidation).
   Future<void> _openFilters() async {
     final l10n = AppLocalizations.of(context)!;
     var metal = _query.metal;
     var status = _query.status;
-    final categoryController = TextEditingController(text: _query.category);
+    var categoryId = _query.categoryId;
+    var period = _stockPeriod;
     final branchController = TextEditingController(text: _query.branch);
+    final categories = await ref
+        .read(categoriesProvider.future)
+        .catchError((_) => <ShopCategory>[]);
+    if (!mounted) return;
 
     await AppFilterSheet.show(
       context,
       onApply: () => setState(() {
+        _stockPeriod = period;
+        final dates = period.toDateQueryParameters();
         _query = _query.copyWith(
           metal: metal,
           status: status,
-          category: categoryController.text,
+          categoryId: categoryId,
           branch: branchController.text,
+          dateFrom: dates['dateFrom'] ?? '',
+          dateTo: dates['dateTo'] ?? '',
         );
       }),
       onClear: () {
         metal = 'all';
         status = 'in_stock';
-        categoryController.clear();
+        categoryId = '';
+        period = const StatPeriod(StatPeriodKind.all);
         branchController.clear();
       },
       builder: (context, setSheetState) => [
@@ -183,6 +205,21 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.commonTimeRange,
+                style: TextStyle(color: AppColors.text2(context), fontSize: 13),
+              ),
+            ),
+            StatPeriodSelector(
+              value: period,
+              onChanged: (value) => setSheetState(() => period = value),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<String>(
           initialValue: status,
           decoration: InputDecoration(
@@ -202,8 +239,11 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
           onChanged: (value) => setSheetState(() => status = value ?? status),
         ),
         const SizedBox(height: AppSpacing.md),
-        TextField(
-          controller: categoryController,
+        DropdownButtonFormField<String>(
+          initialValue:
+              categories.any((c) => c.id == categoryId) && categoryId.isNotEmpty
+              ? categoryId
+              : '',
           decoration: InputDecoration(
             labelText: l10n.inventoryFilterCategory,
             isDense: true,
@@ -211,6 +251,20 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
+          items: [
+            DropdownMenuItem(value: '', child: Text(l10n.inventoryAll)),
+            for (final category in categories)
+              DropdownMenuItem(
+                value: category.id,
+                child: Text(
+                  category.prefix == null
+                      ? category.name
+                      : '${category.name} (${category.prefix})',
+                ),
+              ),
+          ],
+          onChanged: (value) =>
+              setSheetState(() => categoryId = value ?? categoryId),
         ),
         const SizedBox(height: AppSpacing.md),
         TextField(
@@ -226,7 +280,6 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
       ],
     );
 
-    categoryController.dispose();
     branchController.dispose();
   }
 
@@ -391,21 +444,18 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
       onRetry: () => ref.invalidate(inventoryOverviewProvider(_query)),
       data: (overview) {
         final l10n = AppLocalizations.of(context)!;
-        // The "sold" count follows the selected period; other figures are
-        // period-neutral. Falls back to the overview stats while loading.
-        final periodStats =
-            ref.watch(inventoryStatsProvider(_soldPeriod)).valueOrNull ??
-            overview.stats;
         return ListView(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           children: [
             _StatsStrip(
-              stats: periodStats,
-              soldPeriod: _soldPeriod,
-              onSoldPeriodChanged: (p) => setState(() => _soldPeriod = p),
+              stats: overview.stats,
+              onGoldTap: () => _showKaratBreakdown(overview.stats, 'gold'),
+              onSilverTap: () => _showKaratBreakdown(overview.stats, 'silver'),
+              onProductsTap: () => _showMetalBreakdown(overview.stats),
             ),
             _AlertsRow(stats: overview.stats),
             _searchRow(l10n.inventorySearchHintStock),
+            _metalChipsRow(l10n),
             if (overview.items.isEmpty)
               EmptyState.inventory(
                 onAction: _canManage ? () => _openForm() : null,
@@ -419,17 +469,121 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
     );
   }
 
+  /// One-tap Gold/Silver filter without opening the sheet (req §3.4).
+  Widget _metalChipsRow(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        0,
+      ),
+      child: Wrap(
+        spacing: AppSpacing.sm,
+        children: [
+          for (final option in const ['all', 'gold', 'silver'])
+            AppFilterChip(
+              label: option == 'all'
+                  ? l10n.inventoryAll
+                  : inventoryMetalLabel(l10n, option),
+              selected: _query.metal == option,
+              onTap: () =>
+                  setState(() => _query = _query.copyWith(metal: option)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Total Products tile → metal-wise counts (req §3.5).
+  void _showMetalBreakdown(InventoryStats? stats) {
+    if (stats == null || stats.metalBreakdown.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
+    AppDetailSheet.show(
+      context,
+      title: l10n.inventoryMetalBreakdownTitle,
+      sections: [
+        AppDetailSection(
+          heading: l10n.inventoryTotalProducts,
+          rows: [
+            for (final metal in stats.metalBreakdown)
+              AppDetailRow(
+                inventoryMetalLabel(l10n, metal.metalType),
+                '${metal.count} ${l10n.inventoryPiecesSuffix} · '
+                '${inventoryWeightText(metal.totalWeight)}',
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Gold/Silver weight tiles → per-karat split (req §3.3).
+  void _showKaratBreakdown(InventoryStats? stats, String metalType) {
+    if (stats == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    final breakdown = stats.karatBreakdown
+        .where((b) => b.metalType == metalType)
+        .toList();
+    if (breakdown.isEmpty || breakdown.first.karats.isEmpty) return;
+    AppDetailSheet.show(
+      context,
+      title: metalType == 'gold'
+          ? l10n.inventoryGoldByKarat
+          : l10n.inventorySilverByPurity,
+      sections: [
+        AppDetailSection(
+          heading: inventoryMetalLabel(l10n, metalType),
+          rows: [
+            for (final slice in breakdown.first.karats)
+              AppDetailRow(
+                slice.karat,
+                '${inventoryWeightText(slice.totalWeight)} · '
+                '${slice.count} ${l10n.inventoryPiecesSuffix}',
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildSoldBody() {
-    final async = ref.watch(soldProductsProvider(_query.search));
+    final async = ref.watch(soldProductsProvider(_soldQuery));
     return AppStateView<List<SoldProduct>>(
       value: async,
-      onRetry: () => ref.invalidate(soldProductsProvider(_query.search)),
+      onRetry: () => ref.invalidate(soldProductsProvider(_soldQuery)),
       data: (sold) {
         final l10n = AppLocalizations.of(context)!;
         return ListView(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           children: [
             _searchRow(l10n.inventorySearchHintSold, showFilter: false),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                AppSpacing.sm,
+                AppSpacing.sm,
+                0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${l10n.inventorySoldProducts} · '
+                    '${StatPeriodSelector.labelFor(context, _soldPeriod)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text3(context),
+                    ),
+                  ),
+                  StatPeriodSelector(
+                    value: _soldPeriod,
+                    onChanged: (p) => setState(() => _soldPeriod = p),
+                  ),
+                ],
+              ),
+            ),
             if (sold.isEmpty)
               EmptyState(
                 icon: Icons.shopping_bag_outlined,
@@ -532,39 +686,52 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
     );
   }
 
+  /// Richer sold row (req §4.1): tag, category, karat, net weight, amount,
+  /// customer, invoice number, and date — the full row width earns its keep.
   Widget _soldRow(SoldProduct row) {
     final l10n = AppLocalizations.of(context)!;
+    final identity = [
+      if (row.tagNumber != null) row.tagNumber!,
+      if (row.categoryName != null) row.categoryName!,
+      if (row.karat != null) row.karat!,
+    ].join(' • ');
     return CompactDataRow(
       title: row.productName ?? '—',
-      subtitle:
-          '${l10n.inventoryColumnInvoiceNumber}: ${row.invoiceNumber ?? '—'} • ${inventoryShortDate(row.soldDate)}',
+      subtitle: [
+        if (identity.isNotEmpty) identity,
+        '${l10n.inventoryColumnInvoiceNumber}: ${row.invoiceNumber ?? '—'}'
+            ' • ${inventoryShortDate(row.soldDate)}'
+            ' • ${row.customerName ?? '—'}',
+      ].join('\n'),
       metrics: [
         (l10n.inventoryCompactPrice, inventoryCurrencyText(row.sellingPrice)),
+        if (row.netWeight != null)
+          (l10n.inventoryCompactNet, inventoryOptionalWeight(row.netWeight)),
         (
           l10n.inventoryCompactPayment,
           inventoryReadableValue(row.paymentMethod),
         ),
       ],
-      trailing: Text(
-        row.customerName ?? '—',
-        style: TextStyle(fontSize: 11, color: AppColors.text3(context)),
-      ),
     );
   }
 }
 
 // ===========================================================================
 
+/// Stock-tab stat tiles. Sold figures live on the Sold tab only (req §3.1);
+/// each tile taps through to its breakdown (req §3.3/§3.5).
 class _StatsStrip extends StatelessWidget {
   const _StatsStrip({
     required this.stats,
-    required this.soldPeriod,
-    required this.onSoldPeriodChanged,
+    required this.onGoldTap,
+    required this.onSilverTap,
+    required this.onProductsTap,
   });
 
   final InventoryStats? stats;
-  final StatPeriod soldPeriod;
-  final ValueChanged<StatPeriod> onSoldPeriodChanged;
+  final VoidCallback onGoldTap;
+  final VoidCallback onSilverTap;
+  final VoidCallback onProductsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -577,58 +744,28 @@ class _StatsStrip extends StatelessWidget {
         AppSpacing.sm,
         AppSpacing.sm,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${l10n.inventorySoldProducts} · ${StatPeriodSelector.labelFor(context, soldPeriod)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.text3(context),
-                  ),
-                ),
-                StatPeriodSelector(
-                  value: soldPeriod,
-                  onChanged: onSoldPeriodChanged,
-                ),
-              ],
-            ),
+      child: CompactStatStrip(
+        stats: [
+          (
+            icon: Icons.scale_rounded,
+            label: l10n.inventoryTotalGoldWeight,
+            value: inventoryWeightText(stats!.totalGoldWeight),
+            color: AppColors.gold,
           ),
-          CompactStatStrip(
-            stats: [
-              (
-                icon: Icons.scale_rounded,
-                label: l10n.inventoryTotalGoldWeight,
-                value: inventoryWeightText(stats!.totalGoldWeight),
-                color: AppColors.gold,
-              ),
-              (
-                icon: Icons.scale_outlined,
-                label: l10n.inventoryTotalSilverWeight,
-                value: inventoryWeightText(stats!.totalSilverWeight),
-                color: AppColors.silver,
-              ),
-              (
-                icon: Icons.inventory_2_rounded,
-                label: l10n.inventoryTotalProducts,
-                value: '${stats!.totalProducts}',
-                color: AppColors.primary,
-              ),
-              (
-                icon: Icons.shopping_bag_rounded,
-                label: l10n.inventorySoldProducts,
-                value: '${stats!.soldThisMonth}',
-                color: AppColors.primary,
-              ),
-            ],
+          (
+            icon: Icons.scale_outlined,
+            label: l10n.inventoryTotalSilverWeight,
+            value: inventoryWeightText(stats!.totalSilverWeight),
+            color: AppColors.silver,
+          ),
+          (
+            icon: Icons.inventory_2_rounded,
+            label: l10n.inventoryTotalProducts,
+            value: '${stats!.totalProducts}',
+            color: AppColors.primary,
           ),
         ],
+        onTaps: [onGoldTap, onSilverTap, onProductsTap],
       ),
     );
   }
@@ -643,11 +780,11 @@ class _AlertsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     if (stats == null) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
+    // Out-of-stock moved to the Dashboard (req §3.2, lands with R5's
+    // threshold-based version) — no longer shown here.
     final items = [
       if (stats!.lowStock > 0)
         (l10n.inventoryAlertLowStock, stats!.lowStock, AppColors.warning),
-      if (stats!.outOfStock > 0)
-        (l10n.inventoryAlertOutOfStock, stats!.outOfStock, AppColors.error),
       if (stats!.highValueProducts > 0)
         (
           l10n.inventoryAlertHighValue,

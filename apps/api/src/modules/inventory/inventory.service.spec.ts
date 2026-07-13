@@ -27,6 +27,10 @@ describe('InventoryService', () => {
         findFirst: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        count: jest.fn().mockResolvedValue(0),
+      },
+      invoiceItem: {
+        count: jest.fn().mockResolvedValue(0),
       },
       category: {
         findFirst: jest.fn(),
@@ -128,6 +132,10 @@ describe('InventoryService', () => {
     const olderThanNinetyDays = new Date(now);
     olderThanNinetyDays.setDate(olderThanNinetyDays.getDate() - 100);
 
+    // Sold-in-period now comes from invoice items (real sold date) plus
+    // manual status flips without an invoice.
+    prisma.invoiceItem.count.mockResolvedValue(1);
+    prisma.inventoryItem.count.mockResolvedValue(0);
     prisma.inventoryItem.findMany.mockResolvedValue([
       {
         metalType: 'gold',
@@ -318,6 +326,11 @@ describe('InventoryService', () => {
         paymentMethod: 'upi',
         quantity: 1,
         inventoryItemId: 'item-1',
+        tagNumber: null,
+        categoryName: null,
+        metalType: null,
+        karat: null,
+        netWeight: null,
       },
     ]);
     expect(prisma.invoice.findMany).toHaveBeenCalledWith(
@@ -439,6 +452,66 @@ describe('InventoryService', () => {
     expect(tx.inventoryItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ tagNumber: 'OLD-77' }),
+      }),
+    );
+  });
+
+  it('breaks in-stock weight down by karat per metal', async () => {
+    const { service, prisma } = createService();
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        metalType: 'gold',
+        karat: '22K',
+        stockType: 'unique',
+        quantity: 1,
+        netWeight: decimal(10),
+        grossWeight: decimal(11),
+        status: 'in_stock',
+        hasStones: false,
+        stoneValue: decimal(0),
+        purchaseRate: decimal(0),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        metalType: 'gold',
+        karat: '18K',
+        stockType: 'unique',
+        quantity: 2,
+        netWeight: decimal(4),
+        grossWeight: decimal(4),
+        status: 'in_stock',
+        hasStones: false,
+        stoneValue: decimal(0),
+        purchaseRate: decimal(0),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+
+    const stats = await service.getStats('tenant-1');
+    const gold = stats.karatBreakdown.find((m) => m.metalType === 'gold');
+    expect(gold?.karats).toEqual([
+      { karat: '22K', count: 1, totalWeight: 10 },
+      { karat: '18K', count: 2, totalWeight: 8 },
+    ]);
+  });
+
+  it('filters sold products by a period preset on the invoice date', async () => {
+    const { service, prisma } = createService();
+    prisma.invoice.findMany.mockResolvedValue([]);
+    prisma.inventoryItem.findMany.mockResolvedValue([]);
+
+    await service.getSoldProducts('tenant-1', { period: 'month' });
+
+    expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          invoiceDate: expect.objectContaining({
+            gte: expect.any(Date),
+            lte: expect.any(Date),
+          }),
+        }),
       }),
     );
   });

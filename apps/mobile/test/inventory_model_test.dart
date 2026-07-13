@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:swarnbook/features/inventory/data/inventory_repository.dart';
 import 'package:swarnbook/features/inventory/data/models/inventory_item.dart';
+import 'package:swarnbook/shared/application/stat_period.dart';
 
 void main() {
   group('InventoryItem.fromJson', () {
@@ -123,14 +125,80 @@ void main() {
         status: 'sold',
         metal: 'gold',
         search: '  ring ',
-        category: 'Ring',
+        categoryId: 'cat-ring',
         branch: 'Main',
+        dateFrom: '2026-06-01',
+        dateTo: '2026-06-30',
       );
       final params = query.toQueryParameters();
       expect(params['metalType'], 'gold');
       expect(params['search'], 'ring');
-      expect(params['categoryName'], 'Ring');
+      expect(params['categoryId'], 'cat-ring');
       expect(params['location'], 'Main');
+      expect(params['dateFrom'], '2026-06-01');
+      expect(params['dateTo'], '2026-06-30');
+    });
+
+    test('SoldQuery maps period presets and custom ranges to params', () {
+      const monthly = SoldQuery(search: ' ring ', period: StatPeriod.month);
+      final monthParams = monthly.toQueryParameters();
+      expect(monthParams['search'], 'ring');
+      expect(monthParams['period'], 'month');
+
+      final custom = SoldQuery(
+        period: StatPeriod(
+          StatPeriodKind.custom,
+          range: DateTimeRange(
+            start: DateTime(2026, 6, 1),
+            end: DateTime(2026, 6, 30),
+          ),
+        ),
+      );
+      final customParams = custom.toQueryParameters();
+      expect(customParams['period'], 'custom');
+      expect(customParams['dateFrom'], '2026-06-01');
+      expect(customParams['dateTo'], '2026-06-30');
+    });
+
+    test('SoldProduct parses the richer sold row payload', () {
+      final row = SoldProduct.fromJson(const {
+        'productName': 'Gold Ring',
+        'invoiceNumber': 'SLK-2026-0001',
+        'customerName': 'Priya',
+        'soldDate': '2026-06-10T00:00:00.000Z',
+        'sellingPrice': 58100,
+        'paymentMethod': 'upi',
+        'tagNumber': 'RG-04',
+        'categoryName': 'Ring',
+        'metalType': 'gold',
+        'karat': '22K',
+        'netWeight': 4.2,
+      });
+      expect(row.tagNumber, 'RG-04');
+      expect(row.categoryName, 'Ring');
+      expect(row.karat, '22K');
+      expect(row.netWeight, 4.2);
+    });
+
+    test('InventoryStats parses metal and karat breakdowns', () {
+      final stats = InventoryStats.fromJson(const {
+        'totalProducts': 3,
+        'metalBreakdown': [
+          {'metalType': 'gold', 'count': 2, 'quantity': 2, 'totalWeight': 20},
+        ],
+        'karatBreakdown': [
+          {
+            'metalType': 'gold',
+            'karats': [
+              {'karat': '22K', 'count': 1, 'totalWeight': 10.5},
+            ],
+          },
+        ],
+      });
+      expect(stats.metalBreakdown.single.metalType, 'gold');
+      expect(stats.metalBreakdown.single.count, 2);
+      expect(stats.karatBreakdown.single.karats.single.karat, '22K');
+      expect(stats.karatBreakdown.single.karats.single.totalWeight, 10.5);
     });
 
     test('value equality keys the provider family', () {

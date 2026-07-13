@@ -54,6 +54,49 @@ class StatPeriod {
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
 
+  /// Resolves this period to a concrete date range (null = all time), for
+  /// endpoints that only accept dateFrom/dateTo. Mirrors the API's
+  /// resolveDateRange presets.
+  DateTimeRange? resolveRange([DateTime? clock]) {
+    final now = clock ?? DateTime.now();
+    DateTime dayStart(DateTime d) => DateTime(d.year, d.month, d.day);
+    switch (kind) {
+      case StatPeriodKind.all:
+        return null;
+      case StatPeriodKind.custom:
+        return range;
+      case StatPeriodKind.today:
+        return DateTimeRange(start: dayStart(now), end: now);
+      case StatPeriodKind.month:
+        return DateTimeRange(start: DateTime(now.year, now.month, 1), end: now);
+      case StatPeriodKind.threeMonths:
+        return DateTimeRange(
+          start: DateTime(now.year, now.month - 3, now.day),
+          end: now,
+        );
+      case StatPeriodKind.sixMonths:
+        return DateTimeRange(
+          start: DateTime(now.year, now.month - 6, now.day),
+          end: now,
+        );
+      case StatPeriodKind.twelveMonths:
+        return DateTimeRange(
+          start: DateTime(now.year - 1, now.month, now.day),
+          end: now,
+        );
+    }
+  }
+
+  /// dateFrom/dateTo strings for query params, or empty for all-time.
+  Map<String, String> toDateQueryParameters([DateTime? clock]) {
+    final resolved = resolveRange(clock);
+    if (resolved == null) return const {};
+    return {
+      'dateFrom': _isoDate(resolved.start),
+      'dateTo': _isoDate(resolved.end),
+    };
+  }
+
   @override
   bool operator ==(Object other) =>
       other is StatPeriod &&

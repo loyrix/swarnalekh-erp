@@ -923,6 +923,21 @@ class AppLocalizationsGu extends AppLocalizations {
   String get commonLoading => 'લોડ થઈ રહ્યું છે…';
 
   @override
+  String get commonTimeRange => 'સમય મર્યાદા';
+
+  @override
+  String get inventoryMetalBreakdownTitle => 'ધાતુ પ્રમાણે ઉત્પાદનો';
+
+  @override
+  String get inventoryGoldByKarat => 'કેરેટ પ્રમાણે સોનું';
+
+  @override
+  String get inventorySilverByPurity => 'શુદ્ધતા પ્રમાણે ચાંદી';
+
+  @override
+  String get inventoryPiecesSuffix => 'નંગ';
+
+  @override
   String get inventoryMilligrams => 'મિલિગ્રામ';
 
   @override

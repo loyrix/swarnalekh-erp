@@ -1,5 +1,6 @@
 import 'package:swarnbook/core/network/api_client.dart';
 import 'package:swarnbook/features/inventory/data/models/inventory_item.dart';
+import 'package:swarnbook/shared/application/stat_period.dart';
 
 /// Immutable filter set for the inventory overview query. Value equality lets
 /// it key a Riverpod `family` so identical queries share a cache entry.
@@ -8,29 +9,39 @@ class InventoryQuery {
     this.status = 'in_stock',
     this.metal = 'all',
     this.search = '',
-    this.category = '',
+    this.categoryId = '',
     this.branch = '',
+    this.dateFrom = '',
+    this.dateTo = '',
   });
 
   final String status;
   final String metal;
   final String search;
-  final String category;
+  final String categoryId;
   final String branch;
+
+  /// Created-date window (ISO yyyy-MM-dd); empty = all time.
+  final String dateFrom;
+  final String dateTo;
 
   InventoryQuery copyWith({
     String? status,
     String? metal,
     String? search,
-    String? category,
+    String? categoryId,
     String? branch,
+    String? dateFrom,
+    String? dateTo,
   }) {
     return InventoryQuery(
       status: status ?? this.status,
       metal: metal ?? this.metal,
       search: search ?? this.search,
-      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       branch: branch ?? this.branch,
+      dateFrom: dateFrom ?? this.dateFrom,
+      dateTo: dateTo ?? this.dateTo,
     );
   }
 
@@ -38,8 +49,10 @@ class InventoryQuery {
     'status': status,
     if (metal != 'all') 'metalType': metal,
     if (search.trim().isNotEmpty) 'search': search.trim(),
-    if (category.trim().isNotEmpty) 'categoryName': category.trim(),
+    if (categoryId.isNotEmpty) 'categoryId': categoryId,
     if (branch.trim().isNotEmpty) 'location': branch.trim(),
+    if (dateFrom.isNotEmpty) 'dateFrom': dateFrom,
+    if (dateTo.isNotEmpty) 'dateTo': dateTo,
   };
 
   @override
@@ -48,11 +61,37 @@ class InventoryQuery {
       other.status == status &&
       other.metal == metal &&
       other.search == search &&
-      other.category == category &&
-      other.branch == branch;
+      other.categoryId == categoryId &&
+      other.branch == branch &&
+      other.dateFrom == dateFrom &&
+      other.dateTo == dateTo;
 
   @override
-  int get hashCode => Object.hash(status, metal, search, category, branch);
+  int get hashCode =>
+      Object.hash(status, metal, search, categoryId, branch, dateFrom, dateTo);
+}
+
+/// Query for the sold-products list: free-text search + sold-date period.
+class SoldQuery {
+  const SoldQuery({this.search = '', this.period = StatPeriod.month});
+
+  final String search;
+  final StatPeriod period;
+
+  SoldQuery copyWith({String? search, StatPeriod? period}) =>
+      SoldQuery(search: search ?? this.search, period: period ?? this.period);
+
+  Map<String, dynamic> toQueryParameters() => {
+    if (search.trim().isNotEmpty) 'search': search.trim(),
+    ...period.toQueryParameters(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      other is SoldQuery && other.search == search && other.period == period;
+
+  @override
+  int get hashCode => Object.hash(search, period);
 }
 
 class InventoryRepository {
@@ -71,21 +110,10 @@ class InventoryRepository {
     return InventoryOverview.fromJson(payload);
   }
 
-  /// Lightweight stats only — used to re-fetch the "sold" count for a period
-  /// without reloading the whole overview.
-  Future<InventoryStats> getStats({Map<String, dynamic>? query}) async {
-    final response = await _api.dio.get(
-      '/inventory/stats',
-      queryParameters: query,
-    );
-    final payload = response.data as Map<String, dynamic>? ?? const {};
-    return InventoryStats.fromJson(payload);
-  }
-
-  Future<List<SoldProduct>> getSoldProducts(String search) async {
+  Future<List<SoldProduct>> getSoldProducts(SoldQuery query) async {
     final response = await _api.dio.get(
       '/inventory/sold-products',
-      queryParameters: {if (search.trim().isNotEmpty) 'search': search.trim()},
+      queryParameters: query.toQueryParameters(),
     );
     final data = response.data as List<dynamic>? ?? const [];
     return data
