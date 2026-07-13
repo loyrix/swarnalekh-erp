@@ -31,7 +31,6 @@ dependencies:
   intl: ^0.20.2
 
   # UI
-  google_fonts: ^6.2.1
   image: ^4.8.0
   image_picker: ^1.2.1
   printing: ^5.14.3

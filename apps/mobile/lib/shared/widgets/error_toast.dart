@@ -99,7 +99,7 @@ class _ToastContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A28) : Colors.white,
+        color: isDark ? const Color(0xFF1C1C1F) : Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: borderColor.withValues(alpha: 0.3), width: 1),
         boxShadow: [

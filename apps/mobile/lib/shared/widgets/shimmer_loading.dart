@@ -53,8 +53,8 @@ class _ShimmerBoxState extends State<ShimmerBox>
   Widget build(BuildContext context) {
     final isDark = AppColors.isDark(context);
     final baseColor = isDark
-        ? const Color(0xFF1E1E2D)
-        : const Color(0xFFE8E5DF);
+        ? const Color(0xFF1E1E22)
+        : const Color(0xFFE9E9EC);
     final highlightColor = isDark
         ? AppColors.primary.withValues(alpha: 0.08)
         : AppColors.primary.withValues(alpha: 0.06);

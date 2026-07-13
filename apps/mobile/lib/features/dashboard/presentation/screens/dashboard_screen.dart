@@ -162,12 +162,12 @@ class _WelcomeBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppColors.isDark(context)
             ? const LinearGradient(
-                colors: [Color(0xFF1C1810), Color(0xFF262013)],
+                colors: [Color(0xFF201D16), Color(0xFF2B2619)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Color(0xFFFBF8F1), Color(0xFFF0E7D2)],
+                colors: [Color(0xFFF9F7F3), Color(0xFFF1ECE3)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

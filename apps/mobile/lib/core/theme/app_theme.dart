@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// SwarnaLekh Design System
-/// Adaptive dark/light theme with gold accents — jewellery aesthetic
+/// SwarnaLekh Design System — Onyx · Champagne
+/// (docs/design-concepts/06-onyx-champagne.html, chosen 2026-07-13)
+///
+/// Sharp monochrome base + one restrained champagne-gold accent; status &
+/// metal colours reserved for real meaning, never decoration. Platform sans
+/// (no bundled fonts), semibold headings, tabular numerals for figures.
 ///
 /// Usage: AppColors.of(context).background, etc.
 
@@ -54,87 +57,90 @@ class AppColorTokens {
 class AppColors {
   AppColors._();
 
-  // Primary — Rich Gold (always the same)
-  static const Color primary = Color(0xFFD4A853);
-  static const Color primaryLight = Color(0xFFE8C97A);
-  static const Color primaryDark = Color(0xFFB8902E);
-  static const Color primaryMuted = Color(0x33D4A853);
+  // Primary — Champagne gold. Static tokens use the dark-mode accent
+  // (#C6A25E); light mode maps colorScheme.primary to [primaryDark]
+  // (#9C7C3E), the concept's light accent.
+  static const Color primary = Color(0xFFC6A25E);
+  static const Color primaryLight = Color(0xFFDCBE86);
+  static const Color primaryDark = Color(0xFF9C7C3E);
+  static const Color primaryMuted = Color(0x33C6A25E);
 
-  // Status colors — warm-tuned to sit beside gold (used ONLY for real status:
-  // in-stock / sold / overdue / error — never as decoration).
-  static const Color success = Color(0xFF2E9E6B); // deep emerald
-  static const Color successMuted = Color(0x332E9E6B);
-  static const Color warning = Color(0xFFE0912E); // gold-family amber
-  static const Color warningMuted = Color(0x33E0912E);
-  static const Color error = Color(0xFFE04B43); // warm coral red
-  static const Color errorMuted = Color(0x33E04B43);
-  static const Color info = Color(0xFF5E86C7); // muted slate blue
-  static const Color infoMuted = Color(0x335E86C7);
+  // Status colors (used ONLY for real status: in-stock / sold / overdue /
+  // error — never as decoration). Single static value tuned to read on both
+  // the onyx-dark and paper-light backgrounds.
+  static const Color success = Color(0xFF3BAC6E);
+  static const Color successMuted = Color(0x333BAC6E);
+  static const Color warning = Color(0xFFD5902A);
+  static const Color warningMuted = Color(0x33D5902A);
+  static const Color error = Color(0xFFD85350);
+  static const Color errorMuted = Color(0x33D85350);
+  static const Color info = Color(0xFF5687E4);
+  static const Color infoMuted = Color(0x335687E4);
 
   // Metal colors
-  static const Color gold = Color(0xFFD4A853);
-  static const Color silver = Color(0xFFC0C0C0);
-  static const Color platinum = Color(0xFFE5E4E2);
-  static const Color rose = Color(0xFFE8A090);
+  static const Color gold = Color(0xFFC6A25E);
+  static const Color silver = Color(0xFF959DA8);
+  static const Color platinum = Color(0xFF63A39A);
+  static const Color rose = Color(0xFFC27F69);
 
   // Gradients (always the same)
   static const LinearGradient goldGradient = LinearGradient(
-    colors: [Color(0xFFD4A853), Color(0xFFB8902E)],
+    colors: [Color(0xFFC6A25E), Color(0xFF9C7C3E)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient goldShimmer = LinearGradient(
-    colors: [Color(0xFFE8C97A), Color(0xFFD4A853), Color(0xFFB8902E)],
+    colors: [Color(0xFFDCBE86), Color(0xFFC6A25E), Color(0xFF9C7C3E)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ========== DARK MODE ==========
-  static const Color background = Color(0xFF09090C); // Deeper black
-  static const Color surface = Color(0xFF121218); // Darker surface
-  static const Color surfaceLight = Color(0xFF1A1A24); // Lighter for inputs
-  static const Color surfaceCard = Color(0xFF16161E); // Distinct card
-  static const Color surfaceElevated = Color(0xFF1E1E2A);
-  static const Color textPrimary = Color(0xFFF9F9FB);
-  static const Color textSecondary = Color(0xFFA1A1B5);
-  static const Color textMuted = Color(0xFF6B6B80);
-  static const Color textOnPrimary = Color(0xFF09090C); // Dark text on gold
-  static const Color border = Color(0xFF242433); // Darker border
-  static const Color borderLight = Color(0xFF2E2E40);
-  static const Color divider = Color(0xFF1A1A24);
+  // ========== DARK MODE (onyx) ==========
+  static const Color background = Color(0xFF0A0A0C);
+  static const Color surface = Color(0xFF151517);
+  static const Color surfaceLight = Color(0xFF1C1C1F); // inputs / surface-2
+  static const Color surfaceCard = Color(0xFF151517);
+  static const Color surfaceElevated = Color(0xFF1C1C1F);
+  static const Color textPrimary = Color(0xFFF3F3F5);
+  static const Color textSecondary = Color(0xFFA4A4AD);
+  static const Color textMuted = Color(0xFF6C6C75);
+  static const Color textOnPrimary = Color(0xFF1A1408); // ink on champagne
+  static const Color border = Color(0xFF2A2A2F);
+  static const Color borderLight = Color(0xFF35353B);
+  static const Color divider = Color(0xFF202024);
   static const Color glassBorder = Color(0x1AFFFFFF);
   static const LinearGradient cardGradient = LinearGradient(
-    colors: [Color(0xFF16161E), Color(0xFF121218)],
+    colors: [Color(0xFF17171A), Color(0xFF151517)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient surfaceGradient = LinearGradient(
-    colors: [Color(0xFF1A1A24), Color(0xFF121218)],
+    colors: [Color(0xFF1C1C1F), Color(0xFF151517)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ========== LIGHT MODE ==========
-  static const Color backgroundLight = Color(0xFFF3EFE8); // deeper warm cream
+  // ========== LIGHT MODE (paper) ==========
+  static const Color backgroundLight = Color(0xFFF4F4F5);
   static const Color surfaceLightMode = Color(0xFFFFFFFF);
-  static const Color surfaceLightLight = Color(0xFFF0EDE8);
+  static const Color surfaceLightLight = Color(0xFFFAFAFB); // surface-2
   static const Color surfaceCardLight = Color(0xFFFFFFFF);
-  static const Color surfaceElevatedLight = Color(0xFFF5F2ED);
-  static const Color textPrimaryLight = Color(0xFF1A1A28);
-  static const Color textSecondaryLight = Color(0xFF6B6B80);
-  static const Color textMutedLight = Color(0xFF9E9EB0);
-  static const Color textOnPrimaryLight = Color(0xFFFFFFFF);
-  static const Color borderLightMode = Color(0xFFDED8CC); // defined warm edge
-  static const Color borderLightLight = Color(0xFFEAE7E2);
-  static const Color dividerLight = Color(0xFFEDE9E3);
+  static const Color surfaceElevatedLight = Color(0xFFFAFAFB);
+  static const Color textPrimaryLight = Color(0xFF161619);
+  static const Color textSecondaryLight = Color(0xFF57575E);
+  static const Color textMutedLight = Color(0xFF9A9AA3);
+  static const Color textOnPrimaryLight = Color(0xFF241B06); // ink on gold
+  static const Color borderLightMode = Color(0xFFE3E3E7);
+  static const Color borderLightLight = Color(0xFFEDEDF0);
+  static const Color dividerLight = Color(0xFFEDEDF0);
   static const Color glassBorderLight = Color(0x1A000000);
   static const LinearGradient cardGradientLight = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFFCFAF6)],
+    colors: [Color(0xFFFFFFFF), Color(0xFFFCFCFD)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient surfaceGradientLight = LinearGradient(
-    colors: [Color(0xFFF5F2ED), Color(0xFFF0EDE8)],
+    colors: [Color(0xFFFAFAFB), Color(0xFFF4F4F5)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -178,13 +184,15 @@ class AppSpacing {
   static const double xxxl = 64;
 }
 
+/// Onyx Champagne is deliberately square: concept radii are 8/6/5px.
+/// xl/xxl exist for the rare hero/sheet that needs a touch more.
 class AppRadius {
   AppRadius._();
-  static const double sm = 8;
-  static const double md = 12;
-  static const double lg = 16;
-  static const double xl = 20;
-  static const double xxl = 28;
+  static const double sm = 5;
+  static const double md = 6;
+  static const double lg = 8;
+  static const double xl = 10;
+  static const double xxl = 12;
   static const double full = 999;
 }
 
@@ -225,39 +233,42 @@ class AppDensity {
 class AppShadows {
   AppShadows._();
 
+  // Onyx Champagne shadows are near-hairlines: 0 1px 2px, no glow.
   static List<BoxShadow> card = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.2),
-      blurRadius: 12,
-      offset: const Offset(0, 4),
+      color: Colors.black.withValues(alpha: 0.5),
+      blurRadius: 2,
+      offset: const Offset(0, 1),
     ),
   ];
   static List<BoxShadow> cardLight = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.06),
-      blurRadius: 12,
-      offset: const Offset(0, 4),
+      color: const Color(0xFF141419).withValues(alpha: 0.06),
+      blurRadius: 2,
+      offset: const Offset(0, 1),
     ),
   ];
   static List<BoxShadow> elevated = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.3),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
+      color: Colors.black.withValues(alpha: 0.5),
+      blurRadius: 8,
+      offset: const Offset(0, 3),
     ),
   ];
   static List<BoxShadow> elevatedLight = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
+      color: const Color(0xFF141419).withValues(alpha: 0.10),
+      blurRadius: 8,
+      offset: const Offset(0, 3),
     ),
   ];
+  // The one sanctioned gold shadow: the solid primary action (concept
+  // .chip.solid — 0 6px 18px accent 35%).
   static List<BoxShadow> goldGlow = [
     BoxShadow(
-      color: AppColors.primary.withValues(alpha: 0.25),
-      blurRadius: 20,
-      offset: const Offset(0, 4),
+      color: AppColors.primary.withValues(alpha: 0.30),
+      blurRadius: 18,
+      offset: const Offset(0, 6),
     ),
   ];
 
@@ -271,15 +282,15 @@ class AppShadows {
   static List<BoxShadow> softLight = [
     BoxShadow(
       color: Colors.black.withValues(alpha: 0.04),
-      blurRadius: 8,
-      offset: const Offset(0, 2),
+      blurRadius: 3,
+      offset: const Offset(0, 1),
     ),
   ];
   static List<BoxShadow> softDark = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.18),
-      blurRadius: 10,
-      offset: const Offset(0, 3),
+      color: Colors.black.withValues(alpha: 0.35),
+      blurRadius: 3,
+      offset: const Offset(0, 1),
     ),
   ];
   static List<BoxShadow> soft(BuildContext context) =>
@@ -290,81 +301,129 @@ class AppShadows {
 // Theme Builder
 // ====================================
 
+/// Tabular figures everywhere: amounts/weights align in columns and stat
+/// tiles don't jitter as values change. Harmless for plain text.
+const List<FontFeature> _tabularFigures = [FontFeature.tabularFigures()];
+
+/// The concept's family: "Helvetica Neue" (its own fallbacks are the platform
+/// grotesques — SF/Roboto/Segoe). iOS/macOS resolve Helvetica Neue natively;
+/// Android and Flutter-web fall back to Roboto. Applied via
+/// `ThemeData(fontFamily:)` so every style inherits it.
+const String kAppFontFamily = 'Helvetica Neue';
+
+/// Type scale transcribed from 06-onyx-champagne.html — NOT just recolored:
+/// headings are semibold (w600, never w700) with slightly *positive* tracking
+/// (.2–.5px, no tight negative spacing); body is 15px; row titles 13.5 w600;
+/// w700 exists only at label-small size (eyebrows/status chips, wide-tracked).
 TextTheme _buildTextTheme(Color primary, Color secondary, Color muted) {
-  return GoogleFonts.interTextTheme().copyWith(
-    displayLarge: GoogleFonts.outfit(
-      fontSize: 42,
-      fontWeight: FontWeight.w700,
-      color: primary,
-      letterSpacing: -1.4,
-    ),
-    displayMedium: GoogleFonts.outfit(
-      fontSize: 34,
+  return TextTheme(
+    // Hero figure (concept .headline .v — 44px w600 ls .5).
+    displayLarge: TextStyle(
+      fontSize: 44,
       fontWeight: FontWeight.w600,
       color: primary,
-      letterSpacing: -0.4,
+      letterSpacing: 0.5,
+      height: 1.05,
+      fontFeatures: _tabularFigures,
     ),
-    displaySmall: GoogleFonts.outfit(
-      fontSize: 26,
+    displayMedium: TextStyle(
+      fontSize: 32,
       fontWeight: FontWeight.w600,
       color: primary,
+      letterSpacing: 0.3,
+      fontFeatures: _tabularFigures,
     ),
-    headlineMedium: GoogleFonts.outfit(
-      fontSize: 22,
+    // Greeting-level heading (concept .greet h2 — 27px w600 ls .2).
+    displaySmall: TextStyle(
+      fontSize: 27,
       fontWeight: FontWeight.w600,
       color: primary,
+      letterSpacing: 0.2,
+      fontFeatures: _tabularFigures,
     ),
-    headlineSmall: GoogleFonts.outfit(
-      fontSize: 20,
+    // Screen/brand title (concept .brand h1 — 21px w600 ls .3).
+    headlineMedium: TextStyle(
+      fontSize: 21,
       fontWeight: FontWeight.w600,
       color: primary,
+      letterSpacing: 0.3,
+      fontFeatures: _tabularFigures,
     ),
-    titleLarge: GoogleFonts.inter(
-      fontSize: 18,
+    headlineSmall: TextStyle(
+      fontSize: 19,
       fontWeight: FontWeight.w600,
       color: primary,
+      letterSpacing: 0.2,
+      fontFeatures: _tabularFigures,
     ),
-    titleMedium: GoogleFonts.inter(
+    // Card heading (concept .card-h h3 — 17px w600 ls .2).
+    titleLarge: TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      color: primary,
+      letterSpacing: 0.2,
+      fontFeatures: _tabularFigures,
+    ),
+    // Stat/row figure (concept .lrow .amt .n — 16px w600).
+    titleMedium: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
       color: primary,
+      fontFeatures: _tabularFigures,
     ),
-    titleSmall: GoogleFonts.inter(
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: secondary,
-    ),
-    bodyLarge: GoogleFonts.inter(
-      fontSize: 17,
-      fontWeight: FontWeight.w400,
-      color: primary,
-    ),
-    bodyMedium: GoogleFonts.inter(
-      fontSize: 15,
-      fontWeight: FontWeight.w400,
-      color: secondary,
-    ),
-    bodySmall: GoogleFonts.inter(
-      fontSize: 13,
-      fontWeight: FontWeight.w400,
-      color: muted,
-    ),
-    labelLarge: GoogleFonts.inter(
-      fontSize: 15,
+    // List-row title (concept .lrow .ttl — 13.5px w600).
+    titleSmall: TextStyle(
+      fontSize: 13.5,
       fontWeight: FontWeight.w600,
       color: primary,
-      letterSpacing: 0.4,
+      fontFeatures: _tabularFigures,
     ),
-    labelMedium: GoogleFonts.inter(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
+    // Body (concept base — 15px, line-height 1.5).
+    bodyLarge: TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
+      color: primary,
+      height: 1.5,
+      fontFeatures: _tabularFigures,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 13.5,
+      fontWeight: FontWeight.w400,
       color: secondary,
+      height: 1.45,
+      fontFeatures: _tabularFigures,
     ),
-    labelSmall: GoogleFonts.inter(
-      fontSize: 11,
-      fontWeight: FontWeight.w500,
+    // Meta line (concept .lrow .meta / .sub — 11.5–12px).
+    bodySmall: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
       color: muted,
-      letterSpacing: 0.4,
+      fontFeatures: _tabularFigures,
+    ),
+    // Buttons/chips (concept .chip — 13px w600).
+    labelLarge: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: primary,
+      letterSpacing: 0.2,
+      fontFeatures: _tabularFigures,
+    ),
+    // Pill selects / small controls (concept .pill-select — 12px w600).
+    labelMedium: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: secondary,
+      letterSpacing: 0.2,
+      fontFeatures: _tabularFigures,
+    ),
+    // Eyebrows / status chips (concept — 11px w700, wide tracking; pair with
+    // uppercase text at the call site).
+    labelSmall: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      color: muted,
+      letterSpacing: 1.0,
+      fontFeatures: _tabularFigures,
     ),
   );
 }
@@ -378,13 +437,15 @@ ThemeData buildDarkTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
+    fontFamily: kAppFontFamily,
     scaffoldBackgroundColor: AppColors.background,
     colorScheme: const ColorScheme.dark(
       primary: AppColors.primary,
       onPrimary: AppColors.textOnPrimary,
       secondary: AppColors.primaryLight,
-      // Soft gold-tinted tile for filledTonal icon buttons (not loud solid gold).
-      secondaryContainer: Color(0xFF2A2418),
+      // Soft champagne-tinted tile for filledTonal icon buttons
+      // (accent at ~14% over the onyx surface).
+      secondaryContainer: Color(0xFF2E2921),
       onSecondaryContainer: AppColors.primary,
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
@@ -475,14 +536,16 @@ ThemeData buildLightTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
+    fontFamily: kAppFontFamily,
     scaffoldBackgroundColor: AppColors.backgroundLight,
     colorScheme: const ColorScheme.light(
       primary: AppColors.primaryDark,
       onPrimary: AppColors.textOnPrimaryLight,
       secondary: AppColors.primary,
-      // Soft gold-cream tile for filledTonal icon buttons (not loud solid gold).
-      secondaryContainer: Color(0xFFF3E9D4),
-      onSecondaryContainer: AppColors.primaryDark,
+      // Soft champagne-tinted tile for filledTonal icon buttons
+      // (accent at ~10% over white).
+      secondaryContainer: Color(0xFFF5F2EC),
+      onSecondaryContainer: Color(0xFF6E5622), // accent ink
       surface: AppColors.surfaceLightMode,
       onSurface: AppColors.textPrimaryLight,
       error: AppColors.error,
@@ -520,7 +583,7 @@ ThemeData buildLightTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.primaryDark, width: 1.5),
       ),
       hintStyle: textTheme.bodyMedium?.copyWith(
         color: AppColors.textMutedLight,

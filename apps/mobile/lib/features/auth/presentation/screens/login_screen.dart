@@ -264,14 +264,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         gradient: LinearGradient(
           colors: AppColors.isDark(context)
               ? [
-                  const Color(0xFF0D0D12),
-                  const Color(0xFF141420),
-                  const Color(0xFF1A1530),
+                  const Color(0xFF0A0A0C),
+                  const Color(0xFF131316),
+                  const Color(0xFF1B1913),
                 ]
               : [
-                  const Color(0xFFF7F6F3),
-                  const Color(0xFFF0EDE5),
-                  const Color(0xFFE8E2D3),
+                  const Color(0xFFF6F6F7),
+                  const Color(0xFFF2F1EE),
+                  const Color(0xFFECE7DC),
                 ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
