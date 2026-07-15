@@ -78,6 +78,22 @@ PrintableInvoice _fixture({
 }
 
 void main() {
+  group('amountInWordsIndian', () {
+    test('spells amounts using crore/lakh Indian grouping', () {
+      expect(
+        amountInWordsIndian(184741),
+        'Rupees One Lakh Eighty Four Thousand Seven Hundred Forty One Only',
+      );
+      expect(
+        amountInWordsIndian(12345678.5),
+        'Rupees One Crore Twenty Three Lakh Forty Five Thousand Six Hundred '
+        'Seventy Eight and Paise Fifty Only',
+      );
+      expect(amountInWordsIndian(0), 'Rupees Zero Only');
+      expect(amountInWordsIndian(100), 'Rupees One Hundred Only');
+    });
+  });
+
   group('buildInvoicePdf', () {
     test('produces a valid, non-trivial PDF for a rich invoice', () async {
       final bytes = await buildInvoicePdf(_fixture());

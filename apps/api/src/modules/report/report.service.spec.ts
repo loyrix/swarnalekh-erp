@@ -202,8 +202,12 @@ describe('ReportService', () => {
     });
     expect(exportPayload.fileName).toContain('sold-products');
     expect(pdf.startsWith('%PDF-1.4')).toBe(true);
-    expect(pdf).toContain('Sold Products Report');
+    // Title renders uppercase under the shop letterhead.
+    expect(pdf).toContain('SOLD PRODUCTS REPORT');
     expect(pdf).toContain('SLK-2026-0001');
+    // Letterhead + aligned table fonts are embedded.
+    expect(pdf).toContain('Helvetica-Bold');
+    expect(pdf).toContain('Courier');
   });
 
   it('rejects unsupported report export types', async () => {

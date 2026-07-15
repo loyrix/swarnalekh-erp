@@ -21,6 +21,13 @@ export const REPORT_TYPES = [
 
 export type ReportType = (typeof REPORT_TYPES)[number];
 
+/** One rendered line in the hand-rolled report PDF. */
+type PdfLine = {
+  text: string;
+  font?: 'regular' | 'bold' | 'mono' | 'monoBold';
+  size?: number;
+};
+
 const REPORT_LABELS: Record<ReportType, string> = {
   'current-stock': 'Current Stock Report',
   'sold-products': 'Sold Products Report',
@@ -214,15 +221,22 @@ export class ReportService {
       this.getOverview(tenantId, filters),
       this.prisma.tenant.findUnique({
         where: { id: tenantId },
-        select: { shopName: true },
+        select: {
+          shopName: true,
+          address: true,
+          city: true,
+          state: true,
+          pincode: true,
+          phone: true,
+          gstin: true,
+        },
       }),
     ]);
-    const shopName = tenant?.shopName ?? 'SwarnaLekh';
 
     const rows = this.rowsForType(overview.reports, type);
     const title = REPORT_LABELS[type];
     const pdf = this.buildReportPdf(
-      shopName,
+      tenant,
       title,
       rows,
       REPORT_COLUMNS[type],
@@ -533,54 +547,147 @@ export class ReportService {
   }
 
   private buildReportPdf(
-    shopName: string,
+    tenant: {
+      shopName: string;
+      address: string | null;
+      city: string | null;
+      state: string | null;
+      pincode: string | null;
+      phone: string | null;
+      gstin: string | null;
+    } | null,
     title: string,
     rows: any[],
     columns: Array<{ label: string; key: string }>,
     filters: ReportQueryDto,
   ) {
-    const lines = [
-      shopName,
-      title,
-      `Generated: ${this.formatDate(new Date())}`,
-      `Filters: ${this.filterSummary(filters)}`,
-      `Rows: ${rows.length}`,
-      '',
-      columns.map((column) => column.label).join(' | '),
-      '-'.repeat(110),
-      ...rows.map((row) =>
-        columns
-          .map((column) => this.formatPdfCell(row[column.key]))
-          .join(' | '),
+    const shopName = tenant?.shopName ?? 'SwarnaLekh';
+    const addressLine = [
+      tenant?.address,
+      tenant?.city,
+      tenant?.state,
+      tenant?.pincode,
+    ]
+      .filter(Boolean)
+      .join(', ');
+    const contactLine = [
+      tenant?.phone ? `Ph: ${tenant.phone}` : null,
+      tenant?.gstin ? `GSTIN: ${tenant.gstin}` : null,
+    ]
+      .filter(Boolean)
+      .join('    ');
+
+    // Column widths sized to content (capped) so the monospace table aligns.
+    const widths = columns.map((column) =>
+      Math.min(
+        34,
+        Math.max(
+          column.label.length,
+          ...rows.map((row) => this.formatPdfCell(row[column.key]).length),
+          4,
+        ),
+      ),
+    );
+    const renderRow = (cells: string[]) =>
+      cells
+        .map((cell, i) =>
+          (cell.length > widths[i]
+            ? `${cell.slice(0, widths[i] - 1)}~`
+            : cell
+          ).padEnd(widths[i]),
+        )
+        .join('  ');
+
+    const lines: PdfLine[] = [
+      { text: shopName, font: 'bold', size: 16 },
+      ...(addressLine
+        ? [{ text: addressLine, size: 8.5 } satisfies PdfLine]
+        : []),
+      ...(contactLine
+        ? [{ text: contactLine, size: 8.5 } satisfies PdfLine]
+        : []),
+      { text: '', size: 6 },
+      { text: title.toUpperCase(), font: 'bold', size: 11.5 },
+      {
+        text: `Generated: ${this.formatDate(new Date())}   ·   Filters: ${this.filterSummary(filters)}   ·   Rows: ${rows.length}`,
+        size: 8.5,
+      },
+      { text: '', size: 8 },
+      {
+        text: renderRow(columns.map((column) => column.label)),
+        font: 'monoBold',
+        size: 8,
+      },
+      {
+        text: '-'.repeat(
+          Math.min(
+            120,
+            widths.reduce((a, b) => a + b + 2, 0),
+          ),
+        ),
+        font: 'mono',
+        size: 8,
+      },
+      ...rows.map(
+        (row) =>
+          ({
+            text: renderRow(
+              columns.map((column) => this.formatPdfCell(row[column.key])),
+            ),
+            font: 'mono',
+            size: 8,
+          }) satisfies PdfLine,
       ),
     ];
 
-    if (rows.length === 0) lines.push('No rows found.');
+    if (rows.length === 0) lines.push({ text: 'No rows found.', size: 9 });
     return this.buildPdf(lines);
   }
 
-  private buildPdf(lines: string[]) {
+  private buildPdf(input: Array<string | PdfLine>) {
+    const lines: PdfLine[] = input.map((line) =>
+      typeof line === 'string' ? { text: line } : line,
+    );
     const pageWidth = 595;
     const pageHeight = 842;
     const margin = 42;
-    const lineHeight = 14;
-    const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / lineHeight);
-    const pages: string[] = [];
+    const lineGap = 4;
+    const fontRef: Record<NonNullable<PdfLine['font']>, string> = {
+      regular: 'F1',
+      bold: 'F2',
+      mono: 'F3',
+      monoBold: 'F4',
+    };
 
-    for (let start = 0; start < lines.length; start += maxLinesPerPage) {
-      const chunk = lines.slice(start, start + maxLinesPerPage);
-      const commands = [
-        'BT',
-        '/F1 10 Tf',
-        `1 0 0 1 ${margin} ${pageHeight - margin} Tm`,
-      ];
+    // Pack lines into pages by cumulative height (sizes vary per line).
+    const pageChunks: PdfLine[][] = [];
+    let current: PdfLine[] = [];
+    let used = 0;
+    for (const line of lines) {
+      const height = (line.size ?? 10) + lineGap;
+      if (used + height > pageHeight - margin * 2 && current.length > 0) {
+        pageChunks.push(current);
+        current = [];
+        used = 0;
+      }
+      current.push(line);
+      used += height;
+    }
+    if (current.length > 0) pageChunks.push(current);
+
+    const pages = pageChunks.map((chunk) => {
+      const commands = ['BT', `1 0 0 1 ${margin} ${pageHeight - margin} Tm`];
       chunk.forEach((line, index) => {
-        if (index > 0) commands.push(`0 -${lineHeight} Td`);
-        commands.push(`(${this.escapePdfText(this.truncatePdfLine(line))}) Tj`);
+        const size = line.size ?? 10;
+        if (index > 0) commands.push(`0 -${size + lineGap} Td`);
+        commands.push(`/${fontRef[line.font ?? 'regular']} ${size} Tf`);
+        commands.push(
+          `(${this.escapePdfText(this.truncatePdfLine(line.text))}) Tj`,
+        );
       });
       commands.push('ET');
-      pages.push(commands.join('\n'));
-    }
+      return commands.join('\n');
+    });
 
     const objects: string[] = [];
     const addObject = (value: string) => {
@@ -589,9 +696,19 @@ export class ReportService {
     };
     const catalogId = addObject('<< /Type /Catalog /Pages 2 0 R >>');
     const pagesId = addObject('');
-    const fontId = addObject(
-      '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
-    );
+    const fontIds = {
+      F1: addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'),
+      F2: addObject(
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
+      ),
+      F3: addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>'),
+      F4: addObject(
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>',
+      ),
+    };
+    const fontResources = Object.entries(fontIds)
+      .map(([name, id]) => `/${name} ${id} 0 R`)
+      .join(' ');
     const pageIds: number[] = [];
 
     for (const stream of pages) {
@@ -603,7 +720,7 @@ export class ReportService {
           '<< /Type /Page',
           `/Parent ${pagesId} 0 R`,
           `/MediaBox [0 0 ${pageWidth} ${pageHeight}]`,
-          `/Resources << /Font << /F1 ${fontId} 0 R >> >>`,
+          `/Resources << /Font << ${fontResources} >> >>`,
           `/Contents ${contentId} 0 R`,
           '>>',
         ].join(' '),
