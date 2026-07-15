@@ -460,6 +460,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get billingTopSellingProducts => 'सबसे ज्यादा बिके प्रोडक्ट';
 
   @override
+  String get billingBillPreview => 'बिल प्रीव्यू';
+
+  @override
   String get billingFromDate => 'किस तारीख से';
 
   @override

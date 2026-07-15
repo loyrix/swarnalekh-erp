@@ -154,6 +154,7 @@
   "billingTotalBills": "Total Bills",
   "billingAverageBill": "Average Bill",
   "billingTopSellingProducts": "Top Selling Products",
+  "billingBillPreview": "Bill Preview",
   "billingFromDate": "From date",
   "billingToDate": "To date",
   "billingDateHint": "YYYY-MM-DD",

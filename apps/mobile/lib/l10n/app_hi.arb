@@ -154,6 +154,7 @@
   "billingTotalBills": "कुल बिल",
   "billingAverageBill": "औसत बिल",
   "billingTopSellingProducts": "सबसे ज्यादा बिके प्रोडक्ट",
+  "billingBillPreview": "बिल प्रीव्यू",
   "billingFromDate": "किस तारीख से",
   "billingToDate": "किस तारीख तक",
   "billingDateHint": "YYYY-MM-DD",

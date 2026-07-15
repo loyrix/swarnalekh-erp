@@ -154,6 +154,7 @@
   "billingTotalBills": "કુલ બિલ",
   "billingAverageBill": "સરેરાશ બિલ",
   "billingTopSellingProducts": "સૌથી વધુ વેચાયેલા પ્રોડક્ટ",
+  "billingBillPreview": "બિલ પ્રીવ્યૂ",
   "billingFromDate": "શરૂ તારીખ",
   "billingToDate": "અંતિમ તારીખ",
   "billingDateHint": "YYYY-MM-DD",

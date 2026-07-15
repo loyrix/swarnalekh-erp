@@ -42,7 +42,7 @@ Invoice _invoice() => Invoice.fromJson({
 
 void main() {
   group('BillingScreen', () {
-    testWidgets('shows dashboard stats and top-selling products', (
+    testWidgets('shows dashboard stats without a top-selling section', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -58,7 +58,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
 
       expect(find.text("Today's Revenue"), findsOneWidget);
-      expect(find.text('Ring'), findsOneWidget);
+      // Top Selling Products was removed from the billing dashboard.
+      expect(find.text('Top Selling Products'), findsNothing);
     });
 
     testWidgets('history section lists invoices from the provider', (

@@ -458,6 +458,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingTopSellingProducts => 'Top Selling Products';
 
   @override
+  String get billingBillPreview => 'Bill Preview';
+
+  @override
   String get billingFromDate => 'From date';
 
   @override

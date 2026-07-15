@@ -372,6 +372,14 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                         _itemRow(l10n, _filteredItems[index]),
                   ),
           ),
+          // Live per-item breakdown of the selection: karat, weight @ rate,
+          // making, line totals, and the Rate / Making / GST 3% summary.
+          if (_preview != null && _preview!.items.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            SectionHeader(title: l10n.billingBillPreview),
+            const SizedBox(height: AppSpacing.sm),
+            _BillBreakdown(preview: _preview!),
+          ],
           const SizedBox(height: AppSpacing.lg),
           Row(
             children: [
@@ -713,6 +721,174 @@ class _PreviewSummary extends StatelessWidget {
               fontSize: 12,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Per-item pricing breakdown for the current selection, straight from the
+/// server preview: item · karat · qty, net weight @ rate/g, making, line
+/// totals, then the Rate / Making / GST (3%) summary.
+class _BillBreakdown extends StatelessWidget {
+  const _BillBreakdown({required this.preview});
+
+  final InvoicePreview preview;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final p = preview;
+    final gstPercent = p.taxableAmount > 0
+        ? (p.totalTax / p.taxableAmount * 100)
+        : 0.0;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfL(context),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.brd(context)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        children: [
+          for (var i = 0; i < p.items.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: AppColors.div(context)),
+            _lineRow(context, l10n, p.items[i]),
+          ],
+          Divider(height: 1, color: AppColors.brd(context)),
+          const SizedBox(height: AppSpacing.sm),
+          _totalRow(
+            context,
+            '${l10n.billingItems} ×${p.items.length} · ${l10n.billingQty} ${p.totalUnits}',
+            null,
+          ),
+          _totalRow(context, l10n.billingRate, billingMoney(p.productValue)),
+          _totalRow(
+            context,
+            l10n.billingMakingCharges,
+            billingMoney(p.totalMakingCharges),
+          ),
+          if (p.totalStoneValue > 0)
+            _totalRow(
+              context,
+              l10n.billingStoneValue,
+              billingMoney(p.totalStoneValue),
+            ),
+          if (p.discountAmount > 0)
+            _totalRow(
+              context,
+              l10n.billingDiscount,
+              '− ${billingMoney(p.discountAmount)}',
+            ),
+          _totalRow(
+            context,
+            '${l10n.billingGst} ${gstPercent.toStringAsFixed(gstPercent.truncateToDouble() == gstPercent ? 0 : 1)}%',
+            billingMoney(p.totalTax),
+          ),
+          _totalRow(
+            context,
+            l10n.billingFinalTotal,
+            billingMoney(p.grandTotal),
+            emphasize: true,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+      ),
+    );
+  }
+
+  Widget _lineRow(
+    BuildContext context,
+    AppLocalizations l10n,
+    InvoicePreviewLine line,
+  ) {
+    final title = [
+      line.itemName ?? l10n.billingItemFallback,
+      if (line.karat != null) line.karat!,
+      if (line.quantity > 1) '×${line.quantity}',
+    ].join(' · ');
+    final meta = [
+      '${line.netWeight.toStringAsFixed(3)} g',
+      if (line.ratePerGram > 0) '@ ${billingMoney(line.ratePerGram)}/g',
+      if (line.makingCharges > 0)
+        '${l10n.billingMakingCharges} ${billingMoney(line.makingCharges)}',
+    ].join('  ·  ');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.text1(context),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  meta,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.text3(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            billingMoney(line.itemTotal),
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text1(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _totalRow(
+    BuildContext context,
+    String label,
+    String? value, {
+    bool emphasize = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: emphasize ? 13.5 : 12.5,
+              fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
+              color: emphasize
+                  ? AppColors.text1(context)
+                  : AppColors.text3(context),
+            ),
+          ),
+          if (value != null)
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: emphasize ? 15 : 12.5,
+                fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
+                color: emphasize ? AppColors.primary : AppColors.text2(context),
+              ),
+            ),
         ],
       ),
     );

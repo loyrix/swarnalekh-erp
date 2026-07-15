@@ -442,28 +442,6 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.lg),
-            GlassCard(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SectionHeader(title: l10n.billingTopSellingProducts),
-                  const SizedBox(height: AppSpacing.md),
-                  if (dashboard.topSellingProducts.isEmpty)
-                    Text('—', style: TextStyle(color: AppColors.text3(context)))
-                  else
-                    ...dashboard.topSellingProducts.map(
-                      (p) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.diamond_outlined),
-                        title: Text(p.itemName),
-                        trailing: Text('${p.quantity}'),
-                      ),
-                    ),
-                ],
-              ),
-            ),
           ],
         );
       },

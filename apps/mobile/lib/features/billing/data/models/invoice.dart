@@ -106,8 +106,10 @@ class InvoicePreviewLine {
   const InvoicePreviewLine({
     required this.inventoryItemId,
     required this.itemName,
+    required this.karat,
     required this.quantity,
     required this.netWeight,
+    required this.ratePerGram,
     required this.metalValue,
     required this.makingCharges,
     required this.itemTotal,
@@ -115,8 +117,13 @@ class InvoicePreviewLine {
 
   final String inventoryItemId;
   final String? itemName;
+  final String? karat;
   final int quantity;
   final double netWeight;
+
+  /// Metal rate used to price this line (0 when an explicit selling price was
+  /// used instead of a daily rate).
+  final double ratePerGram;
   final double metalValue;
   final double makingCharges;
   final double itemTotal;
@@ -125,8 +132,10 @@ class InvoicePreviewLine {
     return InvoicePreviewLine(
       inventoryItemId: (json['inventoryItemId'] ?? '').toString(),
       itemName: _s(json['itemName']),
+      karat: _s(json['karat']),
       quantity: _i(json['quantity']),
       netWeight: _d(json['netWeight']),
+      ratePerGram: _d(json['ratePerGram']),
       metalValue: _d(json['metalValue']),
       makingCharges: _d(json['makingCharges']),
       itemTotal: _d(json['itemTotal']),

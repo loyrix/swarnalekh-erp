@@ -982,6 +982,12 @@ abstract class AppLocalizations {
   /// **'Top Selling Products'**
   String get billingTopSellingProducts;
 
+  /// No description provided for @billingBillPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Bill Preview'**
+  String get billingBillPreview;
+
   /// No description provided for @billingFromDate.
   ///
   /// In en, this message translates to:

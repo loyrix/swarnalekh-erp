@@ -458,6 +458,9 @@ class AppLocalizationsGu extends AppLocalizations {
   String get billingTopSellingProducts => 'સૌથી વધુ વેચાયેલા પ્રોડક્ટ';
 
   @override
+  String get billingBillPreview => 'બિલ પ્રીવ્યૂ';
+
+  @override
   String get billingFromDate => 'શરૂ તારીખ';
 
   @override

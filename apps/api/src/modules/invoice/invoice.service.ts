@@ -346,6 +346,7 @@ export class InvoiceService {
       items: computed.lines.map((line) => ({
         inventoryItemId: line.invItemId,
         itemName: line.input.itemName ?? null,
+        karat: line.input.karat ?? null,
         quantity: line.input.quantity ?? 1,
         grossWeight: this.toNumber(line.input.grossWeight),
         netWeight: this.toNumber(line.input.netWeight),

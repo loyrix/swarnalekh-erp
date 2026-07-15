@@ -84,6 +84,30 @@ void main() {
       expect(p.grandTotal, 11845);
       expect(p.totalTax, 345);
     });
+
+    test('parses karat and rate per gram on each line', () {
+      final line = InvoicePreviewLine.fromJson({
+        'inventoryItemId': 'a',
+        'itemName': 'Gold Chain',
+        'karat': '22K',
+        'quantity': 1,
+        'netWeight': 10,
+        'ratePerGram': 7320,
+        'metalValue': 73200,
+        'makingCharges': 500,
+        'itemTotal': 73700,
+      });
+      expect(line.karat, '22K');
+      expect(line.ratePerGram, 7320);
+      // Absent rate (explicit selling price) parses as 0.
+      expect(
+        InvoicePreviewLine.fromJson({
+          'inventoryItemId': 'b',
+          'quantity': 1,
+        }).ratePerGram,
+        0,
+      );
+    });
   });
 
   group('BillingInventoryItem.fromJson', () {
