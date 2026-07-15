@@ -1851,6 +1851,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mortgagePaymentType => 'Payment Type';
 
   @override
+  String get mortgageEditPayment => 'Edit Payment';
+
+  @override
+  String get mortgageClosure => 'Closure';
+
+  @override
   String get mortgageInterest => 'Interest';
 
   @override

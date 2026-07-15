@@ -16,6 +16,7 @@ import {
   CollectMortgagePaymentDto,
   CreateMortgageLoanDto,
   MortgageDashboardQueryDto,
+  UpdateMortgagePaymentDto,
 } from './mortgage.dto.js';
 
 @Injectable()
@@ -286,6 +287,101 @@ export class MortgageService {
           totalPayableAmount: new Prisma.Decimal(
             updatedSnapshot.totalPayableAmount,
           ),
+        },
+        include: this.loanInclude,
+      });
+
+      return this.toLoanResponse(updated);
+    });
+  }
+
+  /**
+   * Correct a recorded payment (wrong amount / wrong type). Reverts the old
+   * payment's effect on the loan totals, applies the new values, and refreshes
+   * the loan snapshot. Only active loans; closure payments cannot be edited.
+   */
+  async updatePayment(
+    tenantId: string,
+    loanId: string,
+    paymentId: string,
+    dto: UpdateMortgagePaymentDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const loan = await this.findActiveLoanForUpdate(tx, tenantId, loanId);
+      const payment = await tx.mortgagePayment.findFirst({
+        where: { id: paymentId, loanId: loan.id, tenantId },
+      });
+      if (!payment) {
+        throw new NotFoundException('Payment not found');
+      }
+      if (payment.paymentType === 'closure') {
+        throw new BadRequestException(
+          'Closure payments cannot be edited. Reopen the loan instead.',
+        );
+      }
+
+      const oldAmount = this.toNumber(payment.amount);
+      const oldType = payment.paymentType ?? 'interest';
+      const newAmount = this.round2(dto.amount ?? oldAmount);
+      const newType = dto.paymentType ?? oldType;
+      if (newAmount <= 0) {
+        throw new BadRequestException('Amount must be greater than zero');
+      }
+
+      let totalInterestPaid = this.toNumber(loan.totalInterestPaid);
+      let totalPrincipalPaid = this.toNumber(loan.totalPrincipalPaid);
+      if (oldType === 'principal') {
+        totalPrincipalPaid = this.round2(totalPrincipalPaid - oldAmount);
+      } else {
+        totalInterestPaid = this.round2(totalInterestPaid - oldAmount);
+      }
+      if (newType === 'principal') {
+        totalPrincipalPaid = this.round2(totalPrincipalPaid + newAmount);
+      } else {
+        totalInterestPaid = this.round2(totalInterestPaid + newAmount);
+      }
+
+      if (totalInterestPaid < 0 || totalPrincipalPaid < 0) {
+        throw new BadRequestException(
+          'This correction would make the paid totals negative',
+        );
+      }
+      if (totalPrincipalPaid > this.toNumber(loan.principalAmount) + 0.01) {
+        throw new BadRequestException(
+          'Principal paid cannot exceed the loan amount',
+        );
+      }
+
+      await tx.mortgagePayment.update({
+        where: { id: payment.id },
+        data: {
+          amount: new Prisma.Decimal(newAmount),
+          paymentType: newType,
+          ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+        },
+      });
+
+      const snapshot = calculateMortgagePayable({
+        principalAmount: this.toNumber(loan.principalAmount),
+        interestRateMonthly: this.toNumber(loan.interestRateMonthly),
+        loanDate: loan.loanDate,
+        asOfDate: new Date(),
+        interestPaid: totalInterestPaid,
+        principalPaid: totalPrincipalPaid,
+      });
+
+      const updated = await tx.mortgageLoan.update({
+        where: { id: loan.id },
+        data: {
+          totalInterestPaid: new Prisma.Decimal(totalInterestPaid),
+          totalPrincipalPaid: new Prisma.Decimal(totalPrincipalPaid),
+          pendingInterestAmount: new Prisma.Decimal(
+            snapshot.pendingInterestAmount,
+          ),
+          outstandingPrincipal: new Prisma.Decimal(
+            snapshot.outstandingPrincipal,
+          ),
+          totalPayableAmount: new Prisma.Decimal(snapshot.totalPayableAmount),
         },
         include: this.loanInclude,
       });

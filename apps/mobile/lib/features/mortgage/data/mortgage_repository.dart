@@ -60,6 +60,13 @@ class MortgageRepository {
   Future<void> createLoan(Map<String, dynamic> payload) =>
       _api.dio.post('/mortgages', data: payload);
 
+  /// Correct a recorded payment's amount/type (admin only).
+  Future<void> updatePayment(
+    String loanId,
+    String paymentId,
+    Map<String, dynamic> payload,
+  ) => _api.dio.patch('/mortgages/$loanId/payments/$paymentId', data: payload);
+
   Future<void> collectPayment(String loanId, Map<String, dynamic> payload) =>
       _api.dio.post('/mortgages/$loanId/payments', data: payload);
 

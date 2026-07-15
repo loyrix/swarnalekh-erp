@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Request,
@@ -19,6 +20,7 @@ import {
   CollectMortgagePaymentDto,
   CreateMortgageLoanDto,
   MortgageDashboardQueryDto,
+  UpdateMortgagePaymentDto,
 } from './mortgage.dto.js';
 import { MortgageService } from './mortgage.service.js';
 import {
@@ -87,6 +89,20 @@ export class MortgageController {
       id,
       dto,
     );
+  }
+
+  @Patch(':id/payments/:paymentId')
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({
+    summary: 'Correct a recorded mortgage payment (amount / type)',
+  })
+  async updatePayment(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Param('paymentId') paymentId: string,
+    @Body() dto: UpdateMortgagePaymentDto,
+  ) {
+    return this.mortgageService.updatePayment(req.tenantId, id, paymentId, dto);
   }
 
   @Get(':id/payments/:paymentId/receipt')

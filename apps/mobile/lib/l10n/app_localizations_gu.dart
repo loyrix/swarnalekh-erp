@@ -1851,6 +1851,12 @@ class AppLocalizationsGu extends AppLocalizations {
   String get mortgagePaymentType => 'ચુકવણી પ્રકાર';
 
   @override
+  String get mortgageEditPayment => 'ચુકવણી સંપાદિત કરો';
+
+  @override
+  String get mortgageClosure => 'બંધ';
+
+  @override
   String get mortgageInterest => 'વ્યાજ';
 
   @override

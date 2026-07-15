@@ -82,6 +82,8 @@ describe('MortgageService', () => {
       mortgagePayment: {
         count: jest.fn(),
         create: jest.fn(),
+        findFirst: jest.fn(),
+        update: jest.fn(),
       },
     };
     const prisma = {
@@ -442,6 +444,95 @@ describe('MortgageService', () => {
       }),
     ).rejects.toThrow(BadRequestException);
     expect(tx.mortgagePayment.create).not.toHaveBeenCalled();
+  });
+
+  it('corrects a payment amount and type, reverting the old effect', async () => {
+    const { service, tx } = createService();
+    // Loan currently reflects a 2000 interest payment.
+    tx.mortgageLoan.findFirst.mockResolvedValue(
+      makeLoan({ totalInterestPaid: decimal(2000) }),
+    );
+    tx.mortgagePayment.findFirst.mockResolvedValue({
+      id: 'payment-1',
+      amount: decimal(2000),
+      paymentType: 'interest',
+      notes: null,
+    });
+    tx.mortgagePayment.update.mockResolvedValue({ id: 'payment-1' });
+    tx.mortgageLoan.update.mockImplementation(({ data }) =>
+      Promise.resolve(
+        makeLoan({
+          totalInterestPaid: data.totalInterestPaid,
+          totalPrincipalPaid: data.totalPrincipalPaid,
+        }),
+      ),
+    );
+
+    // Correct: it was actually a 5000 principal payment.
+    await service.updatePayment('tenant-1', 'loan-1', 'payment-1', {
+      amount: 5000,
+      paymentType: 'principal',
+    });
+
+    expect(tx.mortgagePayment.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          amount: decimal(5000),
+          paymentType: 'principal',
+        }),
+      }),
+    );
+    // Old 2000 interest reverted (2000-2000=0); new 5000 principal applied.
+    expect(tx.mortgageLoan.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          totalInterestPaid: decimal(0),
+          totalPrincipalPaid: decimal(5000),
+        }),
+      }),
+    );
+  });
+
+  it('refuses to edit closure payments or unknown payments', async () => {
+    const { service, tx } = createService();
+    tx.mortgageLoan.findFirst.mockResolvedValue(makeLoan());
+    tx.mortgagePayment.findFirst.mockResolvedValueOnce({
+      id: 'payment-1',
+      amount: decimal(100000),
+      paymentType: 'closure',
+      notes: null,
+    });
+    await expect(
+      service.updatePayment('tenant-1', 'loan-1', 'payment-1', {
+        amount: 90000,
+      }),
+    ).rejects.toThrow(BadRequestException);
+
+    tx.mortgagePayment.findFirst.mockResolvedValueOnce(null);
+    await expect(
+      service.updatePayment('tenant-1', 'loan-1', 'missing', { amount: 10 }),
+    ).rejects.toThrow(NotFoundException);
+    expect(tx.mortgagePayment.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects a correction that would exceed the loan principal', async () => {
+    const { service, tx } = createService();
+    tx.mortgageLoan.findFirst.mockResolvedValue(
+      makeLoan({ totalPrincipalPaid: decimal(95000) }),
+    );
+    tx.mortgagePayment.findFirst.mockResolvedValue({
+      id: 'payment-1',
+      amount: decimal(1000),
+      paymentType: 'principal',
+      notes: null,
+    });
+
+    await expect(
+      service.updatePayment('tenant-1', 'loan-1', 'payment-1', {
+        amount: 20000,
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(tx.mortgagePayment.update).not.toHaveBeenCalled();
   });
 
   it('requires full settlement before closing a mortgage loan', async () => {

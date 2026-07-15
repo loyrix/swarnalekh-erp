@@ -12,6 +12,7 @@ import 'package:swarnbook/features/mortgage/data/mortgage_repository.dart';
 import 'package:swarnbook/features/mortgage/presentation/mortgage_format.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/close_loan_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/collect_payment_page.dart';
+import 'package:swarnbook/features/mortgage/presentation/screens/edit_payment_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_form_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/widgets/mortgage_detail_sheet.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
@@ -144,7 +145,30 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
       onCollect: () => _openCollect(loan),
       onClose: _canManage ? () => _openClose(loan) : null,
       onReceipt: (payment) => _openReceipt(loan, payment),
+      onEditPayment: _canManage
+          ? (payment) => _openEditPayment(loan, payment)
+          : null,
     );
+  }
+
+  Future<void> _openEditPayment(
+    MortgageLoan loan,
+    MortgagePayment payment,
+  ) async {
+    // Leave the detail sheet first so the refreshed loan is shown on return.
+    Navigator.of(context).maybePop();
+    final done = await EditPaymentPage.open(
+      context,
+      loanId: loan.id,
+      payment: payment,
+    );
+    if (done == true && mounted) {
+      AppToast.success(
+        context,
+        AppLocalizations.of(context)!.mortgagePaymentSaved,
+      );
+      _invalidate();
+    }
   }
 
   @override

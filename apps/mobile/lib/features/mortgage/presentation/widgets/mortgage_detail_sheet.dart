@@ -13,6 +13,7 @@ Future<void> showMortgageDetail(
   required VoidCallback onCollect,
   VoidCallback? onClose,
   required void Function(MortgagePayment payment) onReceipt,
+  void Function(MortgagePayment payment)? onEditPayment,
 }) {
   final l10n = AppLocalizations.of(context)!;
 
@@ -88,7 +89,11 @@ Future<void> showMortgageDetail(
     ],
     extra: loan.payments.isEmpty
         ? null
-        : _PaymentsBlock(payments: loan.payments, onReceipt: onReceipt),
+        : _PaymentsBlock(
+            payments: loan.payments,
+            onReceipt: onReceipt,
+            onEditPayment: loan.isActive ? onEditPayment : null,
+          ),
     actions: [
       if (loan.isActive)
         GoldButton(
@@ -113,10 +118,27 @@ Future<void> showMortgageDetail(
 }
 
 class _PaymentsBlock extends StatelessWidget {
-  const _PaymentsBlock({required this.payments, required this.onReceipt});
+  const _PaymentsBlock({
+    required this.payments,
+    required this.onReceipt,
+    this.onEditPayment,
+  });
 
   final List<MortgagePayment> payments;
   final void Function(MortgagePayment payment) onReceipt;
+  final void Function(MortgagePayment payment)? onEditPayment;
+
+  String _typeLabel(AppLocalizations l10n, String? type) => switch (type) {
+    'principal' => l10n.mortgagePrincipal,
+    'closure' => l10n.mortgageClosure,
+    _ => l10n.mortgageInterest,
+  };
+
+  Color _typeColor(String? type) => switch (type) {
+    'principal' => AppColors.info,
+    'closure' => AppColors.success,
+    _ => AppColors.warning,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -139,14 +161,34 @@ class _PaymentsBlock extends StatelessWidget {
             dense: true,
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.receipt_long_outlined),
-            title: Text(mortgageMoney(payment.amount)),
-            subtitle: Text(
-              '${payment.receiptNumber ?? l10n.mortgageReceipt} • ${mortgageDate(payment.paymentDate)}',
+            title: Row(
+              children: [
+                Text(mortgageMoney(payment.amount)),
+                const SizedBox(width: AppSpacing.sm),
+                StatusBadge(
+                  label: _typeLabel(l10n, payment.paymentType),
+                  color: _typeColor(payment.paymentType),
+                ),
+              ],
             ),
-            trailing: IconButton(
-              tooltip: l10n.mortgageReceipt,
-              icon: const Icon(Icons.download_rounded),
-              onPressed: () => onReceipt(payment),
+            // What kind of payment and when — the receipt number lives on the
+            // downloaded receipt itself.
+            subtitle: Text(mortgageDate(payment.paymentDate)),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (onEditPayment != null && payment.paymentType != 'closure')
+                  IconButton(
+                    tooltip: l10n.mortgageEditPayment,
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () => onEditPayment!(payment),
+                  ),
+                IconButton(
+                  tooltip: l10n.mortgageReceipt,
+                  icon: const Icon(Icons.download_rounded),
+                  onPressed: () => onReceipt(payment),
+                ),
+              ],
             ),
           ),
       ],

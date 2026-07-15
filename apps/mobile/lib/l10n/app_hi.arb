@@ -563,6 +563,8 @@
   "mortgageCollectPayment": "भुगतान जमा करें",
   "mortgageAmount": "राशि *",
   "mortgagePaymentType": "भुगतान प्रकार",
+  "mortgageEditPayment": "भुगतान संपादित करें",
+  "mortgageClosure": "समापन",
   "mortgageInterest": "ब्याज",
   "mortgagePrincipal": "मूलधन",
   "mortgagePaymentMode": "भुगतान मोड",

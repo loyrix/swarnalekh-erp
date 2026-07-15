@@ -3658,6 +3658,18 @@ abstract class AppLocalizations {
   /// **'Payment Type'**
   String get mortgagePaymentType;
 
+  /// No description provided for @mortgageEditPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Payment'**
+  String get mortgageEditPayment;
+
+  /// No description provided for @mortgageClosure.
+  ///
+  /// In en, this message translates to:
+  /// **'Closure'**
+  String get mortgageClosure;
+
   /// No description provided for @mortgageInterest.
   ///
   /// In en, this message translates to:

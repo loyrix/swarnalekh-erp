@@ -712,6 +712,8 @@
   "mortgageCollectPayment": "Collect Payment",
   "mortgageAmount": "Amount *",
   "mortgagePaymentType": "Payment Type",
+  "mortgageEditPayment": "Edit Payment",
+  "mortgageClosure": "Closure",
   "mortgageInterest": "Interest",
   "mortgagePrincipal": "Principal",
   "mortgagePaymentMode": "Payment Mode",

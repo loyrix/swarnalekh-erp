@@ -5,6 +5,7 @@ import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/mortgage/application/mortgage_providers.dart';
 import 'package:swarnbook/features/mortgage/data/models/mortgage_loan.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/collect_payment_page.dart';
+import 'package:swarnbook/features/mortgage/presentation/screens/edit_payment_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_form_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_screen.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
@@ -96,6 +97,25 @@ void main() {
 
       expect(find.byType(CollectPaymentPage), findsOneWidget);
       expect(find.text('Required'), findsWidgets);
+    });
+
+    testWidgets('edit payment prefills the recorded amount and type', (
+      tester,
+    ) async {
+      final payment = MortgagePayment.fromJson({
+        'id': 'p1',
+        'receiptNumber': 'MR-2026-0001',
+        'amount': 2000,
+        'paymentType': 'principal',
+        'paymentDate': '2026-07-14T00:00:00.000Z',
+      });
+      await tester.pumpWidget(
+        _host(EditPaymentPage(loanId: 'l1', payment: payment)),
+      );
+      await tester.pump();
+
+      expect(find.text('2000'), findsOneWidget); // amount prefilled
+      expect(find.text('Principal'), findsOneWidget); // type prefilled
     });
   });
 }

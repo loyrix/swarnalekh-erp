@@ -1857,6 +1857,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mortgagePaymentType => 'भुगतान प्रकार';
 
   @override
+  String get mortgageEditPayment => 'भुगतान संपादित करें';
+
+  @override
+  String get mortgageClosure => 'समापन';
+
+  @override
   String get mortgageInterest => 'ब्याज';
 
   @override

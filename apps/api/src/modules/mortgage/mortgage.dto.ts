@@ -151,6 +151,26 @@ export class CreateMortgageLoanDto {
   ornaments: CreateMortgageOrnamentDto[];
 }
 
+/** Correct a recorded payment (wrong amount / wrong type). */
+export class UpdateMortgagePaymentDto {
+  @ApiPropertyOptional({ example: 2000 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  amount?: number;
+
+  @ApiPropertyOptional({ example: 'interest', enum: ['interest', 'principal'] })
+  @IsOptional()
+  @IsIn(['interest', 'principal'])
+  paymentType?: 'interest' | 'principal';
+
+  @ApiPropertyOptional({ example: 'Corrected amount' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  notes?: string;
+}
+
 export class CollectMortgagePaymentDto {
   @ApiProperty({ example: 2000 })
   @IsNumber()

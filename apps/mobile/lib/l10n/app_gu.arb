@@ -563,6 +563,8 @@
   "mortgageCollectPayment": "ચુકવણી એકત્રિત કરો",
   "mortgageAmount": "રકમ *",
   "mortgagePaymentType": "ચુકવણી પ્રકાર",
+  "mortgageEditPayment": "ચુકવણી સંપાદિત કરો",
+  "mortgageClosure": "બંધ",
   "mortgageInterest": "વ્યાજ",
   "mortgagePrincipal": "મૂળધન",
   "mortgagePaymentMode": "ચુકવણી મોડ",
