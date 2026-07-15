@@ -3,7 +3,8 @@ import { AppModule } from './app.module';
 import { configureApp } from './bootstrap.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Body parsers are registered in configureApp with a raised limit.
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
   configureApp(app);
 
   const port = process.env.PORT || 3000;

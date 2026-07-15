@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -200,10 +201,18 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
         await _api.dio.post('/inventory', data: payload);
       }
       if (mounted) Navigator.of(context).pop(true);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
-        AppToast.error(context, l10n.errorFailedSaveInventory);
+        // Surface the server's reason (e.g. validation / payload errors)
+        // instead of a generic failure.
+        final serverMessage = e is DioException ? e.message?.trim() : null;
+        AppToast.error(
+          context,
+          (serverMessage == null || serverMessage.isEmpty)
+              ? l10n.errorFailedSaveInventory
+              : serverMessage,
+        );
       }
     }
   }
