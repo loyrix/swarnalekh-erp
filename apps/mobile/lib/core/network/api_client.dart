@@ -58,14 +58,23 @@ class ApiClient {
             onUnauthorized?.call();
           }
 
-          // Extract message from API error response
+          // Extract message from API error response. A bare "Validation
+          // failed" says nothing, so fold the server's per-field `errors`
+          // detail into the message the user actually sees.
           if (error.response?.data is Map) {
-            final message = error.response?.data['message'] ?? 'Unknown error';
+            final data = error.response!.data as Map;
+            final message = data['message'] ?? 'Unknown error';
+            final errors = data['errors'];
+            final detail = errors is List
+                ? errors.map((e) => e.toString()).join('\n')
+                : '';
             error = DioException(
               requestOptions: error.requestOptions,
               response: error.response,
               type: error.type,
-              message: message.toString(),
+              message: detail.isEmpty
+                  ? message.toString()
+                  : '${message.toString()}\n$detail',
             );
           }
           handler.next(error);

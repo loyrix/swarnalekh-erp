@@ -40,10 +40,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       message = exception.message;
+    }
+
+    // Every failed request gets exactly one log line carrying the method, path
+    // and reason — a 4xx that logs nothing is invisible in production. The
+    // validation details are inlined so "Validation failed" is never the whole
+    // story (e.g. which property was rejected).
+    const detail = Array.isArray(errors) ? ` — ${errors.join('; ')}` : '';
+    const line = `${request.method} ${request.url} ${status}: ${message}${detail}`;
+    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(
-        `Unhandled error: ${exception.message}`,
-        exception.stack,
+        line,
+        exception instanceof Error ? exception.stack : undefined,
       );
+    } else {
+      this.logger.warn(line);
     }
 
     response.status(status).json({
