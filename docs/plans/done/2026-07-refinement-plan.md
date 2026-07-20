@@ -1,11 +1,11 @@
 # Refinement Plan — July 2026 (Onyx Champagne + Page-by-Page Requirements)
 
-> Source requirements: [docs/requirements/2026-07-12-page-by-page-requirements.md](../requirements/2026-07-12-page-by-page-requirements.md)
-> Theme: **Onyx · Champagne** ([design concept](../design-concepts/06-onyx-champagne.html)) — see requirements §0 for tokens + type decision (no custom serif; platform sans, semibold, tabular numerals).
+> Source requirements: [docs/requirements/2026-07-12-page-by-page-requirements.md](../../requirements/2026-07-12-page-by-page-requirements.md)
+> Theme: **Onyx · Champagne** ([design concept](../../design-concepts/06-onyx-champagne.html)) — see requirements §0 for tokens + type decision (no custom serif; platform sans, semibold, tabular numerals).
 >
 > Workflow: same rules as [ui-unification-plan.md](ui-unification-plan.md) — phase-by-phase, each phase 100% end-to-end (typed models, 4 UI states, l10n en/hi/gu, tests, analyze/test green) before the next. **Do not start a phase until owner says go.**
 >
-> **Resume pointer: ALL PHASES R0–R5 COMPLETE (R5 56760b5, committed not yet pushed). No migrations since R1. One deferred item: global branch selector context (branches aren't modeled — items carry free-text `location`; needs an owner decision on branch as an entity before any UX). Plan finished otherwise.**
+> **Resume pointer: ALL PHASES R0–R5 COMPLETE and pushed (R5 4885f7a). No migrations since R1. One deferred item: global branch selector context (branches aren't modeled — items carry free-text `location`; needs an owner decision on branch as an entity before any UX). Plan finished otherwise.**
 
 ## Phase overview & ordering
 

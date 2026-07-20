@@ -19,7 +19,7 @@ in A–C is uniform and never redone. (This is the only thing that must precede 
 **Layout style (recommended, agreed):** hybrid — keep low-click tabbed module screens
 (`SectionSwitch`) for browsing; move heavy create/edit forms to **full-screen routes** (not fixed-width dialogs).
 
-**Sources:** [PDF](../source-of-truth/jewellery-erp-system-flow.pdf) · [PRODUCTION_BLOCKERS](../../PRODUCTION_BLOCKERS.md) · [AGENTS](../../AGENTS.md)
+**Sources:** [PDF](../../source-of-truth/jewellery-erp-system-flow.pdf) · [PRODUCTION_BLOCKERS](../../../PRODUCTION_BLOCKERS.md) · [AGENTS](../../../AGENTS.md)
 
 ---
 
@@ -88,10 +88,10 @@ Legend: ⬜ Not started · 🟡 In progress · ✅ Done (full DoD) · ⏸️ Blo
 - A staff redirect guard **already existed** in `app_shell` but was load-time only — refactored to a pure `isRestrictedRoute` and now also enforced on mid-session navigation.
 - The shared library was **already rich** (`CompactDataRow`, `CompactStatStrip`, `EmptyState`, `Shimmer*`, `SearchFilterBar`, `KeyboardAwareScrollView`, `GoldButton`, `SectionSwitch`) — so the kit **composes/adopts** these rather than rebuilding, avoiding a 3rd parallel system.
 
-- [x] `AppBreakpoints` + `AppDensity.isCompact/isExpanded/pick` in [app_theme.dart](../../apps/mobile/lib/core/theme/app_theme.dart) (replaces 9 scattered width thresholds) — `test/app_breakpoints_test.dart`.
+- [x] `AppBreakpoints` + `AppDensity.isCompact/isExpanded/pick` in [app_theme.dart](../../../apps/mobile/lib/core/theme/app_theme.dart) (replaces 9 scattered width thresholds) — `test/app_breakpoints_test.dart`.
 - [x] Cleanup off-plan empty scaffolding: mobile `features/{schemes,ledger,notifications,staff,stage}` + API empty dirs `{scheme,ledger,notification,subscription,sync,audit,rate,user}` removed. **Kept `apps/super-admin`** and empty in-scope `features/settings`. Verified zero imports first.
-- [x] Staff admin-only-route guard: pure `isRestrictedRoute(role, location)` in [app_permissions.dart](../../apps/mobile/lib/features/auth/application/app_permissions.dart) + `didUpdateWidget` enforcement in [app_shell.dart](../../apps/mobile/lib/shared/layouts/app_shell.dart) — tests in `test/app_permissions_test.dart`.
-- [x] **Design-system kit** in `shared/widgets/`, each with widget tests; one-stop barrel [app_kit.dart](../../apps/mobile/lib/shared/widgets/app_kit.dart):
+- [x] Staff admin-only-route guard: pure `isRestrictedRoute(role, location)` in [app_permissions.dart](../../../apps/mobile/lib/features/auth/application/app_permissions.dart) + `didUpdateWidget` enforcement in [app_shell.dart](../../../apps/mobile/lib/shared/layouts/app_shell.dart) — tests in `test/app_permissions_test.dart`.
+- [x] **Design-system kit** in `shared/widgets/`, each with widget tests; one-stop barrel [app_kit.dart](../../../apps/mobile/lib/shared/widgets/app_kit.dart):
 
 | Widget                                 | Status        | Purpose                                                                               |
 | -------------------------------------- | ------------- | ------------------------------------------------------------------------------------- |
@@ -164,7 +164,7 @@ Backend first (removes UI-vs-charged drift and oversell):
 - [ ] `FOR UPDATE` row lock on unique-item stock check in invoice creation (blocker #4). Jest concurrency test.
 - [ ] Idempotency key on `POST /invoices` (blocker #5). Jest duplicate-submit test.
       Mobile:
-- [ ] Typed `Invoice`/`InvoiceLine` models (kill ~29 `Map` reads). "New Bill" calls `/preview` (debounced) and **shows server totals**; relegate [billing_pricing_calculations.dart](../../apps/mobile/lib/features/billing/application/billing_pricing_calculations.dart) to optimistic hint or delete.
+- [ ] Typed `Invoice`/`InvoiceLine` models (kill ~29 `Map` reads). "New Bill" calls `/preview` (debounced) and **shows server totals**; relegate [billing_pricing_calculations.dart](../../../apps/mobile/lib/features/billing/application/billing_pricing_calculations.dart) to optimistic hint or delete.
 - [ ] `AppSectionScaffold`: New Bill · History · Reports. New Bill = full-screen `AppFormScaffold` route (customer → product search/add → live preview → payment → generate); no 720/860px dialogs. Replace bill-preview DataTable with compact rows. Detail via `AppDetailSheet` (keep print/pdf/share/WhatsApp). `AppStatStrip`.
 - [ ] Edge tests: multi-item, qty>1, old-gold exchange, GST on/off, rounding; sold-item reselling blocked; preview total == created total (assert equality); history filters.
 
