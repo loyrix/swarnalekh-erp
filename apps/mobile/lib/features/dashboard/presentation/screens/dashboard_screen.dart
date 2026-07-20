@@ -53,7 +53,16 @@ class _DashboardContent extends StatelessWidget {
         // the owner checks first.
         StaggeredSection(
           index: 2,
-          child: CompactStatStrip(stats: _stats(context, data.stats, isWide)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SectionHeader(
+                title: AppLocalizations.of(context)!.dashboardBusinessOverview,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              CompactStatStrip(stats: _stats(context, data.stats, isWide)),
+            ],
+          ),
         ),
         if (data.stats.categoryStockAlerts.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),

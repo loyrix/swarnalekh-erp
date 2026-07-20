@@ -528,6 +528,19 @@ export class MortgageService {
         })
       : null;
 
+    // A phone that belongs to a *different* customer must not silently switch
+    // the loan onto the existing record — surface it for verification instead.
+    if (
+      existingCustomer &&
+      existingCustomer.name.trim().toLowerCase() !==
+        dto.customerName.trim().toLowerCase()
+    ) {
+      throw new BadRequestException(
+        `This mobile number already belongs to "${existingCustomer.name}". ` +
+          'Please verify the customer details.',
+      );
+    }
+
     const customer =
       existingCustomer ??
       (await tx.customer.create({

@@ -295,6 +295,73 @@ describe('MortgageService', () => {
     );
   });
 
+  it('rejects a phone that belongs to a different customer', async () => {
+    const { service, tx } = createService();
+    tx.customer.findFirst.mockResolvedValue({
+      id: 'customer-9',
+      name: 'Sunita Deshpande',
+      phone: '+919111222333',
+    });
+
+    await expect(
+      service.createLoan('tenant-1', 'user-1', {
+        customerName: 'Priya Shah',
+        customerPhone: '+919111222333',
+        principalAmount: 50000,
+        interestRateMonthly: 2,
+        ornaments: [
+          {
+            ornamentType: 'Chain',
+            purity: '22K',
+            grossWeight: 10,
+            netWeight: 9.5,
+          },
+        ],
+      }),
+    ).rejects.toThrow('already belongs to "Sunita Deshpande"');
+    expect(tx.customer.create).not.toHaveBeenCalled();
+    expect(tx.mortgageLoan.create).not.toHaveBeenCalled();
+  });
+
+  it('reuses the customer when the phone and name both match', async () => {
+    const { service, tx } = createService();
+    tx.customer.findFirst.mockResolvedValue({
+      id: 'customer-1',
+      name: 'Priya Shah',
+      phone: '+919111222333',
+      address: 'Mumbai',
+      aadharNumber: null,
+      panNumber: null,
+    });
+    tx.mortgageLoan.count.mockResolvedValue(0);
+    tx.mortgageLoan.create.mockImplementation(({ data }) =>
+      Promise.resolve(makeLoan({ customerId: data.customerId })),
+    );
+
+    // Case/whitespace differences still count as the same customer.
+    await service.createLoan('tenant-1', 'user-1', {
+      customerName: '  priya shah ',
+      customerPhone: '+919111222333',
+      principalAmount: 50000,
+      interestRateMonthly: 2,
+      ornaments: [
+        {
+          ornamentType: 'Chain',
+          purity: '22K',
+          grossWeight: 10,
+          netWeight: 9.5,
+        },
+      ],
+    });
+
+    expect(tx.customer.create).not.toHaveBeenCalled();
+    expect(tx.mortgageLoan.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ customerId: 'customer-1' }),
+      }),
+    );
+  });
+
   it('generates a PDF payload for mortgage payment receipts', async () => {
     const { service, prisma } = createService();
     const paymentDate = todayUtc();

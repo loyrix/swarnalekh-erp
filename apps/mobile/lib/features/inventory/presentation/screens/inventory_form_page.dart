@@ -31,6 +31,27 @@ class InventoryFormPage extends ConsumerStatefulWidget {
     );
   }
 
+  /// Item name = category name, with the optional details in parentheses.
+  static String composeItemName(String categoryName, String details) {
+    final d = details.trim();
+    return d.isEmpty ? categoryName : '$categoryName ($d)';
+  }
+
+  /// Extracts the optional details part from a stored name given its category
+  /// ("Chain (Hollow Rope)" → "Hollow Rope"; "Chain" → ""; anything else is
+  /// shown verbatim so nothing is hidden from the user).
+  static String detailsFromName(String? name, String? categoryName) {
+    final n = name?.trim() ?? '';
+    final c = categoryName?.trim() ?? '';
+    if (n.isEmpty) return '';
+    if (c.isEmpty) return n;
+    if (n == c) return '';
+    if (n.startsWith('$c (') && n.endsWith(')')) {
+      return n.substring(c.length + 2, n.length - 1);
+    }
+    return n;
+  }
+
   @override
   ConsumerState<InventoryFormPage> createState() => _InventoryFormPageState();
 }
@@ -41,6 +62,7 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
   final ImagePicker _imagePicker = ImagePicker();
 
   late final TextEditingController _nameController;
+  String? _originalItemName;
   late final TextEditingController _quantityController;
   late final TextEditingController _grossWeightController;
   late final TextEditingController _stoneWeightController;
@@ -107,7 +129,16 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
   void initState() {
     super.initState();
     final item = widget.item;
-    _nameController = TextEditingController(text: item?.itemName ?? '');
+    // The name is derived from the category ("Chain" / "Chain (Hollow Rope)");
+    // the field only edits the optional details part. Parse an existing name
+    // back into details using the item's category name.
+    _nameController = TextEditingController(
+      text: InventoryFormPage.detailsFromName(
+        item?.itemName,
+        item?.categoryName,
+      ),
+    );
+    _originalItemName = item?.itemName;
     _categoryId = item?.categoryId;
     _metalType = item?.metalType ?? 'gold';
     _stockType = item?.stockType ?? 'unique';
@@ -160,6 +191,20 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
     setState(() => _netWeightController.text = _weightText(_netWeight));
   }
 
+  String? _selectedCategoryName() {
+    final categories = ref.read(categoriesProvider).valueOrNull;
+    if (categories != null) {
+      for (final c in categories) {
+        if (c.id == _categoryId) return c.name;
+      }
+    }
+    // Fallback when the list isn't loaded but the item already carries it.
+    if (_isEdit && widget.item?.categoryId == _categoryId) {
+      return widget.item?.categoryName;
+    }
+    return null;
+  }
+
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
@@ -176,10 +221,28 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
       AppToast.error(context, l10n.validationStoneExceedsGross);
       return;
     }
+    final categoryName = _selectedCategoryName();
+    if (categoryName == null) {
+      AppToast.error(context, l10n.validationCategoryRequired);
+      return;
+    }
+    final details = _nameController.text.trim();
+    // If the details still parse-match the original name under the selected
+    // category, keep the stored name untouched (legacy names round-trip);
+    // otherwise compose "<Category> (<details>)".
+    final original = _originalItemName?.trim();
+    final itemName =
+        (_isEdit &&
+            original != null &&
+            original.isNotEmpty &&
+            InventoryFormPage.detailsFromName(original, categoryName) ==
+                details)
+        ? original
+        : InventoryFormPage.composeItemName(categoryName, details);
     setState(() => _isSaving = true);
 
     final payload = {
-      'itemName': _nameController.text.trim(),
+      'itemName': itemName,
       'categoryId': _categoryId,
       'stockType': _stockType,
       'quantity': _stockType == 'bulk'
@@ -242,13 +305,15 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
         onSave: _save,
         children: [
           _sectionTitle(l10n.inventoryProductDetails),
+          _categoryDropdown(l10n),
+          const SizedBox(height: AppSpacing.md),
+          // Optional variant/details — the item name itself derives from the
+          // category ("Chain (Hollow Rope)"), so nothing is typed twice.
           _field(
             _nameController,
-            l10n.inventoryFieldItemName,
-            requiredMessage: l10n.validationItemNameRequired,
+            l10n.inventoryFieldDetails,
+            helperText: l10n.inventoryDetailsHint,
           ),
-          const SizedBox(height: AppSpacing.md),
-          _categoryDropdown(l10n),
           if (_isEdit && widget.item?.tagNumber != null) ...[
             const SizedBox(height: AppSpacing.md),
             TextFormField(

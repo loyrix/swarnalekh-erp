@@ -1402,6 +1402,12 @@ abstract class AppLocalizations {
   /// **'Your Jewellery Shop'**
   String get dashboardShopFallback;
 
+  /// No description provided for @dashboardBusinessOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Overview'**
+  String get dashboardBusinessOverview;
+
   /// No description provided for @dashboardQuickActions.
   ///
   /// In en, this message translates to:
@@ -1785,6 +1791,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Item Name *'**
   String get inventoryFieldItemName;
+
+  /// No description provided for @inventoryFieldDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details (optional)'**
+  String get inventoryFieldDetails;
+
+  /// No description provided for @inventoryDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Hollow Rope — item name becomes Category (Details)'**
+  String get inventoryDetailsHint;
 
   /// No description provided for @inventoryFieldTagNumber.
   ///

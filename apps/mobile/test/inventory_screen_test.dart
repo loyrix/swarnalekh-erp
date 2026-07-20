@@ -56,31 +56,60 @@ InventoryItem _item() => InventoryItem.fromJson({
 
 void main() {
   group('InventoryFormPage', () {
-    testWidgets('blocks save and shows validation when name is empty', (
+    testWidgets('asks for optional details instead of a product name', (
       tester,
     ) async {
       await tester.pumpWidget(_host(const InventoryFormPage()));
       await tester.pump();
 
-      // Tap the save (Create) action.
-      await tester.tap(find.text('Create'));
-      await tester.pump();
-
-      // Required validation surfaces; nothing navigated away.
-      expect(find.text('Item Name *'), findsWidgets);
-      expect(find.byType(InventoryFormPage), findsOneWidget);
+      // The duplicate Product Name input is gone; the item name derives from
+      // the category with an optional details suffix.
+      expect(find.text('Item Name *'), findsNothing);
+      expect(find.text('Details (optional)'), findsOneWidget);
     });
 
-    testWidgets('prefills name, tag, and category in edit mode', (
+    test('composeItemName derives the name from category + details', () {
+      expect(InventoryFormPage.composeItemName('Chain', ''), 'Chain');
+      expect(
+        InventoryFormPage.composeItemName('Chain', 'Hollow Rope'),
+        'Chain (Hollow Rope)',
+      );
+    });
+
+    testWidgets('prefills details, tag, and category in edit mode', (
       tester,
     ) async {
       await tester.pumpWidget(_host(InventoryFormPage(item: _item())));
       await tester.pump();
 
-      expect(find.text('Gold Ring'), findsOneWidget); // name prefilled
+      // Legacy name that doesn't match the "Category (X)" pattern is shown
+      // verbatim in the details field so nothing is hidden.
+      expect(find.text('Gold Ring'), findsOneWidget);
       expect(find.text('RG-07'), findsOneWidget); // read-only tag shown
       expect(find.text('Ring (RG)'), findsOneWidget); // category preselected
     });
+
+    testWidgets(
+      'parses "Category (details)" names back into the details field',
+      (tester) async {
+        final item = InventoryItem.fromJson({
+          'id': 'i2',
+          'itemName': 'Ring (Solitaire)',
+          'categoryId': 'cat-ring',
+          'categoryName': 'Ring',
+          'metalType': 'gold',
+          'karat': '22K',
+          'grossWeight': 5.0,
+          'netWeight': 4.2,
+          'status': 'in_stock',
+        });
+        await tester.pumpWidget(_host(InventoryFormPage(item: item)));
+        await tester.pump();
+
+        expect(find.text('Solitaire'), findsOneWidget);
+        expect(find.text('Ring (Solitaire)'), findsNothing);
+      },
+    );
 
     testWidgets('requires a karat and a category before saving', (
       tester,

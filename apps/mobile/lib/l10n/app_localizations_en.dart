@@ -669,6 +669,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardShopFallback => 'Your Jewellery Shop';
 
   @override
+  String get dashboardBusinessOverview => 'Business Overview';
+
+  @override
   String get dashboardQuickActions => 'Quick Actions';
 
   @override
@@ -865,6 +868,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryFieldItemName => 'Item Name *';
+
+  @override
+  String get inventoryFieldDetails => 'Details (optional)';
+
+  @override
+  String get inventoryDetailsHint =>
+      'e.g. Hollow Rope — item name becomes Category (Details)';
 
   @override
   String get inventoryFieldTagNumber => 'Tag Number';
