@@ -26,6 +26,8 @@ export interface InvoiceTotalsInput {
   itemTotals: number[];
   discountAmount?: number;
   oldGoldValue?: number;
+  /** Total GST %, split evenly into CGST/SGST. Defaults to 3 (1.5 + 1.5). */
+  gstPercent?: number;
 }
 
 export interface InvoiceTotalsBreakdown extends JewelleryTaxBreakdown {
@@ -76,10 +78,12 @@ const round2 = (value: number): number =>
 
 export function calculateJewelleryTax(
   taxableAmount: number,
+  totalGstPercent = 3,
 ): JewelleryTaxBreakdown {
   const safeTaxableAmount = Math.max(0, taxableAmount);
-  const cgstPercent = 1.5;
-  const sgstPercent = 1.5;
+  const half = Math.max(0, totalGstPercent) / 2;
+  const cgstPercent = half;
+  const sgstPercent = half;
   const cgstAmount = round2((safeTaxableAmount * cgstPercent) / 100);
   const sgstAmount = round2((safeTaxableAmount * sgstPercent) / 100);
   return {
@@ -125,7 +129,7 @@ export function calculateInvoiceTotals(
   const taxableAmount = round2(
     Math.max(0, subtotal - discountAmount - oldGoldValue),
   );
-  const tax = calculateJewelleryTax(taxableAmount);
+  const tax = calculateJewelleryTax(taxableAmount, input.gstPercent);
   const grandTotalRaw = round2(taxableAmount + tax.totalTax);
   const grandTotal = Math.round(grandTotalRaw);
   const roundOff = round2(grandTotal - grandTotalRaw);

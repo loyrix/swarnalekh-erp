@@ -154,6 +154,7 @@ class InvoicePreview {
     required this.taxableAmount,
     required this.totalTax,
     required this.grandTotal,
+    this.customerAddress,
   });
 
   final List<InvoicePreviewLine> items;
@@ -164,6 +165,7 @@ class InvoicePreview {
   final double taxableAmount;
   final double totalTax;
   final double grandTotal;
+  final String? customerAddress;
 
   /// Sum of per-line metal value — the "product value" summary metric.
   double get productValue =>
@@ -187,6 +189,7 @@ class InvoicePreview {
       taxableAmount: _d(json['taxableAmount']),
       totalTax: _d(json['totalTax']),
       grandTotal: _d(json['grandTotal']),
+      customerAddress: _s(json['customerAddress']),
     );
   }
 }
@@ -250,17 +253,20 @@ class BillingCustomerOption {
     required this.id,
     required this.name,
     required this.phone,
+    required this.address,
   });
 
   final String id;
   final String? name;
   final String? phone;
+  final String? address;
 
   factory BillingCustomerOption.fromJson(Map<String, dynamic> json) {
     return BillingCustomerOption(
       id: (json['id'] ?? '').toString(),
       name: _s(json['name']),
       phone: _s(json['phone']),
+      address: _s(json['address']),
     );
   }
 }
@@ -383,6 +389,7 @@ class PrintableInvoiceDetail {
     required this.invoiceDate,
     required this.customerName,
     required this.customerPhone,
+    required this.customerAddress,
     required this.customerGstin,
     required this.paymentMode,
     required this.items,
@@ -410,6 +417,7 @@ class PrintableInvoiceDetail {
   final DateTime? invoiceDate;
   final String? customerName;
   final String? customerPhone;
+  final String? customerAddress;
   final String? customerGstin;
   final String? paymentMode;
   final List<PrintableItem> items;
@@ -442,6 +450,7 @@ class PrintableInvoiceDetail {
       invoiceDate: DateTime.tryParse(json['invoiceDate']?.toString() ?? ''),
       customerName: _s(json['customerName']),
       customerPhone: _s(json['customerPhone']),
+      customerAddress: _s(json['customerAddress']),
       customerGstin: _s(json['customerGstin']),
       paymentMode: _s(json['paymentMode']),
       items: items is List

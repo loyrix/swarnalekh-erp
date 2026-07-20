@@ -333,6 +333,11 @@ pw.Widget _metaGrid(PrintableInvoiceDetail inv) {
                   'Mobile: ${inv.customerPhone}',
                   style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
                 ),
+              if (inv.customerAddress != null)
+                pw.Text(
+                  inv.customerAddress!,
+                  style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
+                ),
               if (inv.customerGstin != null)
                 pw.Text(
                   'GSTIN: ${inv.customerGstin}',

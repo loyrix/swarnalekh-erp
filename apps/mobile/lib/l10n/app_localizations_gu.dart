@@ -385,6 +385,25 @@ class AppLocalizationsGu extends AppLocalizations {
   String get billingMobileNumber => 'મોબાઇલ નંબર';
 
   @override
+  String get billingCustomerAddress => 'ગ્રાહકનું સરનામું';
+
+  @override
+  String get billingBillPricing => 'બિલ કિંમત (વૈકલ્પિક)';
+
+  @override
+  String get billingGoldRatePerGram => 'સોનાનો ભાવ (₹/ગ્રામ)';
+
+  @override
+  String get billingMakingPerGram => 'મજૂરી (₹/ગ્રામ)';
+
+  @override
+  String get billingGstPercent => 'જીએસટી %';
+
+  @override
+  String get billingBillPricingHint =>
+      'આ બિલના તમામ ભાવ-આધારિત આઇટમની કિંમત નક્કી કરવા સોનાનો ભાવ સેટ કરો. મજૂરી પ્રતિ ગ્રામ લાગુ પડે છે; સાચવેલ વેચાણ કિંમત ધરાવતા આઇટમ તે જ રાખે છે. જીએસટી ડિફૉલ્ટ 3% છે.';
+
+  @override
   String get billingSearchInventory => 'ઇન્વેન્ટરી શોધો';
 
   @override

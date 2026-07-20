@@ -366,6 +366,51 @@ describe('InvoiceService', () => {
     expect(tx.inventoryItem.update).not.toHaveBeenCalled();
   });
 
+  it('prices a rate-based line from the gold rate, making, and GST typed on the bill', async () => {
+    const { service, tx } = createService();
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'item-1',
+      tagNumber: 'INV-0001',
+      itemName: 'Gold Chain',
+      metalType: 'gold',
+      karat: '22K',
+      stockType: 'unique',
+      quantity: 1,
+      status: 'in_stock',
+      grossWeight: decimal(10),
+      netWeight: decimal(9),
+      purchaseRate: decimal(5000),
+      // No selling price and no daily rate: the bill's own rate must price it.
+      makingChargesFixed: null,
+      makingChargesPerGram: null,
+      makingChargesPercent: null,
+      stoneValue: decimal(0),
+      wastagePercent: decimal(0),
+      hallmarkNumber: null,
+      huid: null,
+    });
+
+    const preview = await service.previewInvoice('tenant-1', {
+      customerName: 'Walk-in',
+      customerAddress: '12 MG Road, Surat',
+      ratePerGramOverride: 6000,
+      makingPerGramOverride: 200,
+      gstPercentOverride: 5,
+      items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+    });
+
+    // metal 9*6000=54000, making 200*10=2000 → line 56000.
+    expect(preview.items[0].metalValue).toBe(54000);
+    expect(preview.items[0].makingCharges).toBe(2000);
+    expect(preview.items[0].itemTotal).toBe(56000);
+    // GST 5% of 56000 = 2800 → grand total 58800.
+    expect(preview.totalTax).toBe(2800);
+    expect(preview.grandTotal).toBe(58800);
+    expect(preview.customerAddress).toBe('12 MG Road, Surat');
+    // The typed rate replaces the daily-rate lookup entirely.
+    expect(tx.dailyRate.findFirst).not.toHaveBeenCalled();
+  });
+
   it('returns the existing invoice for a repeated idempotency key', async () => {
     const { service, prisma } = createService();
     prisma.invoice.findFirst.mockResolvedValue({

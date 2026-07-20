@@ -838,6 +838,42 @@ abstract class AppLocalizations {
   /// **'Mobile Number'**
   String get billingMobileNumber;
 
+  /// No description provided for @billingCustomerAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Address'**
+  String get billingCustomerAddress;
+
+  /// No description provided for @billingBillPricing.
+  ///
+  /// In en, this message translates to:
+  /// **'Bill Pricing (optional)'**
+  String get billingBillPricing;
+
+  /// No description provided for @billingGoldRatePerGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Rate (₹/g)'**
+  String get billingGoldRatePerGram;
+
+  /// No description provided for @billingMakingPerGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Making (₹/g)'**
+  String get billingMakingPerGram;
+
+  /// No description provided for @billingGstPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'GST %'**
+  String get billingGstPercent;
+
+  /// No description provided for @billingBillPricingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a gold rate to price every rate-based item on this bill. Making applies per gram; items with a saved selling price keep it. GST defaults to 3%.'**
+  String get billingBillPricingHint;
+
   /// No description provided for @billingSearchInventory.
   ///
   /// In en, this message translates to:

@@ -77,6 +77,37 @@ export class CreateInvoiceDto {
   @IsOptional()
   customerPhone?: string;
 
+  @ApiProperty({ required: false, description: 'Customer billing address' })
+  @IsString()
+  @IsOptional()
+  customerAddress?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Gold rate (per gram) typed on the bill; applies to all rate-priced ' +
+      'items in this bill. Items with an explicit selling price keep it.',
+  })
+  @IsNumber()
+  @IsOptional()
+  ratePerGramOverride?: number;
+
+  @ApiProperty({
+    required: false,
+    description: 'Making charge (per gram of gross weight) typed on the bill.',
+  })
+  @IsNumber()
+  @IsOptional()
+  makingPerGramOverride?: number;
+
+  @ApiProperty({
+    required: false,
+    description: 'Total GST % typed on the bill (split evenly CGST/SGST).',
+  })
+  @IsNumber()
+  @IsOptional()
+  gstPercentOverride?: number;
+
   @ApiProperty({ type: [CreateInvoiceItemDto] })
   @IsArray()
   @ValidateNested({ each: true })

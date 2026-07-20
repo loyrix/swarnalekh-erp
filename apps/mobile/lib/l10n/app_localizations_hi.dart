@@ -387,6 +387,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get billingMobileNumber => 'मोबाइल नंबर';
 
   @override
+  String get billingCustomerAddress => 'ग्राहक का पता';
+
+  @override
+  String get billingBillPricing => 'बिल मूल्य (वैकल्पिक)';
+
+  @override
+  String get billingGoldRatePerGram => 'सोने का भाव (₹/ग्राम)';
+
+  @override
+  String get billingMakingPerGram => 'मजदूरी (₹/ग्राम)';
+
+  @override
+  String get billingGstPercent => 'जीएसटी %';
+
+  @override
+  String get billingBillPricingHint =>
+      'इस बिल के सभी भाव-आधारित आइटम की कीमत तय करने के लिए सोने का भाव सेट करें। मजदूरी प्रति ग्राम लागू होती है; सहेजे गए विक्रय मूल्य वाले आइटम वही रखते हैं। जीएसटी डिफ़ॉल्ट रूप से 3% है।';
+
+  @override
   String get billingSearchInventory => 'इन्वेंटरी खोजें';
 
   @override

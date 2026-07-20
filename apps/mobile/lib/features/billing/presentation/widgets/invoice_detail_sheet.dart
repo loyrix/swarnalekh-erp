@@ -27,6 +27,8 @@ Future<void> showInvoiceDetail(
     ),
     if (inv.customerPhone != null)
       AppDetailRow(l10n.billingMobile, inv.customerPhone!),
+    if (inv.customerAddress != null)
+      AppDetailRow(l10n.billingCustomerAddress, inv.customerAddress!),
     if (inv.customerGstin != null)
       AppDetailRow(l10n.billingGstin, inv.customerGstin!),
     AppDetailRow(l10n.billingInvoiceDate, billingDate(inv.invoiceDate)),

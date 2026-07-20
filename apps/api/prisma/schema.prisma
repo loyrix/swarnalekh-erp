@@ -275,6 +275,7 @@ model Invoice {
   // Customer snapshot
   customerName       String?   @map("customer_name") @db.VarChar(200)
   customerPhone      String?   @map("customer_phone") @db.VarChar(15)
+  customerAddress    String?   @map("customer_address")
   customerGstin      String?   @map("customer_gstin") @db.VarChar(20)
   // Type
   invoiceType        String    @default("sale") @map("invoice_type") @db.VarChar(20)

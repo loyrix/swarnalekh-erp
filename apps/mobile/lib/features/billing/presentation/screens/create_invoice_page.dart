@@ -34,7 +34,11 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   final _formKey = GlobalKey<FormState>();
   final _customerName = TextEditingController();
   final _customerPhone = TextEditingController();
+  final _customerAddress = TextEditingController();
   final _inventorySearch = TextEditingController();
+  final _goldRate = TextEditingController();
+  final _makingPerGram = TextEditingController();
+  final _gstPercent = TextEditingController();
   final _discount = TextEditingController(text: '0');
   final _amountPaid = TextEditingController(text: '0');
   final _notes = TextEditingController();
@@ -69,7 +73,11 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     _previewDebounce?.cancel();
     _customerName.dispose();
     _customerPhone.dispose();
+    _customerAddress.dispose();
     _inventorySearch.dispose();
+    _goldRate.dispose();
+    _makingPerGram.dispose();
+    _gstPercent.dispose();
     _discount.dispose();
     _amountPaid.dispose();
     _notes.dispose();
@@ -121,6 +129,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
   InvoiceDraft _buildDraft({required bool forPreview}) {
     final typedName = _customerName.text.trim();
+    final address = _customerAddress.text.trim();
     return InvoiceDraft(
       customerId: _selectedCustomerId,
       // Preview needs a non-empty name for a walk-in so pricing can compute.
@@ -130,11 +139,17 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       customerPhone: _selectedCustomerId != null
           ? null
           : _customerPhone.text.trim(),
+      // A typed address overrides the saved customer's address; blank falls
+      // back to the saved one server-side.
+      customerAddress: address.isEmpty ? null : address,
       items: _selectedDraftItems(),
       discountAmount: double.tryParse(_discount.text.trim()) ?? 0,
       amountPaid: double.tryParse(_amountPaid.text.trim()) ?? 0,
       paymentMode: _paymentMode,
       notes: _notes.text.trim(),
+      ratePerGramOverride: double.tryParse(_goldRate.text.trim()),
+      makingPerGramOverride: double.tryParse(_makingPerGram.text.trim()),
+      gstPercentOverride: double.tryParse(_gstPercent.text.trim()),
     );
   }
 
@@ -222,6 +237,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       if (customer != null) {
         _customerName.text = customer.name ?? '';
         _customerPhone.text = customer.phone ?? '';
+        _customerAddress.text = customer.address ?? '';
       }
     });
     _schedulePreview();
@@ -338,6 +354,18 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               border: const OutlineInputBorder(),
             ),
           ),
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            controller: _customerAddress,
+            textCapitalization: TextCapitalization.words,
+            maxLines: 2,
+            minLines: 1,
+            decoration: InputDecoration(
+              labelText: l10n.billingCustomerAddress,
+              prefixIcon: const Icon(Icons.location_on_outlined),
+              border: const OutlineInputBorder(),
+            ),
+          ),
           const SizedBox(height: AppSpacing.lg),
           SectionHeader(title: l10n.billingSelectInventoryItems),
           const SizedBox(height: AppSpacing.sm),
@@ -371,6 +399,63 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     itemBuilder: (context, index) =>
                         _itemRow(l10n, _filteredItems[index]),
                   ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SectionHeader(title: l10n.billingBillPricing),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _goldRate,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.billingGoldRatePerGram,
+                    prefixText: '₹ ',
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => _schedulePreview(),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: TextFormField(
+                  controller: _makingPerGram,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.billingMakingPerGram,
+                    prefixText: '₹ ',
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => _schedulePreview(),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              SizedBox(
+                width: 96,
+                child: TextFormField(
+                  controller: _gstPercent,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.billingGstPercent,
+                    suffixText: '%',
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => _schedulePreview(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            l10n.billingBillPricingHint,
+            style: TextStyle(color: AppColors.text3(context), fontSize: 12),
           ),
           // Live per-item breakdown of the selection: karat, weight @ rate,
           // making, line totals, and the Rate / Making / GST 3% summary.

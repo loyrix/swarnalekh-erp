@@ -385,6 +385,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingMobileNumber => 'Mobile Number';
 
   @override
+  String get billingCustomerAddress => 'Customer Address';
+
+  @override
+  String get billingBillPricing => 'Bill Pricing (optional)';
+
+  @override
+  String get billingGoldRatePerGram => 'Gold Rate (₹/g)';
+
+  @override
+  String get billingMakingPerGram => 'Making (₹/g)';
+
+  @override
+  String get billingGstPercent => 'GST %';
+
+  @override
+  String get billingBillPricingHint =>
+      'Set a gold rate to price every rate-based item on this bill. Making applies per gram; items with a saved selling price keep it. GST defaults to 3%.';
+
+  @override
   String get billingSearchInventory => 'Search Inventory';
 
   @override

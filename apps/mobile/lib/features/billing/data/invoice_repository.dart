@@ -63,21 +63,35 @@ class InvoiceDraft {
     this.customerId,
     this.customerName,
     this.customerPhone,
+    this.customerAddress,
     required this.items,
     this.discountAmount = 0,
     this.amountPaid = 0,
     this.paymentMode = 'cash',
     this.notes,
+    this.ratePerGramOverride,
+    this.makingPerGramOverride,
+    this.gstPercentOverride,
   });
 
   final String? customerId;
   final String? customerName;
   final String? customerPhone;
+  final String? customerAddress;
   final List<InvoiceDraftItem> items;
   final double discountAmount;
   final double amountPaid;
   final String paymentMode;
   final String? notes;
+
+  /// Gold rate (per gram) typed on the bill; prices every rate-based line.
+  final double? ratePerGramOverride;
+
+  /// Making charge (per gram of gross weight) typed on the bill.
+  final double? makingPerGramOverride;
+
+  /// Total GST % typed on the bill (split evenly into CGST/SGST).
+  final double? gstPercentOverride;
 
   Map<String, dynamic> toJson({String? idempotencyKey}) {
     return {
@@ -88,11 +102,19 @@ class InvoiceDraft {
           customerPhone != null &&
           customerPhone!.isNotEmpty)
         'customerPhone': customerPhone,
+      if (customerAddress != null && customerAddress!.isNotEmpty)
+        'customerAddress': customerAddress,
       'items': items.map((i) => i.toJson()).toList(),
       'discountAmount': discountAmount,
       'amountPaid': amountPaid,
       'paymentMode': paymentMode,
       if (notes != null && notes!.isNotEmpty) 'notes': notes,
+      if (ratePerGramOverride != null && ratePerGramOverride! > 0)
+        'ratePerGramOverride': ratePerGramOverride,
+      if (makingPerGramOverride != null && makingPerGramOverride! >= 0)
+        'makingPerGramOverride': makingPerGramOverride,
+      if (gstPercentOverride != null && gstPercentOverride! >= 0)
+        'gstPercentOverride': gstPercentOverride,
       if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
     };
   }

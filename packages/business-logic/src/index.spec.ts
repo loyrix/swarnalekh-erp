@@ -18,6 +18,23 @@ describe("business logic", () => {
     });
   });
 
+  it("applies a custom total GST %, split evenly into CGST/SGST", () => {
+    expect(calculateJewelleryTax(1000, 5)).toEqual({
+      cgstPercent: 2.5,
+      cgstAmount: 25,
+      sgstPercent: 2.5,
+      sgstAmount: 25,
+      totalTax: 50,
+    });
+    // Threaded through invoice totals.
+    const totals = calculateInvoiceTotals({
+      itemTotals: [1000],
+      gstPercent: 0,
+    });
+    expect(totals.totalTax).toBe(0);
+    expect(totals.grandTotal).toBe(1000);
+  });
+
   it("calculates old gold exchange value", () => {
     expect(calculateOldGoldValue(10.5, 6500)).toBe(68250);
   });

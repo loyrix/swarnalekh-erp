@@ -46,6 +46,7 @@ type PrintableInvoice = {
     invoiceDate: Date;
     customerName: string | null;
     customerPhone: string | null;
+    customerAddress: string | null;
     customerGstin: string | null;
     paymentMode: string | null;
     items: Array<{
@@ -121,6 +122,7 @@ export class InvoiceService {
   ) {
     let customerName: string | undefined | null = dto.customerName;
     let customerPhone: string | undefined | null = dto.customerPhone;
+    let customerAddress: string | undefined | null = dto.customerAddress;
 
     if (dto.customerId) {
       const customer = await tx.customer.findFirst({
@@ -129,12 +131,26 @@ export class InvoiceService {
       if (customer) {
         customerName = customer.name;
         customerPhone = customer.phone;
+        // Prefer a typed address, else snapshot the saved customer's.
+        customerAddress = dto.customerAddress ?? customer.address;
       } else {
         throw new NotFoundException('Customer not found');
       }
     } else if (!customerName) {
       throw new BadRequestException('Customer Name or ID is required');
     }
+
+    // Bill-time pricing overrides (walk-in). A rate override prices every
+    // rate-based line at the typed rate; items with an explicit selling price
+    // keep their price.
+    const rateOverride =
+      dto.ratePerGramOverride != null && dto.ratePerGramOverride > 0
+        ? dto.ratePerGramOverride
+        : null;
+    const makingPerGramOverride =
+      dto.makingPerGramOverride != null && dto.makingPerGramOverride >= 0
+        ? dto.makingPerGramOverride
+        : null;
 
     if (dto.items.length === 0) {
       throw new BadRequestException(
@@ -210,14 +226,17 @@ export class InvoiceService {
           },
           orderBy,
         });
-      const rateRecord = hasExplicitSellingPrice
-        ? null
-        : ((await findRate(itemKarat)) ?? // exact karat (or explicit null)
-          (await findRate(null)) ?? // legacy metal-wide (null karat) rate
-          // Item has no karat → fall back to any rate set for the metal.
-          (itemKarat === null ? await findRate(undefined) : null));
+      // A typed rate override supplies the rate for rate-based lines, so no
+      // daily rate lookup is needed for them.
+      const rateRecord =
+        hasExplicitSellingPrice || rateOverride != null
+          ? null
+          : ((await findRate(itemKarat)) ?? // exact karat (or explicit null)
+            (await findRate(null)) ?? // legacy metal-wide (null karat) rate
+            // Item has no karat → fall back to any rate set for the metal.
+            (itemKarat === null ? await findRate(undefined) : null));
 
-      if (!hasExplicitSellingPrice && !rateRecord) {
+      if (!hasExplicitSellingPrice && rateOverride == null && !rateRecord) {
         const metalLabel = itemKarat
           ? `${invItem.metalType} ${itemKarat}`
           : invItem.metalType;
@@ -226,9 +245,18 @@ export class InvoiceService {
         );
       }
 
-      const ratePerGram = rateRecord?.ratePerGram ?? null;
-      const componentRatePerGram =
-        ratePerGram?.toNumber() ?? this.toNumber(invItem.purchaseRate);
+      // Effective rate for rate-based pricing: override wins, else the daily
+      // rate. `ratePerGram` (Decimal|null) is what the line reports.
+      const effectiveRatePerGram =
+        rateOverride ?? rateRecord?.ratePerGram?.toNumber() ?? 0;
+      const ratePerGram =
+        rateOverride != null
+          ? new Prisma.Decimal(rateOverride)
+          : (rateRecord?.ratePerGram ?? null);
+      const componentRatePerGram = hasExplicitSellingPrice
+        ? (rateRecord?.ratePerGram?.toNumber() ??
+          this.toNumber(invItem.purchaseRate))
+        : effectiveRatePerGram;
       const grossWeightPerPiece = invItem.grossWeight.toNumber();
       const netWeightPerPiece = invItem.netWeight.toNumber();
       const grossWeight = grossWeightPerPiece * requestedQuantity;
@@ -237,7 +265,10 @@ export class InvoiceService {
         (invItem.stoneValue?.toNumber() ?? 0) * requestedQuantity;
 
       let makingCharges = 0;
-      if (itemDto.makingCharges !== undefined) {
+      if (makingPerGramOverride != null) {
+        // Typed per-gram making applies to every line in the bill.
+        makingCharges = makingPerGramOverride * grossWeight;
+      } else if (itemDto.makingCharges !== undefined) {
         makingCharges = itemDto.makingCharges;
       } else if (invItem.makingChargesFixed) {
         makingCharges =
@@ -263,7 +294,7 @@ export class InvoiceService {
           })
         : calculateItemPrice({
             netWeight,
-            ratePerGram: ratePerGram!.toNumber(),
+            ratePerGram: effectiveRatePerGram,
             makingCharges,
             stoneValue,
             wastagePercent: invItem.wastagePercent.toNumber(),
@@ -316,11 +347,16 @@ export class InvoiceService {
       itemTotals: lines.map((line) => this.toNumber(line.input.itemTotal)),
       discountAmount: dto.discountAmount || 0,
       oldGoldValue,
+      gstPercent:
+        dto.gstPercentOverride != null && dto.gstPercentOverride >= 0
+          ? dto.gstPercentOverride
+          : undefined,
     });
 
     return {
       customerName,
       customerPhone,
+      customerAddress,
       subtotal,
       totalMakingCharges,
       totalStoneValue,
@@ -343,6 +379,7 @@ export class InvoiceService {
     return {
       customerName: computed.customerName ?? null,
       customerPhone: computed.customerPhone ?? null,
+      customerAddress: computed.customerAddress ?? null,
       items: computed.lines.map((line) => ({
         inventoryItemId: line.invItemId,
         itemName: line.input.itemName ?? null,
@@ -405,6 +442,7 @@ export class InvoiceService {
             customerId: dto.customerId,
             customerName: computed.customerName,
             customerPhone: computed.customerPhone,
+            customerAddress: computed.customerAddress,
             subtotal: computed.subtotal,
             totalMakingCharges: computed.totalMakingCharges,
             totalStoneValue: computed.totalStoneValue,
@@ -745,6 +783,7 @@ export class InvoiceService {
         invoiceDate: invoice.invoiceDate,
         customerName: invoice.customerName,
         customerPhone: invoice.customerPhone,
+        customerAddress: invoice.customerAddress,
         customerGstin: invoice.customerGstin,
         paymentMode: invoice.paymentMode,
         items: invoice.items.map((item) => ({
@@ -870,6 +909,7 @@ export class InvoiceService {
       `Invoice Date: ${this.formatDate(invoice.invoiceDate)}`,
       `Customer: ${invoice.customerName ?? 'Walk-in Customer'}`,
       invoice.customerPhone ? `Mobile: ${invoice.customerPhone}` : '',
+      invoice.customerAddress ? `Address: ${invoice.customerAddress}` : '',
       invoice.customerGstin ? `Customer GSTIN: ${invoice.customerGstin}` : '',
       '',
       'Product Details',
