@@ -79,7 +79,9 @@ describe("business logic", () => {
       }),
     ).toEqual({
       elapsedMonths: 3,
-      monthlyInterestAmount: 2000,
+      // Monthly interest reflects what the NEXT month costs — on the
+      // outstanding 90,000, not the original principal.
+      monthlyInterestAmount: 1800,
       accruedInterestAmount: 6000,
       interestPaid: 2500,
       pendingInterestAmount: 3500,
@@ -88,6 +90,92 @@ describe("business logic", () => {
       totalPayableAmount: 93500,
       nextDueDate: new Date("2026-05-10T00:00:00.000Z"),
     });
+  });
+
+  it("completes a month only after the same date next month passes", () => {
+    const base = {
+      principalAmount: 100000,
+      interestRateMonthly: 2,
+      loanDate: "2026-01-10T00:00:00.000Z",
+    };
+    // On the anniversary DAY the first month completes — still 1 month.
+    expect(
+      calculateMortgagePayable({
+        ...base,
+        asOfDate: "2026-02-10T18:30:00.000Z",
+      }).elapsedMonths,
+    ).toBe(1);
+    // The day AFTER the anniversary starts month 2.
+    expect(
+      calculateMortgagePayable({
+        ...base,
+        asOfDate: "2026-02-11T00:00:00.000Z",
+      }).elapsedMonths,
+    ).toBe(2);
+  });
+
+  it("clamps month-end anniversaries (31st → 28th/29th)", () => {
+    const base = {
+      principalAmount: 100000,
+      interestRateMonthly: 2,
+      loanDate: "2026-01-31T00:00:00.000Z",
+    };
+    // Feb 28 is the clamped anniversary — month 1 completes there.
+    expect(
+      calculateMortgagePayable({
+        ...base,
+        asOfDate: "2026-02-28T12:00:00.000Z",
+      }).elapsedMonths,
+    ).toBe(1);
+    // Mar 1 starts month 2.
+    expect(
+      calculateMortgagePayable({
+        ...base,
+        asOfDate: "2026-03-01T00:00:00.000Z",
+      }).elapsedMonths,
+    ).toBe(2);
+  });
+
+  it("accrues each cycle on the principal outstanding at its start", () => {
+    // ₹50,000 @ 2%: month 1 on 50k = 1000; ₹10,000 principal repaid on the
+    // first anniversary → month 2 on 40k = 800.
+    const breakdown = calculateMortgagePayable({
+      principalAmount: 50000,
+      interestRateMonthly: 2,
+      loanDate: "2026-01-10T00:00:00.000Z",
+      asOfDate: "2026-02-15T00:00:00.000Z",
+      principalPaid: 10000,
+      principalPayments: [{ amount: 10000, date: "2026-02-10T00:00:00.000Z" }],
+    });
+    expect(breakdown.elapsedMonths).toBe(2);
+    expect(breakdown.accruedInterestAmount).toBe(1800);
+    expect(breakdown.outstandingPrincipal).toBe(40000);
+    expect(breakdown.monthlyInterestAmount).toBe(800);
+  });
+
+  it("a mid-cycle principal payment reduces only the NEXT cycle", () => {
+    // Payment lands on Feb 15 — cycle 2 (opened Feb 10) was already charged on
+    // the full 50k; cycle 3 (opens Mar 10) accrues on 40k.
+    const base = {
+      principalAmount: 50000,
+      interestRateMonthly: 2,
+      loanDate: "2026-01-10T00:00:00.000Z",
+      principalPaid: 10000,
+      principalPayments: [{ amount: 10000, date: "2026-02-15T00:00:00.000Z" }],
+    };
+    const cycle2 = calculateMortgagePayable({
+      ...base,
+      asOfDate: "2026-02-20T00:00:00.000Z",
+    });
+    expect(cycle2.elapsedMonths).toBe(2);
+    expect(cycle2.accruedInterestAmount).toBe(2000); // 1000 + 1000 (unchanged)
+
+    const cycle3 = calculateMortgagePayable({
+      ...base,
+      asOfDate: "2026-03-11T00:00:00.000Z",
+    });
+    expect(cycle3.elapsedMonths).toBe(3);
+    expect(cycle3.accruedInterestAmount).toBe(2800); // 1000 + 1000 + 800
   });
 
   it("charges a full month from day one (any started month counts)", () => {

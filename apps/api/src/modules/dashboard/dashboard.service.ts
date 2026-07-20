@@ -107,6 +107,12 @@ export class DashboardService {
       }),
       this.prisma.mortgageLoan.findMany({
         where: { tenantId, status: 'active', deletedAt: null },
+        // Payment history feeds cycle-wise interest accrual.
+        include: {
+          payments: {
+            select: { amount: true, paymentType: true, paymentDate: true },
+          },
+        },
       }),
       this.prisma.invoiceItem.aggregate({
         where: {
@@ -176,6 +182,12 @@ export class DashboardService {
         loanDate: loan.loanDate,
         interestPaid: this.toNumber(loan.totalInterestPaid),
         principalPaid: this.toNumber(loan.totalPrincipalPaid),
+        principalPayments: (loan.payments ?? [])
+          .filter((p) => p.paymentType === 'principal')
+          .map((p) => ({
+            amount: this.toNumber(p.amount),
+            date: p.paymentDate,
+          })),
       }),
     );
     const pendingMortgageInterest = mortgageSnapshots.reduce(

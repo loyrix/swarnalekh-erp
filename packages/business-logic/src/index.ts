@@ -38,6 +38,11 @@ export interface InvoiceTotalsBreakdown extends JewelleryTaxBreakdown {
   grandTotal: number;
 }
 
+export interface PrincipalPaymentInput {
+  amount: number;
+  date: Date | string;
+}
+
 export interface MortgagePayableInput {
   principalAmount: number;
   interestRateMonthly: number;
@@ -45,6 +50,13 @@ export interface MortgagePayableInput {
   asOfDate?: Date | string;
   interestPaid?: number;
   principalPaid?: number;
+  /**
+   * Principal-payment history, used to accrue each cycle's interest on the
+   * principal outstanding at that cycle's start (a payment reduces interest
+   * from the NEXT cycle; the running cycle stays charged). When omitted,
+   * accrual falls back to the flat original-principal model.
+   */
+  principalPayments?: PrincipalPaymentInput[];
 }
 
 export interface MortgagePayableBreakdown {
@@ -178,21 +190,31 @@ export function calculateElapsedLoanMonths(
   return Math.max(0, months);
 }
 
-/** Months to CHARGE interest for: any started month counts as a full month
- * (rounded up), including the first — so a loan even 1 day old owes 1 month and
- * 1 month + 2 days owes 2 months. */
+/** The UTC calendar date (midnight timestamp) of a moment — cycle boundaries
+ * compare dates, never times of day. */
+function dateOnlyUtc(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+/** Months to CHARGE interest for. Cycles run exact date-to-date (10th → 10th):
+ * a month completes ON the same date of the following month, and the next
+ * month is charged only after that date has PASSED. Any started month counts
+ * in full — a loan 1 day old owes 1 month; 1 month + 1 day owes 2. The loan
+ * day itself charges nothing yet. */
 export function calculateChargeableLoanMonths(
   loanDate: Date | string,
   asOfDate: Date | string = new Date(),
 ): number {
   const start = normalizeDate(loanDate);
   const asOf = normalizeDate(asOfDate);
-  if (asOf.getTime() <= start.getTime()) return 0;
+  if (dateOnlyUtc(asOf) <= dateOnlyUtc(start)) return 0;
 
   const completed = calculateElapsedLoanMonths(start, asOf);
   const anniversary = addLoanMonths(start, completed);
-  // Any time past the last completed-month anniversary starts a new month.
-  return asOf.getTime() > anniversary.getTime() ? completed + 1 : completed;
+  // A new month begins only the day AFTER the anniversary date.
+  return dateOnlyUtc(asOf) > dateOnlyUtc(anniversary)
+    ? completed + 1
+    : completed;
 }
 
 export function calculateMortgagePayable(
@@ -209,16 +231,52 @@ export function calculateMortgagePayable(
   // Interest is billed per started month (rounded up), so `elapsedMonths` here
   // is the number of months charged.
   const elapsedMonths = calculateChargeableLoanMonths(input.loanDate, asOf);
-  const monthlyInterestAmount = calculateMortgageMonthlyInterest(
-    principalAmount,
-    interestRateMonthly,
+  const outstandingPrincipal = round2(
+    Math.max(0, principalAmount - principalPaid),
   );
-  const accruedInterestAmount = round2(monthlyInterestAmount * elapsedMonths);
+
+  // Each cycle's interest is computed on the principal outstanding at that
+  // cycle's start: payments dated on/before the anniversary that opens a cycle
+  // reduce it; a mid-cycle payment reduces only the NEXT cycle.
+  let accruedInterestAmount: number;
+  const history = input.principalPayments;
+  if (history === undefined) {
+    // Legacy flat model: rate × original principal × charged months.
+    accruedInterestAmount = round2(
+      calculateMortgageMonthlyInterest(principalAmount, interestRateMonthly) *
+        elapsedMonths,
+    );
+  } else {
+    const payments = history
+      .map((p) => ({
+        amount: Math.max(0, p.amount),
+        dateOnly: dateOnlyUtc(normalizeDate(p.date)),
+      }))
+      .filter((p) => p.amount > 0);
+    let accrued = 0;
+    for (let cycle = 1; cycle <= elapsedMonths; cycle += 1) {
+      const cycleStart = dateOnlyUtc(addLoanMonths(input.loanDate, cycle - 1));
+      const paidByCycleStart = payments.reduce(
+        (sum, p) => (p.dateOnly <= cycleStart ? sum + p.amount : sum),
+        0,
+      );
+      const cyclePrincipal = Math.max(0, principalAmount - paidByCycleStart);
+      accrued += calculateMortgageMonthlyInterest(
+        cyclePrincipal,
+        interestRateMonthly,
+      );
+    }
+    accruedInterestAmount = round2(accrued);
+  }
+
   const pendingInterestAmount = round2(
     Math.max(0, accruedInterestAmount - interestPaid),
   );
-  const outstandingPrincipal = round2(
-    Math.max(0, principalAmount - principalPaid),
+  // "Monthly interest" is what the NEXT month will cost — on the outstanding
+  // principal, not the original.
+  const monthlyInterestAmount = calculateMortgageMonthlyInterest(
+    outstandingPrincipal,
+    interestRateMonthly,
   );
 
   return {

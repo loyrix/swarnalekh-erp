@@ -60,6 +60,12 @@ export class MortgageService {
     const [activeLoans, closedLoans, collectionPayments] = await Promise.all([
       this.prisma.mortgageLoan.findMany({
         where: { tenantId, status: 'active', deletedAt: null },
+        // Payment history feeds cycle-wise interest accrual.
+        include: {
+          payments: {
+            select: { amount: true, paymentType: true, paymentDate: true },
+          },
+        },
       }),
       this.prisma.mortgageLoan.count({
         where: { tenantId, status: 'closed', deletedAt: null },
@@ -271,6 +277,13 @@ export class MortgageService {
         asOfDate: new Date(),
         interestPaid: totalInterestPaid,
         principalPaid: totalPrincipalPaid,
+        // Include the payment created above — it's not in loan.payments yet.
+        principalPayments: [
+          ...this.principalPaymentsOf(loan.payments),
+          ...(paymentType === 'principal'
+            ? [{ amount, date: paymentDate }]
+            : []),
+        ],
       });
 
       const updated = await tx.mortgageLoan.update({
@@ -368,6 +381,14 @@ export class MortgageService {
         asOfDate: new Date(),
         interestPaid: totalInterestPaid,
         principalPaid: totalPrincipalPaid,
+        // History with the edited payment's corrected amount/type applied.
+        principalPayments: this.principalPaymentsOf(
+          (loan.payments as any[]).map((p) =>
+            p.id === payment.id
+              ? { ...p, amount: newAmount, paymentType: newType }
+              : p,
+          ),
+        ),
       });
 
       const updated = await tx.mortgageLoan.update({
@@ -615,8 +636,24 @@ export class MortgageService {
     }
   }
 
+  /** Principal-payment history for cycle-wise interest accrual. */
+  private principalPaymentsOf(
+    payments:
+      | Array<{
+          amount: unknown;
+          paymentType?: string | null;
+          paymentDate: Date;
+        }>
+      | undefined,
+  ) {
+    return (payments ?? [])
+      .filter((p) => p.paymentType === 'principal')
+      .map((p) => ({ amount: this.toNumber(p.amount), date: p.paymentDate }));
+  }
+
   private calculateLoanSnapshot(loan: any, asOfDate: Date) {
     return calculateMortgagePayable({
+      principalPayments: this.principalPaymentsOf(loan.payments),
       principalAmount: this.toNumber(loan.principalAmount),
       interestRateMonthly: this.toNumber(loan.interestRateMonthly),
       loanDate: loan.loanDate,
