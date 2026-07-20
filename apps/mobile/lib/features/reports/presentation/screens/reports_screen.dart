@@ -11,7 +11,11 @@ import 'package:swarnbook/features/reports/application/reports_providers.dart';
 import 'package:swarnbook/features/reports/data/models/reports_data.dart';
 import 'package:swarnbook/features/reports/data/reports_repository.dart';
 import 'package:swarnbook/features/reports/presentation/report_format.dart';
+import 'package:swarnbook/features/reports/presentation/report_pdf.dart';
+import 'package:swarnbook/features/reports/presentation/report_pdf_tables.dart';
 import 'package:swarnbook/features/reports/presentation/widgets/report_section.dart';
+import 'package:swarnbook/features/tenant/data/models/tenant_profile.dart';
+import 'package:swarnbook/features/tenant/data/repositories/tenant_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
@@ -32,6 +36,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   String _group = 'inventory';
   bool _roleLoaded = false;
   bool _canView = false;
+
+  final TenantRepository _tenantRepo = TenantRepository();
+  ReportPdfFonts? _cachedFonts;
+  ReportPdfShop? _cachedShop;
+  bool _exporting = false;
 
   @override
   void initState() {
@@ -72,16 +81,76 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     await ref.read(reportsProvider(_query).future);
   }
 
+  /// Builds the report PDF on-device from the already-loaded overview data,
+  /// using the same letterhead engine as the invoice — real tables, not the
+  /// old plain-text server export.
   Future<void> _export(String reportType) async {
     final l10n = AppLocalizations.of(context)!;
+    if (_exporting) return;
+    setState(() => _exporting = true);
     try {
-      final payload = await ref
-          .read(reportsRepositoryProvider)
-          .exportReport(reportType, _query);
-      await Printing.sharePdf(bytes: payload.bytes, filename: payload.fileName);
+      final data = await ref.read(reportsProvider(_query).future);
+      final table = buildReportPdfTable(reportType, data);
+      if (table == null) {
+        if (mounted) AppToast.error(context, l10n.errorFailedLoadDashboard);
+        return;
+      }
+      final shop = await _reportShop();
+      final bytes = await buildReportPdf(
+        shop: shop,
+        table: table,
+        fonts: await _pdfFonts(),
+      );
+      await Printing.sharePdf(bytes: bytes, filename: '$reportType-report.pdf');
     } catch (_) {
       if (mounted) AppToast.error(context, l10n.errorFailedLoadDashboard);
+    } finally {
+      if (mounted) setState(() => _exporting = false);
     }
+  }
+
+  Future<ReportPdfShop> _reportShop() async {
+    if (_cachedShop != null) return _cachedShop!;
+    try {
+      final TenantProfile p = await _tenantRepo.getProfile();
+      final address = [
+        p.address,
+        p.city,
+        p.state,
+        p.pincode,
+      ].where((s) => s != null && s.trim().isNotEmpty).join(', ');
+      _cachedShop = ReportPdfShop(
+        name: p.shopName.isEmpty ? null : p.shopName,
+        address: address.isEmpty ? null : address,
+        phone: p.phone,
+        gstin: p.gstin,
+        pan: p.pan,
+        logoUrl: p.logoUrl,
+      );
+    } catch (_) {
+      // Letterhead still renders with the app name as a safe fallback.
+      _cachedShop = const ReportPdfShop();
+    }
+    return _cachedShop!;
+  }
+
+  Future<ReportPdfFonts> _pdfFonts() async {
+    if (_cachedFonts != null) return _cachedFonts!;
+    try {
+      final base = await PdfGoogleFonts.notoSansRegular();
+      final bold = await PdfGoogleFonts.notoSansBold();
+      final devanagari = await PdfGoogleFonts.notoSansDevanagariRegular();
+      final gujarati = await PdfGoogleFonts.notoSansGujaratiRegular();
+      _cachedFonts = ReportPdfFonts(
+        base: base,
+        bold: bold,
+        fallback: [devanagari, gujarati],
+      );
+    } catch (_) {
+      // Offline / fetch failed → fall back to the built-in PDF fonts.
+      _cachedFonts = const ReportPdfFonts();
+    }
+    return _cachedFonts!;
   }
 
   Future<void> _openFilters() async {

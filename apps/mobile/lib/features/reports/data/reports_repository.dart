@@ -1,5 +1,4 @@
 import 'package:swarnbook/core/network/api_client.dart';
-import 'package:swarnbook/features/reports/application/report_export_payloads.dart';
 import 'package:swarnbook/features/reports/data/models/reports_data.dart';
 
 /// Immutable filter set for reports (value equality keys the provider family).
@@ -79,19 +78,5 @@ class ReportsRepository {
     );
     final payload = response.data as Map<String, dynamic>? ?? const {};
     return ReportsData.fromJson(payload);
-  }
-
-  Future<ReportPdfPayload> exportReport(
-    String reportType,
-    ReportsQuery query,
-  ) async {
-    final response = await _api.dio.get(
-      '/reports/export/$reportType',
-      queryParameters: query.toQueryParameters(),
-    );
-    return decodeReportPdfPayload(
-      Map<String, dynamic>.from(response.data as Map),
-      fallbackFileName: '$reportType-report.pdf',
-    );
   }
 }
