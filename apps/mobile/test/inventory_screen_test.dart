@@ -68,6 +68,18 @@ void main() {
       expect(find.text('Details (optional)'), findsOneWidget);
     });
 
+    testWidgets('offers an editable optional Tag Number when adding', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const InventoryFormPage()));
+      await tester.pump();
+
+      final tag = find.widgetWithText(TextFormField, 'Tag Number');
+      expect(tag, findsOneWidget);
+      final field = tester.widget<TextFormField>(tag);
+      expect(field.enabled, isNot(false)); // editable, unlike the edit view
+    });
+
     test('composeItemName derives the name from category + details', () {
       expect(InventoryFormPage.composeItemName('Chain', ''), 'Chain');
       expect(

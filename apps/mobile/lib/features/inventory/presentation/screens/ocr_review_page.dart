@@ -75,9 +75,12 @@ class _OcrReviewPageState extends ConsumerState<OcrReviewPage> {
     final rows = _rows.map((row) {
       final gross = double.parse(row.grossWeight.text.trim());
       final stone = double.tryParse(row.stoneWeight.text.trim()) ?? 0;
+      final tag = row.tagNumber.text.trim();
       return {
         'itemName': row.itemName.text.trim(),
         'huid': row.huid.text.trim().isEmpty ? null : row.huid.text.trim(),
+        // A typed tag wins ("2" → "PD-0002" server-side); blank = auto.
+        if (tag.isNotEmpty) 'tagNumber': tag,
         'categoryId': row.categoryId,
         'metalType': row.metalType,
         'karat': row.karat.text.trim().isEmpty ? null : row.karat.text.trim(),
@@ -251,6 +254,8 @@ class _OcrRowCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           _field(row.huid, l10n.inventoryHuid),
+          const SizedBox(height: AppSpacing.sm),
+          _field(row.tagNumber, l10n.inventoryFieldTagNumber),
         ],
       ),
     );
@@ -403,6 +408,7 @@ class _OcrField extends StatelessWidget {
 class _OcrRow {
   final TextEditingController itemName;
   final TextEditingController huid;
+  final TextEditingController tagNumber;
   final TextEditingController karat;
   final TextEditingController grossWeight;
   final TextEditingController stoneWeight;
@@ -414,6 +420,7 @@ class _OcrRow {
   _OcrRow({
     required this.itemName,
     required this.huid,
+    required this.tagNumber,
     required this.metalType,
     required this.karat,
     required this.grossWeight,
@@ -436,6 +443,9 @@ class _OcrRow {
     return _OcrRow(
       itemName: TextEditingController(text: row['itemName']?.toString() ?? ''),
       huid: TextEditingController(text: row['huid']?.toString() ?? ''),
+      // Left blank on purpose: the user enters/scans the existing physical tag
+      // if they want one, otherwise the server hands out a category sequence.
+      tagNumber: TextEditingController(),
       metalType: row['metalType']?.toString() ?? 'gold',
       karat: TextEditingController(text: row['karat']?.toString() ?? ''),
       grossWeight: TextEditingController(
@@ -452,6 +462,7 @@ class _OcrRow {
   void dispose() {
     itemName.dispose();
     huid.dispose();
+    tagNumber.dispose();
     karat.dispose();
     grossWeight.dispose();
     stoneWeight.dispose();

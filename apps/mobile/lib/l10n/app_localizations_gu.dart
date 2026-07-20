@@ -898,6 +898,10 @@ class AppLocalizationsGu extends AppLocalizations {
   String get inventoryFieldTagNumber => 'ટેગ નંબર';
 
   @override
+  String get inventoryTagNumberHint =>
+      'વૈકલ્પિક — ખાલી રાખતાં આપોઆપ બનશે (RG-0001). હાલનો ટેગ ટાઇપ કરો, અથવા સંખ્યા (\"2\" → PD-0002).';
+
+  @override
   String get inventoryFieldStockType => 'સ્ટોક પ્રકાર';
 
   @override

@@ -305,6 +305,7 @@
   "inventoryFieldDetails": "વિગતો (વૈકલ્પિક)",
   "inventoryDetailsHint": "દા.ત. Hollow Rope — આઇટમ નામ બનશે શ્રેણી (વિગતો)",
   "inventoryFieldTagNumber": "ટેગ નંબર",
+  "inventoryTagNumberHint": "વૈકલ્પિક — ખાલી રાખતાં આપોઆપ બનશે (RG-0001). હાલનો ટેગ ટાઇપ કરો, અથવા સંખ્યા (\"2\" → PD-0002).",
   "inventoryFieldStockType": "સ્ટોક પ્રકાર",
   "inventoryFieldQuantity": "જથ્થો *",
   "inventoryFieldMetalType": "ધાતુ પ્રકાર *",

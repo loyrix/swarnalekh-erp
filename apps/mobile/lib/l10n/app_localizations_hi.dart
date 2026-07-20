@@ -902,6 +902,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get inventoryFieldTagNumber => 'टैग नंबर';
 
   @override
+  String get inventoryTagNumberHint =>
+      'वैकल्पिक — खाली छोड़ने पर स्वतः बनेगा (RG-0001)। मौजूदा टैग टाइप करें, या संख्या (\"2\" → PD-0002)।';
+
+  @override
   String get inventoryFieldStockType => 'स्टॉक प्रकार';
 
   @override

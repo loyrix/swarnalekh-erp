@@ -305,6 +305,7 @@
   "inventoryFieldDetails": "विवरण (वैकल्पिक)",
   "inventoryDetailsHint": "जैसे Hollow Rope — आइटम नाम बनेगा श्रेणी (विवरण)",
   "inventoryFieldTagNumber": "टैग नंबर",
+  "inventoryTagNumberHint": "वैकल्पिक — खाली छोड़ने पर स्वतः बनेगा (RG-0001)। मौजूदा टैग टाइप करें, या संख्या (\"2\" → PD-0002)।",
   "inventoryFieldStockType": "स्टॉक प्रकार",
   "inventoryFieldQuantity": "मात्रा *",
   "inventoryFieldMetalType": "धातु प्रकार *",

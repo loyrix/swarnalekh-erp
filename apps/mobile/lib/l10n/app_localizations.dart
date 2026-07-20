@@ -1846,6 +1846,12 @@ abstract class AppLocalizations {
   /// **'Tag Number'**
   String get inventoryFieldTagNumber;
 
+  /// No description provided for @inventoryTagNumberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — blank auto-generates (RG-0001). Type an existing tag, or a number (\"2\" → PD-0002).'**
+  String get inventoryTagNumberHint;
+
   /// No description provided for @inventoryFieldStockType.
   ///
   /// In en, this message translates to:

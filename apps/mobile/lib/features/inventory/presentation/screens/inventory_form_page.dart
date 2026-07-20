@@ -62,6 +62,7 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
   final ImagePicker _imagePicker = ImagePicker();
 
   late final TextEditingController _nameController;
+  late final TextEditingController _tagController;
   String? _originalItemName;
   late final TextEditingController _quantityController;
   late final TextEditingController _grossWeightController;
@@ -139,6 +140,7 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
       ),
     );
     _originalItemName = item?.itemName;
+    _tagController = TextEditingController();
     _categoryId = item?.categoryId;
     _metalType = item?.metalType ?? 'gold';
     _stockType = item?.stockType ?? 'unique';
@@ -161,6 +163,7 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _tagController.dispose();
     _quantityController.dispose();
     _grossWeightController.dispose();
     _stoneWeightController.dispose();
@@ -241,9 +244,12 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
         : InventoryFormPage.composeItemName(categoryName, details);
     setState(() => _isSaving = true);
 
+    final tagNumber = _tagController.text.trim();
     final payload = {
       'itemName': itemName,
       'categoryId': _categoryId,
+      // A typed tag wins ("2" → "PD-0002" server-side); blank = auto sequence.
+      if (!_isEdit && tagNumber.isNotEmpty) 'tagNumber': tagNumber,
       'stockType': _stockType,
       'quantity': _stockType == 'bulk'
           ? int.parse(_quantityController.text.trim())
@@ -323,6 +329,15 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
                 labelText: l10n.inventoryFieldTagNumber,
                 border: const OutlineInputBorder(),
               ),
+            ),
+          ] else if (!_isEdit) ...[
+            const SizedBox(height: AppSpacing.md),
+            // Optional: leave blank for an auto sequence (RG-0001), type an
+            // existing physical tag, or just a number ("2" → "PD-0002").
+            _field(
+              _tagController,
+              l10n.inventoryFieldTagNumber,
+              helperText: l10n.inventoryTagNumberHint,
             ),
           ],
           const SizedBox(height: AppSpacing.md),

@@ -100,7 +100,7 @@ describe('InventoryService', () => {
     );
   });
 
-  it('ignores reviewed tags and still generates SwarnaLekh tags', async () => {
+  it('auto-generates a tag for an imported row with no typed tag', async () => {
     const { service, tx } = createService();
     tx.inventoryItem.findMany.mockResolvedValue([{ tagNumber: 'INV-0001' }]);
     tx.inventoryItem.create.mockImplementation(({ data }) =>
@@ -111,7 +111,7 @@ describe('InventoryService', () => {
       rows: [
         {
           itemName: 'Gold Ring',
-          tagNumber: 'HUID123456',
+          // No tagNumber and no categoryId → falls back to the INV-#### seq.
           metalType: 'gold',
           grossWeight: 4.5,
           netWeight: 4.2,
@@ -398,7 +398,7 @@ describe('InventoryService', () => {
     );
     expect(tx.inventoryItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ tagNumber: 'RG-05' }),
+        data: expect.objectContaining({ tagNumber: 'RG-0005' }),
       }),
     );
   });
@@ -411,7 +411,7 @@ describe('InventoryService', () => {
       .mockResolvedValueOnce({ prefix: 'RG', nextSequence: 2 })
       .mockResolvedValueOnce({ prefix: 'RG', nextSequence: 3 });
     tx.inventoryItem.findFirst
-      .mockResolvedValueOnce({ id: 'legacy' }) // RG-01 taken manually
+      .mockResolvedValueOnce({ id: 'legacy' }) // RG-0001 taken manually
       .mockResolvedValueOnce(null);
     tx.inventoryItem.create.mockImplementation(({ data }) =>
       Promise.resolve({ id: 'item-1', ...data }),
@@ -427,7 +427,7 @@ describe('InventoryService', () => {
 
     expect(tx.inventoryItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ tagNumber: 'RG-02' }),
+        data: expect.objectContaining({ tagNumber: 'RG-0002' }),
       }),
     );
   });
@@ -452,6 +452,87 @@ describe('InventoryService', () => {
     expect(tx.inventoryItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ tagNumber: 'OLD-77' }),
+      }),
+    );
+  });
+
+  it('expands a numeric shorthand tag into the category sequence', async () => {
+    const { service, prisma, tx } = createService();
+    prisma.category.findFirst.mockResolvedValue({ id: 'cat-pendant' });
+    tx.category.findFirst.mockResolvedValue({ prefix: 'PD' });
+    tx.inventoryItem.findFirst.mockResolvedValue(null); // no clash
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: 'item-1', ...data }),
+    );
+
+    await service.create('tenant-1', {
+      itemName: 'Pendant',
+      categoryName: 'Pendant',
+      tagNumber: '2',
+      metalType: 'gold',
+      grossWeight: 3,
+      netWeight: 2.8,
+    });
+
+    // "2" → "PD-0002"; no new sequence is consumed.
+    expect(tx.category.update).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tagNumber: 'PD-0002' }),
+      }),
+    );
+  });
+
+  it('rejects a typed tag that is already in stock', async () => {
+    const { service, prisma, tx } = createService();
+    prisma.category.findFirst.mockResolvedValue({ id: 'cat-ring' });
+    tx.category.findFirst.mockResolvedValue({ prefix: 'RG' });
+    tx.inventoryItem.findFirst.mockResolvedValue({ id: 'taken' }); // clash
+
+    await expect(
+      service.create('tenant-1', {
+        itemName: 'Gold Ring',
+        categoryName: 'Ring',
+        tagNumber: '5',
+        metalType: 'gold',
+        grossWeight: 10,
+        netWeight: 9,
+      }),
+    ).rejects.toThrow('already used');
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+  });
+
+  it('honours a per-row physical tag on an imported item', async () => {
+    const { service, tx } = createService();
+    tx.inventoryItem.findMany
+      .mockResolvedValueOnce([]) // huid duplicate check
+      .mockResolvedValueOnce([]); // existing tags
+    tx.category.findMany.mockResolvedValueOnce([{ id: 'cat-ring' }]);
+    tx.category.findFirst.mockResolvedValue({ prefix: 'RG' });
+    tx.inventoryItem.findFirst.mockResolvedValue(null); // no clash
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve(data),
+    );
+
+    await service.importItems('tenant-1', {
+      rows: [
+        {
+          itemName: 'Gold Ring',
+          huid: 'HUID123456',
+          categoryId: 'cat-ring',
+          tagNumber: 'EXISTING-TAG-9',
+          metalType: 'gold',
+          grossWeight: 4.5,
+          netWeight: 4.2,
+        },
+      ],
+    });
+
+    // The physical tag is kept as-is; no category sequence is consumed.
+    expect(tx.category.update).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tagNumber: 'EXISTING-TAG-9' }),
       }),
     );
   });
@@ -620,7 +701,7 @@ describe('InventoryService', () => {
     expect(tx.inventoryItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          tagNumber: 'RG-03',
+          tagNumber: 'RG-0003',
           categoryId: 'cat-ring',
         }),
       }),

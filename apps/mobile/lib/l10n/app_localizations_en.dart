@@ -899,6 +899,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryFieldTagNumber => 'Tag Number';
 
   @override
+  String get inventoryTagNumberHint =>
+      'Optional — blank auto-generates (RG-0001). Type an existing tag, or a number (\"2\" → PD-0002).';
+
+  @override
   String get inventoryFieldStockType => 'Stock Type';
 
   @override

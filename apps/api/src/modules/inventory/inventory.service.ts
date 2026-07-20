@@ -82,11 +82,12 @@ export class InventoryService {
   async create(tenantId: string, dto: CreateInventoryDto) {
     const categoryId = await this.resolveCategoryId(tenantId, dto);
     return this.prisma.$transaction(async (tx) => {
-      const tagNumber =
-        this.cleanString(dto.tagNumber) ??
-        (categoryId
-          ? await this.nextCategoryTag(tx, tenantId, categoryId)
-          : undefined);
+      const tagNumber = await this.resolveTagNumber(
+        tx,
+        tenantId,
+        categoryId,
+        dto.tagNumber,
+      );
       return tx.inventoryItem.create({
         data: this.toInventoryCreateData(tenantId, {
           ...dto,
@@ -97,10 +98,62 @@ export class InventoryService {
     });
   }
 
-  /// Hands out the next RG-01-style tag for the item's category. The atomic
+  /// Resolves the tag for one item: a typed tag wins (numeric shorthand like
+  /// "2" expands to the category sequence "PD-0002"; anything else is kept
+  /// verbatim, e.g. a re-used physical tag from a HUID import), and must be
+  /// unique in the shop or it 409s. With no typed tag, a fresh category
+  /// sequence is handed out. Returns undefined when neither applies.
+  private async resolveTagNumber(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    categoryId: string | undefined,
+    rawTag: string | undefined,
+  ): Promise<string | undefined> {
+    const typed = this.cleanString(rawTag);
+    if (typed) {
+      const tagNumber = await this.expandNumericTag(
+        tx,
+        tenantId,
+        categoryId,
+        typed,
+      );
+      const clash = await tx.inventoryItem.findFirst({
+        where: { tenantId, tagNumber, deletedAt: null },
+        select: { id: true },
+      });
+      if (clash) {
+        throw new ConflictException(
+          `Tag "${tagNumber}" is already used by another item in stock.`,
+        );
+      }
+      return tagNumber;
+    }
+    return categoryId
+      ? await this.nextCategoryTag(tx, tenantId, categoryId)
+      : undefined;
+  }
+
+  /// Expands a bare number ("2") into the item's category sequence tag
+  /// ("PD-0002"). A tag that already carries letters is returned as-is.
+  private async expandNumericTag(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    categoryId: string | undefined,
+    typed: string,
+  ): Promise<string> {
+    if (!/^\d+$/.test(typed) || !categoryId) return typed;
+    const category = await tx.category.findFirst({
+      where: { id: categoryId, tenantId },
+      select: { prefix: true },
+    });
+    if (!category?.prefix) return typed;
+    return `${category.prefix}-${typed.padStart(4, '0')}`;
+  }
+
+  /// Hands out the next RG-0001-style tag for the item's category. The atomic
   /// nextSequence increment row-locks the category, so concurrent creates
   /// serialize and never share a number; the clash loop only skips numbers
-  /// already taken by manually-entered legacy tags.
+  /// already taken by manually-entered tags.
   private async nextCategoryTag(
     tx: Prisma.TransactionClient,
     tenantId: string,
@@ -121,7 +174,7 @@ export class InventoryService {
       const sequence = bumped.nextSequence - 1;
       const tagNumber = `${bumped.prefix}-${sequence
         .toString()
-        .padStart(2, '0')}`;
+        .padStart(4, '0')}`;
       const clash = await tx.inventoryItem.findFirst({
         where: { tenantId, tagNumber },
         select: { id: true },
@@ -269,10 +322,18 @@ export class InventoryService {
 
       const created = [];
       for (const row of dto.rows) {
-        let tagNumber = row.categoryId
-          ? await this.nextCategoryTag(tx, tenantId, row.categoryId)
-          : undefined;
-        if (!tagNumber) {
+        // A typed tag (e.g. the item's existing physical tag, or "2" →
+        // "PD-0002") wins and is uniqueness-checked; otherwise fall back to a
+        // category sequence, then the flat INV-#### sequence.
+        let tagNumber = await this.resolveTagNumber(
+          tx,
+          tenantId,
+          row.categoryId,
+          row.tagNumber,
+        );
+        if (tagNumber) {
+          usedTags.add(tagNumber);
+        } else {
           tagNumber = this.formatInventoryTag(nextTagNumber++);
           usedTags.add(tagNumber);
           while (usedTags.has(this.formatInventoryTag(nextTagNumber))) {

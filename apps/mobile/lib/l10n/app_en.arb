@@ -305,6 +305,7 @@
   "inventoryFieldDetails": "Details (optional)",
   "inventoryDetailsHint": "e.g. Hollow Rope — item name becomes Category (Details)",
   "inventoryFieldTagNumber": "Tag Number",
+  "inventoryTagNumberHint": "Optional — blank auto-generates (RG-0001). Type an existing tag, or a number (\"2\" → PD-0002).",
   "inventoryFieldStockType": "Stock Type",
   "inventoryFieldQuantity": "Quantity *",
   "inventoryFieldMetalType": "Metal Type *",
