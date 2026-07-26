@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
@@ -144,11 +145,49 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
       loan,
       onCollect: () => _openCollect(loan),
       onClose: _canManage ? () => _openClose(loan) : null,
+      onReopen: _canManage && !loan.isActive ? () => _openReopen(loan) : null,
       onReceipt: (payment) => _openReceipt(loan, payment),
       onEditPayment: _canManage
           ? (payment) => _openEditPayment(loan, payment)
           : null,
     );
+  }
+
+  Future<void> _openReopen(MortgageLoan loan) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.mortgageReopen),
+        content: Text(l10n.mortgageReopenConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.mortgageReopen),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await ref.read(mortgageRepositoryProvider).reopenLoan(loan.id);
+      if (!mounted) return;
+      AppToast.success(context, l10n.mortgageLoanReopened);
+      _invalidate();
+    } catch (e) {
+      if (!mounted) return;
+      final message = e is DioException ? e.message?.trim() : null;
+      AppToast.error(
+        context,
+        (message == null || message.isEmpty)
+            ? l10n.mortgageFailedReopen
+            : message,
+      );
+    }
   }
 
   Future<void> _openEditPayment(

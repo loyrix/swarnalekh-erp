@@ -229,3 +229,10 @@ export class CloseMortgageLoanDto {
   @IsString()
   notes?: string;
 }
+
+export class ReopenMortgageLoanDto {
+  @ApiPropertyOptional({ example: 'Reopened to correct a wrong collection' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}

@@ -1824,6 +1824,19 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mortgageLoanClosed => 'लोन बंद हुआ';
 
   @override
+  String get mortgageReopen => 'फिर से खोलें';
+
+  @override
+  String get mortgageReopenConfirm =>
+      'गलत वसूली या क्लोजिंग ठीक करने के लिए यह लोन फिर से खोलें? सेटलमेंट एंट्री हटा दी जाएगी और लोन दोबारा सक्रिय हो जाएगा।';
+
+  @override
+  String get mortgageLoanReopened => 'लोन फिर से खोला गया';
+
+  @override
+  String get mortgageFailedReopen => 'लोन फिर से नहीं खोला जा सका';
+
+  @override
   String get mortgagePaymentReceiptMissing => 'भुगतान रसीद नहीं मिली';
 
   @override

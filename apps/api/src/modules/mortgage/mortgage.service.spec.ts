@@ -84,6 +84,7 @@ describe('MortgageService', () => {
         create: jest.fn(),
         findFirst: jest.fn(),
         update: jest.fn(),
+        deleteMany: jest.fn(),
       },
     };
     const prisma = {
@@ -666,6 +667,78 @@ describe('MortgageService', () => {
     expect(result.status).toBe('closed');
     expect(result.outstandingPrincipal).toBe(0);
     expect(result.totalPayableAmount).toBe(0);
+  });
+
+  it('reopens a closed loan, dropping the closure and rebuilding real totals', async () => {
+    const { service, tx } = createService();
+    tx.mortgageLoan.findFirst.mockResolvedValue(
+      makeLoan({
+        status: 'closed',
+        closedAt: new Date('2026-06-10T00:00:00.000Z'),
+        closedBy: 'user-1',
+        // Close had forced these to "fully paid".
+        totalInterestPaid: decimal(2000),
+        totalPrincipalPaid: decimal(100000),
+        pendingInterestAmount: decimal(0),
+        outstandingPrincipal: decimal(0),
+        totalPayableAmount: decimal(0),
+        payments: [
+          { id: 'p-1', amount: decimal(2000), paymentType: 'interest' },
+          { id: 'p-2', amount: decimal(100000), paymentType: 'closure' },
+        ],
+      }),
+    );
+    tx.mortgagePayment.deleteMany.mockResolvedValue({ count: 1 });
+    tx.mortgageLoan.update.mockImplementation(({ data }) =>
+      Promise.resolve(
+        makeLoan({
+          status: data.status,
+          closedAt: data.closedAt,
+          closedBy: data.closedBy,
+          totalInterestPaid: data.totalInterestPaid,
+          totalPrincipalPaid: data.totalPrincipalPaid,
+          pendingInterestAmount: data.pendingInterestAmount,
+          outstandingPrincipal: data.outstandingPrincipal,
+          totalPayableAmount: data.totalPayableAmount,
+        }),
+      ),
+    );
+
+    const result = await service.reopenLoan('tenant-1', 'loan-1', {
+      notes: 'fix a wrong collection',
+    });
+
+    // The synthetic closure payment is removed.
+    expect(tx.mortgagePayment.deleteMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ paymentType: 'closure' }),
+      }),
+    );
+    // Real paid totals rebuilt from surviving payments: interest 2000, no
+    // principal (close had inflated principal to the full loan).
+    expect(tx.mortgageLoan.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'active',
+          closedAt: null,
+          closedBy: null,
+          totalInterestPaid: decimal(2000),
+          totalPrincipalPaid: decimal(0),
+          outstandingPrincipal: decimal(100000),
+        }),
+      }),
+    );
+    expect(result.status).toBe('active');
+  });
+
+  it('refuses to reopen a loan that is not closed', async () => {
+    const { service, tx } = createService();
+    tx.mortgageLoan.findFirst.mockResolvedValue(makeLoan({ status: 'active' }));
+
+    await expect(service.reopenLoan('tenant-1', 'loan-1', {})).rejects.toThrow(
+      'Only a closed loan can be reopened',
+    );
+    expect(tx.mortgagePayment.deleteMany).not.toHaveBeenCalled();
   });
 
   it('soft deletes mortgage loans after confirming tenant ownership', async () => {

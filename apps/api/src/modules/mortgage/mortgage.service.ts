@@ -13,6 +13,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { resolveDateRange } from '../../common/date-range.util.js';
 import {
   CloseMortgageLoanDto,
+  ReopenMortgageLoanDto,
   CollectMortgagePaymentDto,
   CreateMortgageLoanDto,
   MortgageDashboardQueryDto,
@@ -462,6 +463,84 @@ export class MortgageService {
           outstandingPrincipal: new Prisma.Decimal(0),
           totalPayableAmount: new Prisma.Decimal(0),
           notes: dto.notes ?? loan.notes,
+        },
+        include: this.loanInclude,
+      });
+
+      return this.toLoanResponse(updated);
+    });
+  }
+
+  /**
+   * Reopen a closed loan so its Collect/Close entries can be corrected. Closing
+   * writes a synthetic settlement (a `closure` payment plus totals forced to
+   * "fully paid"); reopening reverses exactly that: it deletes the closure
+   * payment(s), rebuilds the real paid totals from the surviving payment rows,
+   * flips the loan back to `active`, and recomputes the snapshot as of today.
+   * The owner then edits entries via the normal flow and closes again.
+   */
+  async reopenLoan(tenantId: string, id: string, dto: ReopenMortgageLoanDto) {
+    return this.prisma.$transaction(async (tx) => {
+      const loan = await tx.mortgageLoan.findFirst({
+        where: { id, tenantId, deletedAt: null },
+        include: this.loanInclude,
+      });
+      if (!loan) throw new NotFoundException('Mortgage loan not found');
+      if (loan.status !== 'closed') {
+        throw new BadRequestException('Only a closed loan can be reopened');
+      }
+
+      // Drop the settlement artifact created at close time.
+      await tx.mortgagePayment.deleteMany({
+        where: { tenantId, loanId: loan.id, paymentType: 'closure' },
+      });
+
+      // Rebuild the true paid totals from the payments that actually happened
+      // (closure rows excluded) — close had overwritten them with settlement
+      // values (principal forced to the full loan, interest bumped by the
+      // pending amount).
+      const surviving = (loan.payments as any[]).filter(
+        (p) => p.paymentType !== 'closure',
+      );
+      const totalPrincipalPaid = this.round2(
+        surviving
+          .filter((p) => p.paymentType === 'principal')
+          .reduce((sum, p) => sum + this.toNumber(p.amount), 0),
+      );
+      const totalInterestPaid = this.round2(
+        surviving
+          .filter(
+            (p) => p.paymentType !== 'principal' && p.paymentType !== 'closure',
+          )
+          .reduce((sum, p) => sum + this.toNumber(p.amount), 0),
+      );
+
+      const snapshot = calculateMortgagePayable({
+        principalAmount: this.toNumber(loan.principalAmount),
+        interestRateMonthly: this.toNumber(loan.interestRateMonthly),
+        loanDate: loan.loanDate,
+        asOfDate: new Date(),
+        interestPaid: totalInterestPaid,
+        principalPaid: totalPrincipalPaid,
+        principalPayments: this.principalPaymentsOf(surviving),
+      });
+
+      const updated = await tx.mortgageLoan.update({
+        where: { id: loan.id },
+        data: {
+          status: 'active',
+          closedAt: null,
+          closedBy: null,
+          totalInterestPaid: new Prisma.Decimal(totalInterestPaid),
+          totalPrincipalPaid: new Prisma.Decimal(totalPrincipalPaid),
+          pendingInterestAmount: new Prisma.Decimal(
+            snapshot.pendingInterestAmount,
+          ),
+          outstandingPrincipal: new Prisma.Decimal(
+            snapshot.outstandingPrincipal,
+          ),
+          totalPayableAmount: new Prisma.Decimal(snapshot.totalPayableAmount),
+          ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
         },
         include: this.loanInclude,
       });

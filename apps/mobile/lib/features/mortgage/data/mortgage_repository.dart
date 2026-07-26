@@ -73,6 +73,12 @@ class MortgageRepository {
   Future<void> closeLoan(String loanId, Map<String, dynamic> payload) =>
       _api.dio.post('/mortgages/$loanId/close', data: payload);
 
+  /// Reopen a closed loan so Collect/Close entries can be corrected (admin).
+  Future<void> reopenLoan(String loanId, {String? notes}) => _api.dio.post(
+    '/mortgages/$loanId/reopen',
+    data: {if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim()},
+  );
+
   Future<MortgageReceiptPdfPayload> getReceipt(
     String loanId,
     String paymentId,

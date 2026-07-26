@@ -1817,6 +1817,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mortgageLoanClosed => 'Loan closed';
 
   @override
+  String get mortgageReopen => 'Reopen';
+
+  @override
+  String get mortgageReopenConfirm =>
+      'Reopen this loan to correct a wrong collection or closing? The settlement entry is removed and the loan becomes active again.';
+
+  @override
+  String get mortgageLoanReopened => 'Loan reopened';
+
+  @override
+  String get mortgageFailedReopen => 'Could not reopen the loan';
+
+  @override
   String get mortgagePaymentReceiptMissing => 'Payment receipt is missing';
 
   @override

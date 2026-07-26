@@ -3586,6 +3586,30 @@ abstract class AppLocalizations {
   /// **'Loan closed'**
   String get mortgageLoanClosed;
 
+  /// No description provided for @mortgageReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen'**
+  String get mortgageReopen;
+
+  /// No description provided for @mortgageReopenConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen this loan to correct a wrong collection or closing? The settlement entry is removed and the loan becomes active again.'**
+  String get mortgageReopenConfirm;
+
+  /// No description provided for @mortgageLoanReopened.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan reopened'**
+  String get mortgageLoanReopened;
+
+  /// No description provided for @mortgageFailedReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reopen the loan'**
+  String get mortgageFailedReopen;
+
   /// No description provided for @mortgagePaymentReceiptMissing.
   ///
   /// In en, this message translates to:

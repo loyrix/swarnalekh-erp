@@ -20,6 +20,7 @@ import {
   CollectMortgagePaymentDto,
   CreateMortgageLoanDto,
   MortgageDashboardQueryDto,
+  ReopenMortgageLoanDto,
   UpdateMortgagePaymentDto,
 } from './mortgage.dto.js';
 import { MortgageService } from './mortgage.service.js';
@@ -133,6 +134,19 @@ export class MortgageController {
       id,
       dto,
     );
+  }
+
+  @Post(':id/reopen')
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({
+    summary: 'Reopen a closed loan to correct Collect/Close entries',
+  })
+  async reopenLoan(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() dto: ReopenMortgageLoanDto,
+  ) {
+    return this.mortgageService.reopenLoan(req.tenantId, id, dto);
   }
 
   @Delete(':id')

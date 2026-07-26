@@ -12,6 +12,7 @@ Future<void> showMortgageDetail(
   MortgageLoan loan, {
   required VoidCallback onCollect,
   VoidCallback? onClose,
+  VoidCallback? onReopen,
   required void Function(MortgagePayment payment) onReceipt,
   void Function(MortgagePayment payment)? onEditPayment,
 }) {
@@ -111,6 +112,17 @@ Future<void> showMortgageDetail(
           onPressed: () {
             Navigator.of(context).maybePop();
             onClose();
+          },
+        ),
+      // A closed loan can be reopened to correct a wrong Collect/Close entry.
+      if (!loan.isActive && onReopen != null)
+        GoldButton(
+          label: l10n.mortgageReopen,
+          icon: Icons.lock_open_rounded,
+          isOutlined: true,
+          onPressed: () {
+            Navigator.of(context).maybePop();
+            onReopen();
           },
         ),
     ],
