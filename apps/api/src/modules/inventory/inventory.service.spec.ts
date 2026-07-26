@@ -179,7 +179,8 @@ describe('InventoryService', () => {
     ]);
 
     await expect(service.getStats('tenant-1')).resolves.toMatchObject({
-      totalProducts: 3,
+      // Excludes the sold item — only what's available in the shop counts.
+      totalProducts: 2,
       inStock: 2,
       sold: 1,
       soldThisMonth: 1,
@@ -197,6 +198,36 @@ describe('InventoryService', () => {
         { metalType: 'silver', count: 1, quantity: 2, totalWeight: 100 },
       ],
     });
+  });
+
+  it('counts reserved items in Total Products but excludes sold', async () => {
+    const { service, prisma } = createService();
+    prisma.invoiceItem.count.mockResolvedValue(0);
+    prisma.inventoryItem.count.mockResolvedValue(0);
+    const base = {
+      metalType: 'gold',
+      stockType: 'unique',
+      quantity: 1,
+      grossWeight: decimal(5),
+      netWeight: decimal(4),
+      hasStones: false,
+      stoneValue: decimal(0),
+      purchaseRate: decimal(6000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      { ...base, status: 'in_stock' },
+      { ...base, status: 'reserved' },
+      { ...base, status: 'on_approval' },
+      { ...base, status: 'sold' },
+    ]);
+
+    const stats = await service.getStats('tenant-1');
+    // 4 items, 1 sold → 3 available; only in_stock is "in stock".
+    expect(stats.totalProducts).toBe(3);
+    expect(stats.inStock).toBe(1);
+    expect(stats.sold).toBe(1);
   });
 
   it('passes PDF search and filters to inventory listing', async () => {

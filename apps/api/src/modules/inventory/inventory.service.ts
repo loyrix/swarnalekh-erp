@@ -472,6 +472,10 @@ export class InventoryService {
 
     const inStockItems = items.filter((item) => item.status === 'in_stock');
     const soldItems = items.filter((item) => item.status === 'sold');
+    // "Total Products" counts what is currently in the shop: everything except
+    // sold (in_stock + reserved + on_approval). Sold items live only in Sales
+    // History and Reports.
+    const availableItems = items.filter((item) => item.status !== 'sold');
     const quantityByStatus = new Map<string, number>();
 
     for (const item of items) {
@@ -527,7 +531,7 @@ export class InventoryService {
 
     return {
       total: items.length,
-      totalProducts: items.length,
+      totalProducts: availableItems.length,
       inStock: inStockItems.length,
       sold: soldItems.length,
       soldThisMonth,
