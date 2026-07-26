@@ -1831,6 +1831,57 @@ class AppLocalizationsGu extends AppLocalizations {
   String get mortgageFailedReopen => 'લોન ફરી ખોલી શકાઈ નહીં';
 
   @override
+  String get mortgageAddTopup => 'ટોપ-અપ ઉમેરો';
+
+  @override
+  String get mortgageTopupTitle => 'લોન ટોપ-અપ ઉમેરો';
+
+  @override
+  String get mortgageTopupHelp =>
+      'આ લોનમાં વધારાનું મૂળધન ઉમેરો. ટોપ-અપ પર વ્યાજ તમારી વૈશ્વિક મોર્ટગેજ સેટિંગ મુજબ લાગશે.';
+
+  @override
+  String get mortgageTopupAmount => 'ટોપ-અપ રકમ';
+
+  @override
+  String get mortgageTopupDate => 'ટોપ-અપ તારીખ';
+
+  @override
+  String get mortgageTotalTopups => 'કુલ ટોપ-અપ';
+
+  @override
+  String get mortgageTopupAdded => 'ટોપ-અપ ઉમેરાયું';
+
+  @override
+  String get mortgageFailedTopup => 'ટોપ-અપ ઉમેરી શકાયું નહીં';
+
+  @override
+  String get mortgageSettings => 'મોર્ટગેજ સેટિંગ્સ';
+
+  @override
+  String get mortgageTopupPolicy => 'ટોપ-અપ વ્યાજ નીતિ';
+
+  @override
+  String get mortgageTopupSeparate => 'ટોપ-અપ તારીખથી';
+
+  @override
+  String get mortgageTopupSeparateHint =>
+      'ટોપ-અપ પરનું વ્યાજ તેની પોતાની તારીખથી શરૂ થાય છે.';
+
+  @override
+  String get mortgageTopupMerge => 'મૂળ લોન સાથે ભેગું કરો';
+
+  @override
+  String get mortgageTopupMergeHint =>
+      'ટોપ-અપ પરનું વ્યાજ મૂળ લોન તારીખથી લેવાય છે.';
+
+  @override
+  String get mortgageSettingsSaved => 'સેટિંગ સાચવાઈ';
+
+  @override
+  String get mortgageSettingsFailed => 'સેટિંગ સાચવી શકાઈ નહીં';
+
+  @override
   String get mortgagePaymentReceiptMissing => 'ચુકવણી રસીદ ખૂટે છે';
 
   @override

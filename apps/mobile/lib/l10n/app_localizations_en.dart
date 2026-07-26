@@ -1830,6 +1830,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mortgageFailedReopen => 'Could not reopen the loan';
 
   @override
+  String get mortgageAddTopup => 'Add Top-up';
+
+  @override
+  String get mortgageTopupTitle => 'Add Loan Top-up';
+
+  @override
+  String get mortgageTopupHelp =>
+      'Add extra principal to this loan. How the top-up accrues interest follows your global mortgage setting.';
+
+  @override
+  String get mortgageTopupAmount => 'Top-up Amount';
+
+  @override
+  String get mortgageTopupDate => 'Top-up Date';
+
+  @override
+  String get mortgageTotalTopups => 'Total Top-ups';
+
+  @override
+  String get mortgageTopupAdded => 'Top-up added';
+
+  @override
+  String get mortgageFailedTopup => 'Could not add the top-up';
+
+  @override
+  String get mortgageSettings => 'Mortgage settings';
+
+  @override
+  String get mortgageTopupPolicy => 'Top-up interest policy';
+
+  @override
+  String get mortgageTopupSeparate => 'From the top-up date';
+
+  @override
+  String get mortgageTopupSeparateHint =>
+      'Interest on a top-up starts from its own date.';
+
+  @override
+  String get mortgageTopupMerge => 'Merge with original loan';
+
+  @override
+  String get mortgageTopupMergeHint =>
+      'Interest on a top-up is charged from the original loan date.';
+
+  @override
+  String get mortgageSettingsSaved => 'Setting saved';
+
+  @override
+  String get mortgageSettingsFailed => 'Could not save the setting';
+
+  @override
   String get mortgagePaymentReceiptMissing => 'Payment receipt is missing';
 
   @override

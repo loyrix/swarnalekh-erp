@@ -236,3 +236,21 @@ export class ReopenMortgageLoanDto {
   @IsString()
   notes?: string;
 }
+
+export class TopUpMortgageLoanDto {
+  @ApiProperty({ example: 25000, description: 'Principal added to the loan' })
+  @IsNumber()
+  @Min(1)
+  amount: number;
+
+  @ApiPropertyOptional({ example: '2026-07-26T00:00:00.000Z' })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  topupDate?: Date;
+
+  @ApiPropertyOptional({ example: 'Customer requested an additional advance' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}

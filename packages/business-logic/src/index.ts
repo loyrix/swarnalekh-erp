@@ -45,6 +45,14 @@ export interface PrincipalPaymentInput {
   date: Date | string;
 }
 
+export interface PrincipalAdditionInput {
+  amount: number;
+  date: Date | string;
+}
+
+/** How a top-up (principal addition) accrues interest. */
+export type TopupMode = "separate" | "merge";
+
 export interface MortgagePayableInput {
   principalAmount: number;
   interestRateMonthly: number;
@@ -59,6 +67,15 @@ export interface MortgagePayableInput {
    * accrual falls back to the flat original-principal model.
    */
   principalPayments?: PrincipalPaymentInput[];
+  /**
+   * Top-up history — principal ADDED to the loan after it opened. In "merge"
+   * mode a top-up counts from the original loan date (interest on the full
+   * amount from day one); in "separate" mode it counts from the loan cycle
+   * that begins on/after the top-up date.
+   */
+  principalAdditions?: PrincipalAdditionInput[];
+  /** Top-up accrual policy. Defaults to "separate". */
+  topupMode?: TopupMode;
 }
 
 export interface MortgagePayableBreakdown {
@@ -227,8 +244,22 @@ export function calculateMortgagePayable(
   const principalAmount = Math.max(0, input.principalAmount);
   const interestRateMonthly = Math.max(0, input.interestRateMonthly);
   const interestPaid = round2(Math.max(0, input.interestPaid ?? 0));
+  const topupMode: TopupMode = input.topupMode ?? "separate";
+  const additions = (input.principalAdditions ?? [])
+    .map((a) => ({
+      amount: Math.max(0, a.amount),
+      dateOnly: dateOnlyUtc(normalizeDate(a.date)),
+    }))
+    .filter((a) => a.amount > 0);
+  const totalAdditions = round2(
+    additions.reduce((sum, a) => sum + a.amount, 0),
+  );
+  // Payments can pay down the original principal plus any top-ups.
   const principalPaid = round2(
-    Math.min(principalAmount, Math.max(0, input.principalPaid ?? 0)),
+    Math.min(
+      principalAmount + totalAdditions,
+      Math.max(0, input.principalPaid ?? 0),
+    ),
   );
   const asOf = input.asOfDate ?? new Date();
   const completedMonths = calculateElapsedLoanMonths(input.loanDate, asOf);
@@ -236,22 +267,24 @@ export function calculateMortgagePayable(
   // is the number of months charged.
   const elapsedMonths = calculateChargeableLoanMonths(input.loanDate, asOf);
   const outstandingPrincipal = round2(
-    Math.max(0, principalAmount - principalPaid),
+    Math.max(0, principalAmount + totalAdditions - principalPaid),
   );
 
-  // Each cycle's interest is computed on the principal outstanding at that
-  // cycle's start: payments dated on/before the anniversary that opens a cycle
-  // reduce it; a mid-cycle payment reduces only the NEXT cycle.
+  // Each cycle's interest is computed on the principal in force at that cycle's
+  // start: payments dated on/before the anniversary that opens a cycle reduce
+  // it; a mid-cycle payment reduces only the NEXT cycle. Top-ups add principal
+  // — from day one in "merge" mode, or from the cycle at/after the top-up date
+  // in "separate" mode.
   let accruedInterestAmount: number;
   const history = input.principalPayments;
-  if (history === undefined) {
+  if (history === undefined && additions.length === 0) {
     // Legacy flat model: rate × original principal × charged months.
     accruedInterestAmount = round2(
       calculateMortgageMonthlyInterest(principalAmount, interestRateMonthly) *
         elapsedMonths,
     );
   } else {
-    const payments = history
+    const payments = (history ?? [])
       .map((p) => ({
         amount: Math.max(0, p.amount),
         dateOnly: dateOnlyUtc(normalizeDate(p.date)),
@@ -264,7 +297,17 @@ export function calculateMortgagePayable(
         (sum, p) => (p.dateOnly <= cycleStart ? sum + p.amount : sum),
         0,
       );
-      const cyclePrincipal = Math.max(0, principalAmount - paidByCycleStart);
+      const addedByCycleStart = additions.reduce(
+        (sum, a) =>
+          topupMode === "merge" || a.dateOnly <= cycleStart
+            ? sum + a.amount
+            : sum,
+        0,
+      );
+      const cyclePrincipal = Math.max(
+        0,
+        principalAmount + addedByCycleStart - paidByCycleStart,
+      );
       accrued += calculateMortgageMonthlyInterest(
         cyclePrincipal,
         interestRateMonthly,

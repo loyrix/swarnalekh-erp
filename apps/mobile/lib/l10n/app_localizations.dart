@@ -3610,6 +3610,102 @@ abstract class AppLocalizations {
   /// **'Could not reopen the loan'**
   String get mortgageFailedReopen;
 
+  /// No description provided for @mortgageAddTopup.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Top-up'**
+  String get mortgageAddTopup;
+
+  /// No description provided for @mortgageTopupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Loan Top-up'**
+  String get mortgageTopupTitle;
+
+  /// No description provided for @mortgageTopupHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add extra principal to this loan. How the top-up accrues interest follows your global mortgage setting.'**
+  String get mortgageTopupHelp;
+
+  /// No description provided for @mortgageTopupAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-up Amount'**
+  String get mortgageTopupAmount;
+
+  /// No description provided for @mortgageTopupDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-up Date'**
+  String get mortgageTopupDate;
+
+  /// No description provided for @mortgageTotalTopups.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Top-ups'**
+  String get mortgageTotalTopups;
+
+  /// No description provided for @mortgageTopupAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-up added'**
+  String get mortgageTopupAdded;
+
+  /// No description provided for @mortgageFailedTopup.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the top-up'**
+  String get mortgageFailedTopup;
+
+  /// No description provided for @mortgageSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortgage settings'**
+  String get mortgageSettings;
+
+  /// No description provided for @mortgageTopupPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-up interest policy'**
+  String get mortgageTopupPolicy;
+
+  /// No description provided for @mortgageTopupSeparate.
+  ///
+  /// In en, this message translates to:
+  /// **'From the top-up date'**
+  String get mortgageTopupSeparate;
+
+  /// No description provided for @mortgageTopupSeparateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest on a top-up starts from its own date.'**
+  String get mortgageTopupSeparateHint;
+
+  /// No description provided for @mortgageTopupMerge.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge with original loan'**
+  String get mortgageTopupMerge;
+
+  /// No description provided for @mortgageTopupMergeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest on a top-up is charged from the original loan date.'**
+  String get mortgageTopupMergeHint;
+
+  /// No description provided for @mortgageSettingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Setting saved'**
+  String get mortgageSettingsSaved;
+
+  /// No description provided for @mortgageSettingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the setting'**
+  String get mortgageSettingsFailed;
+
   /// No description provided for @mortgagePaymentReceiptMissing.
   ///
   /// In en, this message translates to:

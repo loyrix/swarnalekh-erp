@@ -13,6 +13,7 @@ Future<void> showMortgageDetail(
   required VoidCallback onCollect,
   VoidCallback? onClose,
   VoidCallback? onReopen,
+  VoidCallback? onTopUp,
   required void Function(MortgagePayment payment) onReceipt,
   void Function(MortgagePayment payment)? onEditPayment,
 }) {
@@ -28,6 +29,8 @@ Future<void> showMortgageDetail(
     AppDetailRow(l10n.reportsLoanAmount, mortgageMoney(loan.principalAmount)),
     AppDetailRow(l10n.mortgageLoanDate, mortgageDate(loan.loanDate)),
     AppDetailRow(l10n.mortgageTenure, tenure),
+    if (loan.totalTopups > 0)
+      AppDetailRow(l10n.mortgageTotalTopups, mortgageMoney(loan.totalTopups)),
     if (loan.isActive) ...[
       AppDetailRow(
         l10n.mortgageOutstanding,
@@ -103,6 +106,16 @@ Future<void> showMortgageDetail(
           onPressed: () {
             Navigator.of(context).maybePop();
             onCollect();
+          },
+        ),
+      if (loan.isActive && onTopUp != null)
+        GoldButton(
+          label: l10n.mortgageAddTopup,
+          icon: Icons.add_card_outlined,
+          isOutlined: true,
+          onPressed: () {
+            Navigator.of(context).maybePop();
+            onTopUp();
           },
         ),
       if (loan.isActive && onClose != null)

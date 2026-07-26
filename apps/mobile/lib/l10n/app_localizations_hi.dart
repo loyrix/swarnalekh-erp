@@ -1837,6 +1837,57 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mortgageFailedReopen => 'लोन फिर से नहीं खोला जा सका';
 
   @override
+  String get mortgageAddTopup => 'टॉप-अप जोड़ें';
+
+  @override
+  String get mortgageTopupTitle => 'लोन टॉप-अप जोड़ें';
+
+  @override
+  String get mortgageTopupHelp =>
+      'इस लोन में अतिरिक्त मूलधन जोड़ें। टॉप-अप पर ब्याज आपकी वैश्विक मॉर्गेज सेटिंग के अनुसार लगेगा।';
+
+  @override
+  String get mortgageTopupAmount => 'टॉप-अप राशि';
+
+  @override
+  String get mortgageTopupDate => 'टॉप-अप तिथि';
+
+  @override
+  String get mortgageTotalTopups => 'कुल टॉप-अप';
+
+  @override
+  String get mortgageTopupAdded => 'टॉप-अप जोड़ा गया';
+
+  @override
+  String get mortgageFailedTopup => 'टॉप-अप नहीं जोड़ा जा सका';
+
+  @override
+  String get mortgageSettings => 'मॉर्गेज सेटिंग्स';
+
+  @override
+  String get mortgageTopupPolicy => 'टॉप-अप ब्याज नीति';
+
+  @override
+  String get mortgageTopupSeparate => 'टॉप-अप तिथि से';
+
+  @override
+  String get mortgageTopupSeparateHint =>
+      'टॉप-अप पर ब्याज उसकी अपनी तिथि से शुरू होता है।';
+
+  @override
+  String get mortgageTopupMerge => 'मूल लोन के साथ मिलाएँ';
+
+  @override
+  String get mortgageTopupMergeHint =>
+      'टॉप-अप पर ब्याज मूल लोन तिथि से लगाया जाता है।';
+
+  @override
+  String get mortgageSettingsSaved => 'सेटिंग सहेजी गई';
+
+  @override
+  String get mortgageSettingsFailed => 'सेटिंग सहेजी नहीं जा सकी';
+
+  @override
   String get mortgagePaymentReceiptMissing => 'भुगतान रसीद नहीं मिली';
 
   @override

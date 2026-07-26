@@ -73,6 +73,21 @@ class MortgageRepository {
   Future<void> closeLoan(String loanId, Map<String, dynamic> payload) =>
       _api.dio.post('/mortgages/$loanId/close', data: payload);
 
+  /// Add a principal top-up to an active loan (admin).
+  Future<void> topUpLoan(String loanId, Map<String, dynamic> payload) =>
+      _api.dio.post('/mortgages/$loanId/topups', data: payload);
+
+  /// The shop's global top-up interest policy ("separate" or "merge").
+  Future<String> getTopupMode() async {
+    final response = await _api.dio.get('/tenant/profile');
+    final data = response.data as Map?;
+    final mode = data?['mortgageTopupMode']?.toString();
+    return mode == 'merge' ? 'merge' : 'separate';
+  }
+
+  Future<void> setTopupMode(String mode) =>
+      _api.dio.put('/tenant/profile', data: {'mortgageTopupMode': mode});
+
   /// Reopen a closed loan so Collect/Close entries can be corrected (admin).
   Future<void> reopenLoan(String loanId, {String? notes}) => _api.dio.post(
     '/mortgages/$loanId/reopen',

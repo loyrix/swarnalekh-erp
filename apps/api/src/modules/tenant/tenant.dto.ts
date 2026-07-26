@@ -3,6 +3,7 @@ import {
   IsString,
   IsOptional,
   IsEmail,
+  IsIn,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -105,4 +106,12 @@ export class UpdateTenantDto {
   @IsString()
   @MaxLength(300000)
   logoUrl?: string;
+
+  @ApiPropertyOptional({
+    example: 'separate',
+    description: 'Mortgage top-up interest policy: "separate" or "merge".',
+  })
+  @IsOptional()
+  @IsIn(['separate', 'merge'])
+  mortgageTopupMode?: string;
 }

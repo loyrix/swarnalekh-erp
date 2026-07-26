@@ -62,6 +62,7 @@ const makeLoan = (overrides: Record<string, unknown> = {}) => {
     closer: null,
     ornaments: [],
     payments: [],
+    topups: [],
     ...overrides,
   };
 };
@@ -85,6 +86,14 @@ describe('MortgageService', () => {
         findFirst: jest.fn(),
         update: jest.fn(),
         deleteMany: jest.fn(),
+      },
+      mortgageTopup: {
+        create: jest.fn(),
+      },
+      tenant: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ mortgageTopupMode: 'separate' }),
       },
     };
     const prisma = {
@@ -667,6 +676,55 @@ describe('MortgageService', () => {
     expect(result.status).toBe('closed');
     expect(result.outstandingPrincipal).toBe(0);
     expect(result.totalPayableAmount).toBe(0);
+  });
+
+  it('records a top-up and grows the outstanding principal', async () => {
+    const { service, tx } = createService();
+    const loanDate = new Date('2026-01-10T00:00:00.000Z');
+    tx.mortgageLoan.findFirst.mockResolvedValue(
+      makeLoan({
+        loanDate,
+        principalAmount: decimal(100000),
+        outstandingPrincipal: decimal(100000),
+      }),
+    );
+    tx.mortgageTopup.create.mockResolvedValue({ id: 'topup-1' });
+    tx.mortgageLoan.update.mockImplementation(({ data }) =>
+      Promise.resolve(
+        makeLoan({
+          outstandingPrincipal: data.outstandingPrincipal,
+          totalPayableAmount: data.totalPayableAmount,
+          topups: [{ amount: decimal(50000), topupDate: new Date() }],
+        }),
+      ),
+    );
+
+    const result = await service.topUpLoan('tenant-1', 'user-1', 'loan-1', {
+      amount: 50000,
+      notes: 'extra advance',
+    });
+
+    expect(tx.mortgageTopup.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          loanId: 'loan-1',
+          amount: decimal(50000),
+        }),
+      }),
+    );
+    // Outstanding principal grows by the top-up.
+    expect(result.outstandingPrincipal).toBe(150000);
+    expect(result.totalTopups).toBe(50000);
+  });
+
+  it('rejects a non-positive top-up', async () => {
+    const { service, tx } = createService();
+    tx.mortgageLoan.findFirst.mockResolvedValue(makeLoan());
+
+    await expect(
+      service.topUpLoan('tenant-1', 'user-1', 'loan-1', { amount: 0 }),
+    ).rejects.toThrow('greater than zero');
+    expect(tx.mortgageTopup.create).not.toHaveBeenCalled();
   });
 
   it('reopens a closed loan, dropping the closure and rebuilding real totals', async () => {

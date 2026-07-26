@@ -33,6 +33,9 @@ model Tenant {
   subscriptionPlan      String    @default("free") @map("subscription_plan") @db.VarChar(20)
   subscriptionExpiresAt DateTime? @map("subscription_expires_at") @db.Timestamptz()
   isActive              Boolean   @default(true) @map("is_active")
+  // Global mortgage top-up interest policy: "separate" (top-up accrues from its
+  // own date) or "merge" (top-up folds into the original loan from day one).
+  mortgageTopupMode     String    @default("separate") @map("mortgage_topup_mode") @db.VarChar(20)
   createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
 
@@ -47,6 +50,7 @@ model Tenant {
   payments              Payment[]
   mortgageLoans         MortgageLoan[]
   mortgagePayments      MortgagePayment[]
+  mortgageTopups        MortgageTopup[]
   schemes               Scheme[]
   schemeEnrollments     SchemeEnrollment[]
   ledgerParties         LedgerParty[]
@@ -426,6 +430,7 @@ model MortgageLoan {
   closer    User?              @relation("MortgageLoanClosedBy", fields: [closedBy], references: [id])
   ornaments MortgageOrnament[]
   payments  MortgagePayment[]
+  topups    MortgageTopup[]
 
   @@unique([tenantId, loanNumber])
   @@index([tenantId])
@@ -478,6 +483,25 @@ model MortgagePayment {
   @@index([loanId])
   @@index([tenantId, paymentDate])
   @@map("mortgage_payments")
+}
+
+model MortgageTopup {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  loanId     String   @map("loan_id") @db.Uuid
+  amount     Decimal  @db.Decimal(14, 2)
+  topupDate  DateTime @default(now()) @map("topup_date") @db.Date
+  notes      String?
+  createdBy  String?  @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  tenant Tenant       @relation(fields: [tenantId], references: [id])
+  loan   MortgageLoan @relation(fields: [loanId], references: [id])
+
+  @@index([tenantId])
+  @@index([loanId])
+  @@map("mortgage_topups")
 }
 
 // ==================

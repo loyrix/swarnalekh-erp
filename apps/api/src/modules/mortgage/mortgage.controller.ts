@@ -21,6 +21,7 @@ import {
   CreateMortgageLoanDto,
   MortgageDashboardQueryDto,
   ReopenMortgageLoanDto,
+  TopUpMortgageLoanDto,
   UpdateMortgagePaymentDto,
 } from './mortgage.dto.js';
 import { MortgageService } from './mortgage.service.js';
@@ -129,6 +130,22 @@ export class MortgageController {
     @Body() dto: CloseMortgageLoanDto,
   ) {
     return this.mortgageService.closeLoan(
+      req.tenantId,
+      req.appUser?.id,
+      id,
+      dto,
+    );
+  }
+
+  @Post(':id/topups')
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({ summary: 'Add a principal top-up to an active loan' })
+  async topUpLoan(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() dto: TopUpMortgageLoanDto,
+  ) {
+    return this.mortgageService.topUpLoan(
       req.tenantId,
       req.appUser?.id,
       id,

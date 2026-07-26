@@ -195,6 +195,39 @@ describe("business logic", () => {
     expect(cycle3.accruedInterestAmount).toBe(2800); // 1000 + 1000 + 800
   });
 
+  it('accrues a top-up from its own cycle in "separate" mode', () => {
+    // ₹1,00,000 @ 2% from 10 Jan; ₹50,000 top-up on 15 Feb; as of 15 Mar.
+    // Cycles: Jan10 (100k→2000), Feb10 (still 100k, top-up not yet →2000),
+    // Mar10 (top-up now in force, 150k→3000) = 7000.
+    const breakdown = calculateMortgagePayable({
+      principalAmount: 100000,
+      interestRateMonthly: 2,
+      loanDate: "2026-01-10T00:00:00.000Z",
+      asOfDate: "2026-03-15T00:00:00.000Z",
+      principalAdditions: [{ amount: 50000, date: "2026-02-15T00:00:00.000Z" }],
+      topupMode: "separate",
+    });
+    expect(breakdown.elapsedMonths).toBe(3);
+    expect(breakdown.accruedInterestAmount).toBe(7000);
+    expect(breakdown.outstandingPrincipal).toBe(150000);
+    expect(breakdown.monthlyInterestAmount).toBe(3000);
+  });
+
+  it('accrues a top-up from the original date in "merge" mode', () => {
+    // Same loan, but merge treats the top-up as present from day one:
+    // every cycle accrues on 150k → 3000 × 3 = 9000.
+    const breakdown = calculateMortgagePayable({
+      principalAmount: 100000,
+      interestRateMonthly: 2,
+      loanDate: "2026-01-10T00:00:00.000Z",
+      asOfDate: "2026-03-15T00:00:00.000Z",
+      principalAdditions: [{ amount: 50000, date: "2026-02-15T00:00:00.000Z" }],
+      topupMode: "merge",
+    });
+    expect(breakdown.accruedInterestAmount).toBe(9000);
+    expect(breakdown.outstandingPrincipal).toBe(150000);
+  });
+
   it("charges a full month from day one (any started month counts)", () => {
     // 29 days in → still within the first month, but a started month is a full
     // month, so one month's interest is due.

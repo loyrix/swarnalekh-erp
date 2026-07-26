@@ -8,6 +8,7 @@ import {
   addLoanMonths,
   calculateMortgageMonthlyInterest,
   calculateMortgagePayable,
+  type TopupMode,
 } from '@swarnbook/business-logic';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { resolveDateRange } from '../../common/date-range.util.js';
@@ -17,6 +18,7 @@ import {
   CollectMortgagePaymentDto,
   CreateMortgageLoanDto,
   MortgageDashboardQueryDto,
+  TopUpMortgageLoanDto,
   UpdateMortgagePaymentDto,
 } from './mortgage.dto.js';
 
@@ -40,6 +42,9 @@ export class MortgageService {
         { createdAt: 'desc' as const },
       ],
     },
+    topups: {
+      orderBy: { topupDate: 'asc' as const },
+    },
     creator: {
       select: { id: true, name: true },
     },
@@ -58,30 +63,33 @@ export class MortgageService {
       defaultPeriod: 'today',
     });
 
-    const [activeLoans, closedLoans, collectionPayments] = await Promise.all([
-      this.prisma.mortgageLoan.findMany({
-        where: { tenantId, status: 'active', deletedAt: null },
-        // Payment history feeds cycle-wise interest accrual.
-        include: {
-          payments: {
-            select: { amount: true, paymentType: true, paymentDate: true },
+    const [activeLoans, closedLoans, collectionPayments, topupMode] =
+      await Promise.all([
+        this.prisma.mortgageLoan.findMany({
+          where: { tenantId, status: 'active', deletedAt: null },
+          // Payment + top-up history feed cycle-wise interest accrual.
+          include: {
+            payments: {
+              select: { amount: true, paymentType: true, paymentDate: true },
+            },
+            topups: { select: { amount: true, topupDate: true } },
           },
-        },
-      }),
-      this.prisma.mortgageLoan.count({
-        where: { tenantId, status: 'closed', deletedAt: null },
-      }),
-      this.prisma.mortgagePayment.findMany({
-        where: {
-          tenantId,
-          ...(range ? { paymentDate: range } : {}),
-        },
-        select: { amount: true },
-      }),
-    ]);
+        }),
+        this.prisma.mortgageLoan.count({
+          where: { tenantId, status: 'closed', deletedAt: null },
+        }),
+        this.prisma.mortgagePayment.findMany({
+          where: {
+            tenantId,
+            ...(range ? { paymentDate: range } : {}),
+          },
+          select: { amount: true },
+        }),
+        this.getTopupMode(this.prisma, tenantId),
+      ]);
 
     const activeSnapshots = activeLoans.map((loan) =>
-      this.calculateLoanSnapshot(loan, new Date()),
+      this.calculateLoanSnapshot(loan, new Date(), topupMode),
     );
     const pendingInterest = activeSnapshots.reduce(
       (sum, snapshot) => sum + snapshot.pendingInterestAmount,
@@ -138,7 +146,8 @@ export class MortgageService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return loans.map((loan) => this.toLoanResponse(loan));
+    const topupMode = await this.getTopupMode(this.prisma, tenantId);
+    return loans.map((loan) => this.toLoanResponse(loan, topupMode));
   }
 
   async findOne(tenantId: string, id: string) {
@@ -151,7 +160,8 @@ export class MortgageService {
       throw new NotFoundException('Mortgage loan not found');
     }
 
-    return this.toLoanResponse(loan);
+    const topupMode = await this.getTopupMode(this.prisma, tenantId);
+    return this.toLoanResponse(loan, topupMode);
   }
 
   async createLoan(
@@ -238,10 +248,15 @@ export class MortgageService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       const loan = await this.findActiveLoanForUpdate(tx, tenantId, id);
+      const topupMode = await this.getTopupMode(tx, tenantId);
       const paymentType = dto.paymentType ?? 'interest';
       const paymentDate = dto.paymentDate ?? new Date();
       const amount = this.round2(dto.amount);
-      const currentSnapshot = this.calculateLoanSnapshot(loan, paymentDate);
+      const currentSnapshot = this.calculateLoanSnapshot(
+        loan,
+        paymentDate,
+        topupMode,
+      );
       let totalInterestPaid = this.toNumber(loan.totalInterestPaid);
       let totalPrincipalPaid = this.toNumber(loan.totalPrincipalPaid);
 
@@ -278,6 +293,8 @@ export class MortgageService {
         asOfDate: new Date(),
         interestPaid: totalInterestPaid,
         principalPaid: totalPrincipalPaid,
+        principalAdditions: this.principalAdditionsOf(loan.topups),
+        topupMode,
         // Include the payment created above — it's not in loan.payments yet.
         principalPayments: [
           ...this.principalPaymentsOf(loan.payments),
@@ -305,7 +322,78 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated);
+      return this.toLoanResponse(updated, topupMode);
+    });
+  }
+
+  /**
+   * Add a principal top-up to an active loan. How the top-up accrues interest
+   * depends on the shop's global policy: "merge" (from the original loan date)
+   * or "separate" (from the top-up's own date). The loan snapshot is refreshed
+   * to reflect the larger outstanding principal.
+   */
+  async topUpLoan(
+    tenantId: string,
+    userId: string,
+    id: string,
+    dto: TopUpMortgageLoanDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const loan = await this.findActiveLoanForUpdate(tx, tenantId, id);
+      const topupMode = await this.getTopupMode(tx, tenantId);
+      const amount = this.round2(dto.amount);
+      if (amount <= 0) {
+        throw new BadRequestException(
+          'Top-up amount must be greater than zero',
+        );
+      }
+      const topupDate = dto.topupDate ?? new Date();
+
+      await tx.mortgageTopup.create({
+        data: {
+          tenantId,
+          loanId: loan.id,
+          amount: new Prisma.Decimal(amount),
+          topupDate,
+          notes: dto.notes,
+          createdBy: userId,
+        },
+      });
+
+      const snapshot = calculateMortgagePayable({
+        principalAmount: this.toNumber(loan.principalAmount),
+        interestRateMonthly: this.toNumber(loan.interestRateMonthly),
+        loanDate: loan.loanDate,
+        asOfDate: new Date(),
+        interestPaid: this.toNumber(loan.totalInterestPaid),
+        principalPaid: this.toNumber(loan.totalPrincipalPaid),
+        principalPayments: this.principalPaymentsOf(loan.payments),
+        // Include the top-up created above — it's not in loan.topups yet.
+        principalAdditions: [
+          ...this.principalAdditionsOf(loan.topups),
+          { amount, date: topupDate },
+        ],
+        topupMode,
+      });
+
+      const updated = await tx.mortgageLoan.update({
+        where: { id: loan.id },
+        data: {
+          monthlyInterestAmount: new Prisma.Decimal(
+            snapshot.monthlyInterestAmount,
+          ),
+          pendingInterestAmount: new Prisma.Decimal(
+            snapshot.pendingInterestAmount,
+          ),
+          outstandingPrincipal: new Prisma.Decimal(
+            snapshot.outstandingPrincipal,
+          ),
+          totalPayableAmount: new Prisma.Decimal(snapshot.totalPayableAmount),
+        },
+        include: this.loanInclude,
+      });
+
+      return this.toLoanResponse(updated, topupMode);
     });
   }
 
@@ -322,6 +410,7 @@ export class MortgageService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       const loan = await this.findActiveLoanForUpdate(tx, tenantId, loanId);
+      const topupMode = await this.getTopupMode(tx, tenantId);
       const payment = await tx.mortgagePayment.findFirst({
         where: { id: paymentId, loanId: loan.id, tenantId },
       });
@@ -360,7 +449,13 @@ export class MortgageService {
           'This correction would make the paid totals negative',
         );
       }
-      if (totalPrincipalPaid > this.toNumber(loan.principalAmount) + 0.01) {
+      const principalCeiling =
+        this.toNumber(loan.principalAmount) +
+        this.principalAdditionsOf(loan.topups).reduce(
+          (sum, a) => sum + a.amount,
+          0,
+        );
+      if (totalPrincipalPaid > principalCeiling + 0.01) {
         throw new BadRequestException(
           'Principal paid cannot exceed the loan amount',
         );
@@ -382,6 +477,8 @@ export class MortgageService {
         asOfDate: new Date(),
         interestPaid: totalInterestPaid,
         principalPaid: totalPrincipalPaid,
+        principalAdditions: this.principalAdditionsOf(loan.topups),
+        topupMode,
         // History with the edited payment's corrected amount/type applied.
         principalPayments: this.principalPaymentsOf(
           (loan.payments as any[]).map((p) =>
@@ -408,7 +505,7 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated);
+      return this.toLoanResponse(updated, topupMode);
     });
   }
 
@@ -420,8 +517,9 @@ export class MortgageService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       const loan = await this.findActiveLoanForUpdate(tx, tenantId, id);
+      const topupMode = await this.getTopupMode(tx, tenantId);
       const closureDate = dto.closureDate ?? new Date();
-      const snapshot = this.calculateLoanSnapshot(loan, closureDate);
+      const snapshot = this.calculateLoanSnapshot(loan, closureDate, topupMode);
       const amountPaid = this.round2(dto.amountPaid);
 
       if (amountPaid + 0.01 < snapshot.totalPayableAmount) {
@@ -458,7 +556,16 @@ export class MortgageService {
                 snapshot.pendingInterestAmount,
             ),
           ),
-          totalPrincipalPaid: loan.principalAmount,
+          // Settlement clears the original principal plus any top-ups.
+          totalPrincipalPaid: new Prisma.Decimal(
+            this.round2(
+              this.toNumber(loan.principalAmount) +
+                this.principalAdditionsOf(loan.topups).reduce(
+                  (sum, a) => sum + a.amount,
+                  0,
+                ),
+            ),
+          ),
           pendingInterestAmount: new Prisma.Decimal(0),
           outstandingPrincipal: new Prisma.Decimal(0),
           totalPayableAmount: new Prisma.Decimal(0),
@@ -467,7 +574,7 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated);
+      return this.toLoanResponse(updated, topupMode);
     });
   }
 
@@ -489,6 +596,7 @@ export class MortgageService {
       if (loan.status !== 'closed') {
         throw new BadRequestException('Only a closed loan can be reopened');
       }
+      const topupMode = await this.getTopupMode(tx, tenantId);
 
       // Drop the settlement artifact created at close time.
       await tx.mortgagePayment.deleteMany({
@@ -523,6 +631,8 @@ export class MortgageService {
         interestPaid: totalInterestPaid,
         principalPaid: totalPrincipalPaid,
         principalPayments: this.principalPaymentsOf(surviving),
+        principalAdditions: this.principalAdditionsOf(loan.topups),
+        topupMode,
       });
 
       const updated = await tx.mortgageLoan.update({
@@ -545,7 +655,7 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated);
+      return this.toLoanResponse(updated, topupMode);
     });
   }
 
@@ -730,9 +840,25 @@ export class MortgageService {
       .map((p) => ({ amount: this.toNumber(p.amount), date: p.paymentDate }));
   }
 
-  private calculateLoanSnapshot(loan: any, asOfDate: Date) {
+  /** Top-up history (principal additions) for cycle-wise interest accrual. */
+  private principalAdditionsOf(
+    topups: Array<{ amount: unknown; topupDate: Date }> | undefined,
+  ) {
+    return (topups ?? []).map((t) => ({
+      amount: this.toNumber(t.amount),
+      date: t.topupDate,
+    }));
+  }
+
+  private calculateLoanSnapshot(
+    loan: any,
+    asOfDate: Date,
+    topupMode: TopupMode = 'separate',
+  ) {
     return calculateMortgagePayable({
       principalPayments: this.principalPaymentsOf(loan.payments),
+      principalAdditions: this.principalAdditionsOf(loan.topups),
+      topupMode,
       principalAmount: this.toNumber(loan.principalAmount),
       interestRateMonthly: this.toNumber(loan.interestRateMonthly),
       loanDate: loan.loanDate,
@@ -742,10 +868,26 @@ export class MortgageService {
     });
   }
 
-  private toLoanResponse(loan: any) {
-    const snapshot = this.calculateLoanSnapshot(loan, new Date());
+  /** The shop's global top-up interest policy. */
+  private async getTopupMode(
+    client: { tenant: { findUnique: Function } },
+    tenantId: string,
+  ): Promise<TopupMode> {
+    const tenant = await client.tenant.findUnique({
+      where: { id: tenantId },
+      select: { mortgageTopupMode: true },
+    });
+    return tenant?.mortgageTopupMode === 'merge' ? 'merge' : 'separate';
+  }
+
+  private toLoanResponse(loan: any, topupMode: TopupMode = 'separate') {
+    const snapshot = this.calculateLoanSnapshot(loan, new Date(), topupMode);
     const isClosed = loan.status === 'closed';
     const nextDueDate = isClosed ? null : snapshot.nextDueDate;
+    const totalTopups = (loan.topups ?? []).reduce(
+      (sum: number, t: any) => sum + this.toNumber(t.amount),
+      0,
+    );
 
     return {
       id: loan.id,
@@ -760,6 +902,7 @@ export class MortgageService {
       photoIdUrl: loan.photoIdUrl,
       customerPhotoUrl: loan.customerPhotoUrl,
       principalAmount: this.toNumber(loan.principalAmount),
+      totalTopups: this.round2(totalTopups),
       interestRateMonthly: this.toNumber(loan.interestRateMonthly),
       monthlyInterestAmount: snapshot.monthlyInterestAmount,
       loanDate: loan.loanDate,
@@ -806,6 +949,13 @@ export class MortgageService {
         notes: payment.notes,
         collectedBy: payment.collectedBy,
         createdAt: payment.createdAt,
+      })),
+      topups: (loan.topups ?? []).map((topup: any) => ({
+        id: topup.id,
+        amount: this.toNumber(topup.amount),
+        topupDate: topup.topupDate,
+        notes: topup.notes,
+        createdAt: topup.createdAt,
       })),
     };
   }

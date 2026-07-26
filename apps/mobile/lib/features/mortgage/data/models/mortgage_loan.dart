@@ -23,6 +23,8 @@ class MortgageLoan {
     required this.notes,
     required this.ornaments,
     required this.payments,
+    required this.topups,
+    required this.totalTopups,
   });
 
   final String id;
@@ -51,6 +53,8 @@ class MortgageLoan {
   final String? notes;
   final List<MortgageOrnament> ornaments;
   final List<MortgagePayment> payments;
+  final List<MortgageTopup> topups;
+  final double totalTopups;
 
   bool get isActive => status == 'active';
 
@@ -95,6 +99,34 @@ class MortgageLoan {
           .whereType<Map<String, dynamic>>()
           .map(MortgagePayment.fromJson)
           .toList(),
+      topups: (json['topups'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(MortgageTopup.fromJson)
+          .toList(),
+      totalTopups: _num(json['totalTopups']),
+    );
+  }
+}
+
+class MortgageTopup {
+  const MortgageTopup({
+    required this.id,
+    required this.amount,
+    required this.topupDate,
+    required this.notes,
+  });
+
+  final String id;
+  final double amount;
+  final String? topupDate;
+  final String? notes;
+
+  factory MortgageTopup.fromJson(Map<String, dynamic> json) {
+    return MortgageTopup(
+      id: (json['id'] ?? '').toString(),
+      amount: MortgageLoan._num(json['amount']),
+      topupDate: MortgageLoan._str(json['topupDate']),
+      notes: MortgageLoan._str(json['notes']),
     );
   }
 }
