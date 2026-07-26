@@ -674,6 +674,27 @@
   "inventoryReviewHuidTitle": "HUID રસીદ આઇટમની સમીક્ષા કરો",
   "inventoryReviewHuidSubtitle": "ઇન્વેન્ટરીમાં ઉમેરતા પહેલા AI-ભરેલી પંક્તિઓ તપાસો.",
   "inventoryImportItems": "આઇટમ આયાત કરો",
+  "inventoryImportFile": "ફાઇલમાંથી આયાત કરો",
+  "inventoryImportFileSubtitle": "બીજા જ્વેલરી ERP માંથી સ્ટોક લાવો (CSV કે Excel).",
+  "inventoryImportFileHelp": "તમારા જૂના સૉફ્ટવેરમાંથી નિકાસ કરેલી CSV કે Excel (.xlsx) ફાઇલ પસંદ કરો. હાલના ટેગ નંબર એમ જ રહે છે; ફક્ત ટેગ વગરની પંક્તિઓને નવો ટેગ મળે છે.",
+  "inventoryImportChooseFile": "CSV / Excel ફાઇલ પસંદ કરો",
+  "inventoryImportMapColumns": "કૉલમ મૅપ કરો",
+  "inventoryImportSkipColumn": "— છોડો —",
+  "inventoryImportEmptyFile": "તે ફાઇલમાં આયાત કરવા યોગ્ય કોઈ પંક્તિ નથી.",
+  "inventoryImportParseFailed": "ફાઇલ વાંચી શકાઈ નહીં. તપાસો કે તે માન્ય CSV કે Excel નિકાસ છે.",
+  "inventoryImportNoValidRows": "આયાત કરવા યોગ્ય કોઈ માન્ય પંક્તિ નથી — પહેલા દર્શાવેલ ભૂલો સુધારો.",
+  "inventoryImportSummary": "{valid} આયાત માટે તૈયાર, {errors} માં ભૂલો",
+  "@inventoryImportSummary": {
+    "placeholders": { "valid": { "type": "int" }, "errors": { "type": "int" } }
+  },
+  "inventoryImportDuplicateTags": "ફાઇલમાં {count} ડુપ્લિકેટ ટેગ નંબર — આયાત પહેલાં દરેક ટેગ અનન્ય બનાવો.",
+  "@inventoryImportDuplicateTags": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "inventoryImportRowError": "પંક્તિ {row}: {reasons}",
+  "@inventoryImportRowError": {
+    "placeholders": { "row": { "type": "int" }, "reasons": { "type": "String" } }
+  },
   "inventoryHuid": "HUID",
   "inventoryHallmark": "હોલમાર્ક",
   "inventoryKarat": "કૅરેટ",

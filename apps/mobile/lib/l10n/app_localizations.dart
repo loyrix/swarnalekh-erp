@@ -4276,6 +4276,78 @@ abstract class AppLocalizations {
   /// **'Import Items'**
   String get inventoryImportItems;
 
+  /// No description provided for @inventoryImportFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from File'**
+  String get inventoryImportFile;
+
+  /// No description provided for @inventoryImportFileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring stock in from another jewellery ERP (CSV or Excel).'**
+  String get inventoryImportFileSubtitle;
+
+  /// No description provided for @inventoryImportFileHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a CSV or Excel (.xlsx) file exported from your old software. Existing tag numbers are kept as-is; only rows without a tag get a new one.'**
+  String get inventoryImportFileHelp;
+
+  /// No description provided for @inventoryImportChooseFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose CSV / Excel file'**
+  String get inventoryImportChooseFile;
+
+  /// No description provided for @inventoryImportMapColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'Map Columns'**
+  String get inventoryImportMapColumns;
+
+  /// No description provided for @inventoryImportSkipColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'— Skip —'**
+  String get inventoryImportSkipColumn;
+
+  /// No description provided for @inventoryImportEmptyFile.
+  ///
+  /// In en, this message translates to:
+  /// **'That file has no rows to import.'**
+  String get inventoryImportEmptyFile;
+
+  /// No description provided for @inventoryImportParseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read that file. Check it is a valid CSV or Excel export.'**
+  String get inventoryImportParseFailed;
+
+  /// No description provided for @inventoryImportNoValidRows.
+  ///
+  /// In en, this message translates to:
+  /// **'No valid rows to import — fix the highlighted errors first.'**
+  String get inventoryImportNoValidRows;
+
+  /// No description provided for @inventoryImportSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{valid} ready to import, {errors} with errors'**
+  String inventoryImportSummary(int valid, int errors);
+
+  /// No description provided for @inventoryImportDuplicateTags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} duplicate tag number(s) in the file — make each tag unique before importing.'**
+  String inventoryImportDuplicateTags(int count);
+
+  /// No description provided for @inventoryImportRowError.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {row}: {reasons}'**
+  String inventoryImportRowError(int row, String reasons);
+
   /// No description provided for @inventoryHuid.
   ///
   /// In en, this message translates to:

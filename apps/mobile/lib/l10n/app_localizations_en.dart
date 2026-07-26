@@ -2174,6 +2174,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryImportItems => 'Import Items';
 
   @override
+  String get inventoryImportFile => 'Import from File';
+
+  @override
+  String get inventoryImportFileSubtitle =>
+      'Bring stock in from another jewellery ERP (CSV or Excel).';
+
+  @override
+  String get inventoryImportFileHelp =>
+      'Choose a CSV or Excel (.xlsx) file exported from your old software. Existing tag numbers are kept as-is; only rows without a tag get a new one.';
+
+  @override
+  String get inventoryImportChooseFile => 'Choose CSV / Excel file';
+
+  @override
+  String get inventoryImportMapColumns => 'Map Columns';
+
+  @override
+  String get inventoryImportSkipColumn => '— Skip —';
+
+  @override
+  String get inventoryImportEmptyFile => 'That file has no rows to import.';
+
+  @override
+  String get inventoryImportParseFailed =>
+      'Could not read that file. Check it is a valid CSV or Excel export.';
+
+  @override
+  String get inventoryImportNoValidRows =>
+      'No valid rows to import — fix the highlighted errors first.';
+
+  @override
+  String inventoryImportSummary(int valid, int errors) {
+    return '$valid ready to import, $errors with errors';
+  }
+
+  @override
+  String inventoryImportDuplicateTags(int count) {
+    return '$count duplicate tag number(s) in the file — make each tag unique before importing.';
+  }
+
+  @override
+  String inventoryImportRowError(int row, String reasons) {
+    return 'Row $row: $reasons';
+  }
+
+  @override
   String get inventoryHuid => 'HUID';
 
   @override

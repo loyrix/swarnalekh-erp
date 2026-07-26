@@ -40,6 +40,14 @@ dependencies:
   flutter_secure_storage: ^10.3.1
   pdf: ^3.13.0
 
+  # Inventory import from other ERPs (CSV / Excel). xlsx is read with a small
+  # in-repo parser over archive + xml (the heavy Excel packages pin xml <7,
+  # which clashes with pdf's xml ^7).
+  file_picker: ^8.1.4
+  csv: ^6.0.0
+  archive: ^4.0.2
+  xml: ^7.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

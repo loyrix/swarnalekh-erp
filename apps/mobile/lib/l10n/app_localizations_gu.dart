@@ -2175,6 +2175,53 @@ class AppLocalizationsGu extends AppLocalizations {
   String get inventoryImportItems => 'આઇટમ આયાત કરો';
 
   @override
+  String get inventoryImportFile => 'ફાઇલમાંથી આયાત કરો';
+
+  @override
+  String get inventoryImportFileSubtitle =>
+      'બીજા જ્વેલરી ERP માંથી સ્ટોક લાવો (CSV કે Excel).';
+
+  @override
+  String get inventoryImportFileHelp =>
+      'તમારા જૂના સૉફ્ટવેરમાંથી નિકાસ કરેલી CSV કે Excel (.xlsx) ફાઇલ પસંદ કરો. હાલના ટેગ નંબર એમ જ રહે છે; ફક્ત ટેગ વગરની પંક્તિઓને નવો ટેગ મળે છે.';
+
+  @override
+  String get inventoryImportChooseFile => 'CSV / Excel ફાઇલ પસંદ કરો';
+
+  @override
+  String get inventoryImportMapColumns => 'કૉલમ મૅપ કરો';
+
+  @override
+  String get inventoryImportSkipColumn => '— છોડો —';
+
+  @override
+  String get inventoryImportEmptyFile =>
+      'તે ફાઇલમાં આયાત કરવા યોગ્ય કોઈ પંક્તિ નથી.';
+
+  @override
+  String get inventoryImportParseFailed =>
+      'ફાઇલ વાંચી શકાઈ નહીં. તપાસો કે તે માન્ય CSV કે Excel નિકાસ છે.';
+
+  @override
+  String get inventoryImportNoValidRows =>
+      'આયાત કરવા યોગ્ય કોઈ માન્ય પંક્તિ નથી — પહેલા દર્શાવેલ ભૂલો સુધારો.';
+
+  @override
+  String inventoryImportSummary(int valid, int errors) {
+    return '$valid આયાત માટે તૈયાર, $errors માં ભૂલો';
+  }
+
+  @override
+  String inventoryImportDuplicateTags(int count) {
+    return 'ફાઇલમાં $count ડુપ્લિકેટ ટેગ નંબર — આયાત પહેલાં દરેક ટેગ અનન્ય બનાવો.';
+  }
+
+  @override
+  String inventoryImportRowError(int row, String reasons) {
+    return 'પંક્તિ $row: $reasons';
+  }
+
+  @override
   String get inventoryHuid => 'HUID';
 
   @override

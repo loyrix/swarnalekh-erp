@@ -13,6 +13,7 @@ import 'package:swarnbook/features/inventory/application/inventory_providers.dar
 import 'package:swarnbook/features/inventory/data/inventory_repository.dart';
 import 'package:swarnbook/features/inventory/data/models/inventory_item.dart';
 import 'package:swarnbook/features/inventory/presentation/inventory_format.dart';
+import 'package:swarnbook/features/inventory/presentation/screens/inventory_file_import_page.dart';
 import 'package:swarnbook/features/inventory/presentation/screens/inventory_form_page.dart';
 import 'package:swarnbook/features/inventory/presentation/screens/ocr_review_page.dart';
 import 'package:swarnbook/features/inventory/presentation/widgets/inventory_detail_sheet.dart';
@@ -310,6 +311,21 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
     if (source != null) await _scanReceipt(source);
   }
 
+  Future<void> _openFileImport() async {
+    final imported = await AppFormScaffold.push<bool>(
+      context,
+      builder: (_) => const InventoryFileImportPage(),
+    );
+    if (imported == true && mounted) {
+      AppToast.success(
+        context,
+        AppLocalizations.of(context)!.inventoryImported,
+      );
+      setState(() => _section = 'view');
+      ref.invalidate(inventoryOverviewProvider(_query));
+    }
+  }
+
   Future<void> _scanReceipt(ImageSource source) async {
     final l10n = AppLocalizations.of(context)!;
     try {
@@ -430,6 +446,7 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
           isUploading: _isOcrUploading,
           onScan: _isOcrUploading ? null : _showReceiptSourceSheet,
           onManual: _isOcrUploading ? null : () => _openForm(),
+          onImportFile: _isOcrUploading ? null : _openFileImport,
         ),
         'sold' => _buildSoldBody(),
         _ => _buildStockBody(),
@@ -835,11 +852,13 @@ class _AddSection extends StatelessWidget {
     required this.isUploading,
     required this.onScan,
     required this.onManual,
+    required this.onImportFile,
   });
 
   final bool isUploading;
   final VoidCallback? onScan;
   final VoidCallback? onManual;
+  final VoidCallback? onImportFile;
 
   @override
   Widget build(BuildContext context) {
@@ -853,6 +872,14 @@ class _AddSection extends StatelessWidget {
           title: l10n.inventoryScanHuidReceipt,
           subtitle: l10n.inventoryScanHuidSubtitle,
           onTap: onScan,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _card(
+          context,
+          icon: Icons.upload_file_outlined,
+          title: l10n.inventoryImportFile,
+          subtitle: l10n.inventoryImportFileSubtitle,
+          onTap: onImportFile,
         ),
         const SizedBox(height: AppSpacing.md),
         _card(
