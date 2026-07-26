@@ -2301,16 +2301,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get periodToday => 'Today';
 
   @override
+  String get periodYesterday => 'Yesterday';
+
+  @override
+  String get periodLast7 => 'Last 7 Days';
+
+  @override
+  String get periodLast30 => 'Last 30 Days';
+
+  @override
   String get periodMonth => 'This Month';
 
   @override
-  String get period3Months => '3 Months';
+  String get periodLastMonth => 'Last Month';
 
   @override
-  String get period6Months => '6 Months';
+  String get period3Months => 'Last 3 Months';
+
+  @override
+  String get period6Months => 'Last 6 Months';
 
   @override
   String get period12Months => '12 Months';
+
+  @override
+  String get periodFinancialYear => 'Financial Year';
 
   @override
   String get periodAll => 'All Time';

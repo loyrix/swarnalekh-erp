@@ -4522,22 +4522,46 @@ abstract class AppLocalizations {
   /// **'Today'**
   String get periodToday;
 
+  /// No description provided for @periodYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get periodYesterday;
+
+  /// No description provided for @periodLast7.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 Days'**
+  String get periodLast7;
+
+  /// No description provided for @periodLast30.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 Days'**
+  String get periodLast30;
+
   /// No description provided for @periodMonth.
   ///
   /// In en, this message translates to:
   /// **'This Month'**
   String get periodMonth;
 
+  /// No description provided for @periodLastMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Month'**
+  String get periodLastMonth;
+
   /// No description provided for @period3Months.
   ///
   /// In en, this message translates to:
-  /// **'3 Months'**
+  /// **'Last 3 Months'**
   String get period3Months;
 
   /// No description provided for @period6Months.
   ///
   /// In en, this message translates to:
-  /// **'6 Months'**
+  /// **'Last 6 Months'**
   String get period6Months;
 
   /// No description provided for @period12Months.
@@ -4545,6 +4569,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'12 Months'**
   String get period12Months;
+
+  /// No description provided for @periodFinancialYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Year'**
+  String get periodFinancialYear;
 
   /// No description provided for @periodAll.
   ///

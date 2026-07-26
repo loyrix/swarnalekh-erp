@@ -2309,16 +2309,31 @@ class AppLocalizationsHi extends AppLocalizations {
   String get periodToday => 'आज';
 
   @override
+  String get periodYesterday => 'कल';
+
+  @override
+  String get periodLast7 => 'पिछले 7 दिन';
+
+  @override
+  String get periodLast30 => 'पिछले 30 दिन';
+
+  @override
   String get periodMonth => 'इस महीने';
 
   @override
-  String get period3Months => '3 महीने';
+  String get periodLastMonth => 'पिछला महीना';
 
   @override
-  String get period6Months => '6 महीने';
+  String get period3Months => 'पिछले 3 महीने';
+
+  @override
+  String get period6Months => 'पिछले 6 महीने';
 
   @override
   String get period12Months => '12 महीने';
+
+  @override
+  String get periodFinancialYear => 'वित्तीय वर्ष';
 
   @override
   String get periodAll => 'सभी समय';

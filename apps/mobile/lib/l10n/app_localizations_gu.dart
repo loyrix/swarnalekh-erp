@@ -2302,16 +2302,31 @@ class AppLocalizationsGu extends AppLocalizations {
   String get periodToday => 'આજે';
 
   @override
+  String get periodYesterday => 'ગઈકાલે';
+
+  @override
+  String get periodLast7 => 'છેલ્લા 7 દિવસ';
+
+  @override
+  String get periodLast30 => 'છેલ્લા 30 દિવસ';
+
+  @override
   String get periodMonth => 'આ મહિને';
 
   @override
-  String get period3Months => '3 મહિના';
+  String get periodLastMonth => 'ગયો મહિનો';
 
   @override
-  String get period6Months => '6 મહિના';
+  String get period3Months => 'છેલ્લા 3 મહિના';
+
+  @override
+  String get period6Months => 'છેલ્લા 6 મહિના';
 
   @override
   String get period12Months => '12 મહિના';
+
+  @override
+  String get periodFinancialYear => 'નાણાકીય વર્ષ';
 
   @override
   String get periodAll => 'બધો સમય';

@@ -4,10 +4,15 @@ import 'package:flutter/material.dart';
 /// inventory sold, …). Maps to the API's `period`/`dateFrom`/`dateTo` params.
 enum StatPeriodKind {
   today,
+  yesterday,
+  last7,
+  last30,
   month,
+  lastMonth,
   threeMonths,
   sixMonths,
   twelveMonths,
+  financialYear,
   all,
   custom,
 }
@@ -26,10 +31,15 @@ class StatPeriod {
 
   String get apiPeriod => switch (kind) {
     StatPeriodKind.today => 'today',
+    StatPeriodKind.yesterday => 'yesterday',
+    StatPeriodKind.last7 => 'last7',
+    StatPeriodKind.last30 => 'last30',
     StatPeriodKind.month => 'month',
+    StatPeriodKind.lastMonth => 'lastmonth',
     StatPeriodKind.threeMonths => '3months',
     StatPeriodKind.sixMonths => '6months',
     StatPeriodKind.twelveMonths => '12months',
+    StatPeriodKind.financialYear => 'financialyear',
     StatPeriodKind.all => 'all',
     StatPeriodKind.custom => 'custom',
   };
@@ -67,8 +77,31 @@ class StatPeriod {
         return range;
       case StatPeriodKind.today:
         return DateTimeRange(start: dayStart(now), end: now);
+      case StatPeriodKind.yesterday:
+        final y = dayStart(now).subtract(const Duration(days: 1));
+        return DateTimeRange(start: y, end: y);
+      case StatPeriodKind.last7:
+        return DateTimeRange(
+          start: dayStart(now).subtract(const Duration(days: 6)),
+          end: now,
+        );
+      case StatPeriodKind.last30:
+        return DateTimeRange(
+          start: dayStart(now).subtract(const Duration(days: 29)),
+          end: now,
+        );
       case StatPeriodKind.month:
         return DateTimeRange(start: DateTime(now.year, now.month, 1), end: now);
+      case StatPeriodKind.lastMonth:
+        return DateTimeRange(
+          start: DateTime(now.year, now.month - 1, 1),
+          // Day 0 of this month = last day of the previous month.
+          end: DateTime(now.year, now.month, 0),
+        );
+      case StatPeriodKind.financialYear:
+        // Indian FY starts 1 April; before April it began the prior year.
+        final fyYear = now.month >= 4 ? now.year : now.year - 1;
+        return DateTimeRange(start: DateTime(fyYear, 4, 1), end: now);
       case StatPeriodKind.threeMonths:
         return DateTimeRange(
           start: DateTime(now.year, now.month - 3, now.day),

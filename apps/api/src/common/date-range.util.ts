@@ -5,10 +5,15 @@
 
 export const STAT_PERIODS = [
   'today',
+  'yesterday',
+  'last7',
+  'last30',
   'month',
+  'lastmonth',
   '3months',
   '6months',
   '12months',
+  'financialyear',
   'all',
   'custom',
 ] as const;
@@ -37,6 +42,18 @@ function monthsAgo(d: Date, months: number): Date {
   const x = startOfDay(d);
   x.setMonth(x.getMonth() - months);
   return x;
+}
+
+function daysAgo(d: Date, days: number): Date {
+  const x = startOfDay(d);
+  x.setDate(x.getDate() - days);
+  return x;
+}
+
+/** Start of the Indian financial year (1 April) containing `d`. */
+function financialYearStart(d: Date): Date {
+  const year = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
+  return startOfDay(new Date(year, 3, 1));
 }
 
 function parseBoundary(value: string | undefined, endOfDayBoundary: boolean) {
@@ -74,10 +91,26 @@ export function resolveDateRange(
       if (!gte && !lte) return null;
       return { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) };
     }
+    case 'yesterday': {
+      const start = daysAgo(now, 1);
+      return { gte: start, lte: endOfDay(start) };
+    }
+    case 'last7':
+      // Inclusive 7-day window ending today (today + 6 prior days).
+      return { gte: daysAgo(now, 6), lte: endOfDay(now) };
+    case 'last30':
+      return { gte: daysAgo(now, 29), lte: endOfDay(now) };
     case 'month': {
       const start = startOfDay(now);
       start.setDate(1);
       return { gte: start, lte: endOfDay(now) };
+    }
+    case 'lastmonth': {
+      const start = startOfDay(
+        new Date(now.getFullYear(), now.getMonth() - 1, 1),
+      );
+      const end = endOfDay(new Date(now.getFullYear(), now.getMonth(), 0));
+      return { gte: start, lte: end };
     }
     case '3months':
       return { gte: monthsAgo(now, 3), lte: endOfDay(now) };
@@ -85,6 +118,8 @@ export function resolveDateRange(
       return { gte: monthsAgo(now, 6), lte: endOfDay(now) };
     case '12months':
       return { gte: monthsAgo(now, 12), lte: endOfDay(now) };
+    case 'financialyear':
+      return { gte: financialYearStart(now), lte: endOfDay(now) };
     case 'today':
     default:
       return { gte: startOfDay(now), lte: endOfDay(now) };

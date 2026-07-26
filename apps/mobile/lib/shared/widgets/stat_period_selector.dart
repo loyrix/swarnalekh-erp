@@ -21,14 +21,24 @@ class StatPeriodSelector extends StatelessWidget {
     switch (period.kind) {
       case StatPeriodKind.today:
         return l10n.periodToday;
+      case StatPeriodKind.yesterday:
+        return l10n.periodYesterday;
+      case StatPeriodKind.last7:
+        return l10n.periodLast7;
+      case StatPeriodKind.last30:
+        return l10n.periodLast30;
       case StatPeriodKind.month:
         return l10n.periodMonth;
+      case StatPeriodKind.lastMonth:
+        return l10n.periodLastMonth;
       case StatPeriodKind.threeMonths:
         return l10n.period3Months;
       case StatPeriodKind.sixMonths:
         return l10n.period6Months;
       case StatPeriodKind.twelveMonths:
         return l10n.period12Months;
+      case StatPeriodKind.financialYear:
+        return l10n.periodFinancialYear;
       case StatPeriodKind.all:
         return l10n.periodAll;
       case StatPeriodKind.custom:
@@ -69,10 +79,14 @@ class StatPeriodSelector extends StatelessWidget {
       onSelected: (kind) => _onSelected(context, kind),
       itemBuilder: (context) => [
         _item(l10n.periodToday, StatPeriodKind.today),
+        _item(l10n.periodYesterday, StatPeriodKind.yesterday),
+        _item(l10n.periodLast7, StatPeriodKind.last7),
+        _item(l10n.periodLast30, StatPeriodKind.last30),
         _item(l10n.periodMonth, StatPeriodKind.month),
+        _item(l10n.periodLastMonth, StatPeriodKind.lastMonth),
         _item(l10n.period3Months, StatPeriodKind.threeMonths),
         _item(l10n.period6Months, StatPeriodKind.sixMonths),
-        _item(l10n.period12Months, StatPeriodKind.twelveMonths),
+        _item(l10n.periodFinancialYear, StatPeriodKind.financialYear),
         _item(l10n.periodAll, StatPeriodKind.all),
         const PopupMenuDivider(),
         _item(l10n.periodCustom, StatPeriodKind.custom),

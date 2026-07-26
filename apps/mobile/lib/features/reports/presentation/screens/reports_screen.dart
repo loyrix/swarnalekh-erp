@@ -17,8 +17,10 @@ import 'package:swarnbook/features/reports/presentation/widgets/report_section.d
 import 'package:swarnbook/features/tenant/data/models/tenant_profile.dart';
 import 'package:swarnbook/features/tenant/data/repositories/tenant_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/stat_period.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
+import 'package:swarnbook/shared/widgets/stat_period_selector.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
@@ -33,9 +35,22 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   Timer? _searchDebounce;
 
   ReportsQuery _query = const ReportsQuery();
+  // Reports default to all-time; the shared period picker narrows the window.
+  StatPeriod _period = const StatPeriod(StatPeriodKind.all);
   String _group = 'inventory';
   bool _roleLoaded = false;
   bool _canView = false;
+
+  void _onPeriodChanged(StatPeriod period) {
+    final dates = period.toDateQueryParameters();
+    setState(() {
+      _period = period;
+      _query = _query.copyWith(
+        dateFrom: dates['dateFrom'] ?? '',
+        dateTo: dates['dateTo'] ?? '',
+      );
+    });
+  }
 
   final TenantRepository _tenantRepo = TenantRepository();
   ReportPdfFonts? _cachedFonts;
@@ -155,8 +170,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   Future<void> _openFilters() async {
     final l10n = AppLocalizations.of(context)!;
-    final from = TextEditingController(text: _query.dateFrom);
-    final to = TextEditingController(text: _query.dateTo);
+    // Date range is driven by the shared period picker in the header, not here.
     final category = TextEditingController(text: _query.category);
     final branch = TextEditingController(text: _query.branch);
     var status = _query.status;
@@ -165,23 +179,17 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       context,
       onApply: () => setState(() {
         _query = _query.copyWith(
-          dateFrom: from.text,
-          dateTo: to.text,
           category: category.text,
           branch: branch.text,
           status: status,
         );
       }),
       onClear: () {
-        from.clear();
-        to.clear();
         category.clear();
         branch.clear();
         status = 'all';
       },
       builder: (context, setSheetState) => [
-        _sheetField(from, l10n.reportsFromDate, hint: l10n.reportsDateHint),
-        _sheetField(to, l10n.reportsToDate, hint: l10n.reportsDateHint),
         _sheetField(category, l10n.reportsCategory),
         _sheetField(branch, l10n.reportsBranch),
         DropdownButtonFormField<String>(
@@ -218,8 +226,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       ],
     );
 
-    from.dispose();
-    to.dispose();
     category.dispose();
     branch.dispose();
   }
@@ -283,27 +289,40 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   }
 
   Widget _header(AppLocalizations l10n) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: TextField(
-            controller: _searchController,
-            onChanged: _onSearchChanged,
-            decoration: InputDecoration(
-              hintText: l10n.reportsSearchHint,
-              isDense: true,
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: l10n.reportsSearchHint,
+                  isDense: true,
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: AppSpacing.sm),
+            IconButton.filledTonal(
+              tooltip: l10n.commonFilters,
+              onPressed: _openFilters,
+              icon: const Icon(Icons.tune_rounded),
+            ),
+          ],
         ),
-        const SizedBox(width: AppSpacing.sm),
-        IconButton.filledTonal(
-          tooltip: l10n.commonFilters,
-          onPressed: _openFilters,
-          icon: const Icon(Icons.tune_rounded),
+        const SizedBox(height: AppSpacing.sm),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: StatPeriodSelector(
+            value: _period,
+            onChanged: _onPeriodChanged,
+          ),
         ),
       ],
     );
