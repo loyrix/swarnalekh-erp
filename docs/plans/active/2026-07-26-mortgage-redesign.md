@@ -25,12 +25,12 @@ screen, shown only when the loan has top-ups.
 
 ## B · Mortgage detail/list redesign (existing data)
 
-- [ ] Full-page detail (replace bottom sheet): Loan Overview, Loan Details.
-- [ ] Top-up History section (loan.topups).
-- [ ] Gold Details section (ornaments: photo, purity, weight, HUID, tag).
-- [ ] Call / WhatsApp buttons (url_launcher).
-- [ ] 3-dot context menu on list cards.
-- [ ] "DUE IN N days" badge + header actions + avatar.
+- [x] Full-page detail (replace bottom sheet): Loan Overview, Loan Details.
+- [x] Top-up History section (loan.topups).
+- [x] Gold Details section (ornaments) + Payment History (receipt/edit preserved).
+- [x] Call / WhatsApp buttons (url_launcher).
+- [x] 3-dot context menu on list cards (View Details, Collect, Top-up, Close, Reopen).
+- [x] "DUE IN N days" / overdue badge + avatar. (Header edit/print icons come with C.)
 
 ## C · Heavy new pieces
 

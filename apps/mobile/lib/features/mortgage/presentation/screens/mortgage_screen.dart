@@ -14,9 +14,9 @@ import 'package:swarnbook/features/mortgage/presentation/mortgage_format.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/close_loan_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/collect_payment_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/edit_payment_page.dart';
+import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_detail_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_form_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/topup_loan_page.dart';
-import 'package:swarnbook/features/mortgage/presentation/widgets/mortgage_detail_sheet.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/application/stat_period.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
@@ -97,7 +97,7 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
     }
   }
 
-  Future<void> _openCollect(MortgageLoan loan) async {
+  Future<bool> _openCollect(MortgageLoan loan) async {
     final done = await CollectPaymentPage.open(context, loanId: loan.id);
     if (done == true && mounted) {
       AppToast.success(
@@ -105,11 +105,13 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         AppLocalizations.of(context)!.mortgagePaymentSaved,
       );
       _invalidate();
+      return true;
     }
+    return false;
   }
 
-  Future<void> _openClose(MortgageLoan loan) async {
-    if (!_canManage) return;
+  Future<bool> _openClose(MortgageLoan loan) async {
+    if (!_canManage) return false;
     final done = await CloseLoanPage.open(
       context,
       loanId: loan.id,
@@ -121,14 +123,16 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         AppLocalizations.of(context)!.mortgageLoanClosed,
       );
       _invalidate();
+      return true;
     }
+    return false;
   }
 
-  Future<void> _openReceipt(MortgageLoan loan, MortgagePayment payment) async {
+  Future<bool> _openReceipt(MortgageLoan loan, MortgagePayment payment) async {
     final l10n = AppLocalizations.of(context)!;
     if (loan.id.isEmpty || payment.id.isEmpty) {
       AppToast.error(context, l10n.mortgagePaymentReceiptMissing);
-      return;
+      return false;
     }
     try {
       final payload = await ref
@@ -138,24 +142,25 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
     } catch (_) {
       if (mounted) AppToast.error(context, l10n.mortgageFailedGenerateReceipt);
     }
+    return false;
   }
 
-  void _openDetail(MortgageLoan loan) {
-    showMortgageDetail(
+  Future<void> _openDetail(MortgageLoan loan) async {
+    final changed = await MortgageDetailPage.open(
       context,
-      loan,
-      onCollect: () => _openCollect(loan),
-      onClose: _canManage ? () => _openClose(loan) : null,
-      onReopen: _canManage && !loan.isActive ? () => _openReopen(loan) : null,
-      onTopUp: _canManage && loan.isActive ? () => _openTopUp(loan) : null,
-      onReceipt: (payment) => _openReceipt(loan, payment),
-      onEditPayment: _canManage
-          ? (payment) => _openEditPayment(loan, payment)
-          : null,
+      loan: loan,
+      canManage: _canManage,
+      onCollect: _openCollect,
+      onTopUp: _openTopUp,
+      onClose: _openClose,
+      onReopen: _openReopen,
+      onReceipt: _openReceipt,
+      onEditPayment: _openEditPayment,
     );
+    if (changed == true && mounted) _invalidate();
   }
 
-  Future<void> _openTopUp(MortgageLoan loan) async {
+  Future<bool> _openTopUp(MortgageLoan loan) async {
     final done = await TopUpLoanPage.open(context, loanId: loan.id);
     if (done == true && mounted) {
       AppToast.success(
@@ -163,10 +168,12 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         AppLocalizations.of(context)!.mortgageTopupAdded,
       );
       _invalidate();
+      return true;
     }
+    return false;
   }
 
-  Future<void> _openReopen(MortgageLoan loan) async {
+  Future<bool> _openReopen(MortgageLoan loan) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -185,14 +192,15 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !mounted) return false;
     try {
       await ref.read(mortgageRepositoryProvider).reopenLoan(loan.id);
-      if (!mounted) return;
+      if (!mounted) return false;
       AppToast.success(context, l10n.mortgageLoanReopened);
       _invalidate();
+      return true;
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       final message = e is DioException ? e.message?.trim() : null;
       AppToast.error(
         context,
@@ -200,15 +208,14 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
             ? l10n.mortgageFailedReopen
             : message,
       );
+      return false;
     }
   }
 
-  Future<void> _openEditPayment(
+  Future<bool> _openEditPayment(
     MortgageLoan loan,
     MortgagePayment payment,
   ) async {
-    // Leave the detail sheet first so the refreshed loan is shown on return.
-    Navigator.of(context).maybePop();
     final done = await EditPaymentPage.open(
       context,
       loanId: loan.id,
@@ -220,7 +227,9 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         AppLocalizations.of(context)!.mortgagePaymentSaved,
       );
       _invalidate();
+      return true;
     }
+    return false;
   }
 
   @override
@@ -326,22 +335,39 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           StatusBadge(label: loan.status),
-          if (loan.isActive)
-            ItemActionsMenu(
-              actions: [
+          ItemActionsMenu(
+            actions: [
+              ItemAction(
+                type: ItemActionType.view,
+                customLabel: l10n.mortgageViewDetails,
+                onPressed: () => _openDetail(loan),
+              ),
+              if (loan.isActive)
                 ItemAction(
-                  type: ItemActionType.view,
+                  type: ItemActionType.collect,
                   customLabel: l10n.mortgageCollect,
                   onPressed: () => _openCollect(loan),
                 ),
-                if (_canManage)
-                  ItemAction(
-                    type: ItemActionType.edit,
-                    customLabel: l10n.mortgageClose,
-                    onPressed: () => _openClose(loan),
-                  ),
-              ],
-            ),
+              if (loan.isActive && _canManage)
+                ItemAction(
+                  type: ItemActionType.payment,
+                  customLabel: l10n.mortgageAddTopup,
+                  onPressed: () => _openTopUp(loan),
+                ),
+              if (loan.isActive && _canManage)
+                ItemAction(
+                  type: ItemActionType.close,
+                  customLabel: l10n.mortgageClose,
+                  onPressed: () => _openClose(loan),
+                ),
+              if (!loan.isActive && _canManage)
+                ItemAction(
+                  type: ItemActionType.edit,
+                  customLabel: l10n.mortgageReopen,
+                  onPressed: () => _openReopen(loan),
+                ),
+            ],
+          ),
         ],
       ),
       onTap: () => _openDetail(loan),

@@ -60,6 +60,14 @@ class MortgageRepository {
   Future<void> createLoan(Map<String, dynamic> payload) =>
       _api.dio.post('/mortgages', data: payload);
 
+  /// Full detail for one loan (`GET /mortgages/:id`).
+  Future<MortgageLoan> getLoan(String loanId) async {
+    final response = await _api.dio.get('/mortgages/$loanId');
+    return MortgageLoan.fromJson(
+      (response.data as Map).cast<String, dynamic>(),
+    );
+  }
+
   /// Correct a recorded payment's amount/type (admin only).
   Future<void> updatePayment(
     String loanId,

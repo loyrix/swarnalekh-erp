@@ -1972,6 +1972,31 @@ class AppLocalizationsGu extends AppLocalizations {
   String get mortgageSavePayment => 'ચુકવણી સાચવો';
 
   @override
+  String get mortgageViewDetails => 'વિગતો જુઓ';
+
+  @override
+  String get mortgageLoanOverview => 'લોન અવલોકન';
+
+  @override
+  String get mortgageTopupHistory => 'ટોપ-અપ ઇતિહાસ';
+
+  @override
+  String get mortgagePaymentHistory => 'ચુકવણી ઇતિહાસ';
+
+  @override
+  String get mortgageContactFailed => 'સંપર્ક એપ ખોલી શકાઈ નહીં';
+
+  @override
+  String mortgageDueInDays(int days) {
+    return '$days દિવસમાં બાકી';
+  }
+
+  @override
+  String mortgageOverdueByDays(int days) {
+    return '$days દિવસ મુદતવીતી';
+  }
+
+  @override
   String get mortgageCloseLoan => 'લોન બંધ કરો';
 
   @override

@@ -1972,6 +1972,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mortgageSavePayment => 'Save Payment';
 
   @override
+  String get mortgageViewDetails => 'View Details';
+
+  @override
+  String get mortgageLoanOverview => 'Loan Overview';
+
+  @override
+  String get mortgageTopupHistory => 'Top-up History';
+
+  @override
+  String get mortgagePaymentHistory => 'Payment History';
+
+  @override
+  String get mortgageContactFailed => 'Could not open the contact app';
+
+  @override
+  String mortgageDueInDays(int days) {
+    return 'DUE IN $days DAYS';
+  }
+
+  @override
+  String mortgageOverdueByDays(int days) {
+    return 'OVERDUE BY $days DAYS';
+  }
+
+  @override
   String get mortgageCloseLoan => 'Close Loan';
 
   @override

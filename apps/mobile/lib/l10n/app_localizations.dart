@@ -3886,6 +3886,48 @@ abstract class AppLocalizations {
   /// **'Save Payment'**
   String get mortgageSavePayment;
 
+  /// No description provided for @mortgageViewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get mortgageViewDetails;
+
+  /// No description provided for @mortgageLoanOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Overview'**
+  String get mortgageLoanOverview;
+
+  /// No description provided for @mortgageTopupHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-up History'**
+  String get mortgageTopupHistory;
+
+  /// No description provided for @mortgagePaymentHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment History'**
+  String get mortgagePaymentHistory;
+
+  /// No description provided for @mortgageContactFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the contact app'**
+  String get mortgageContactFailed;
+
+  /// No description provided for @mortgageDueInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'DUE IN {days} DAYS'**
+  String mortgageDueInDays(int days);
+
+  /// No description provided for @mortgageOverdueByDays.
+  ///
+  /// In en, this message translates to:
+  /// **'OVERDUE BY {days} DAYS'**
+  String mortgageOverdueByDays(int days);
+
   /// No description provided for @mortgageCloseLoan.
   ///
   /// In en, this message translates to:
