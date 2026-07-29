@@ -3928,6 +3928,48 @@ abstract class AppLocalizations {
   /// **'OVERDUE BY {days} DAYS'**
   String mortgageOverdueByDays(int days);
 
+  /// No description provided for @mortgageCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get mortgageCall;
+
+  /// No description provided for @mortgageWhatsapp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get mortgageWhatsapp;
+
+  /// No description provided for @mortgageLastCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Collection'**
+  String get mortgageLastCollection;
+
+  /// No description provided for @mortgagePerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'p.m.'**
+  String get mortgagePerMonth;
+
+  /// No description provided for @mortgageTopupShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-up'**
+  String get mortgageTopupShort;
+
+  /// No description provided for @mortgagePrintShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get mortgagePrintShort;
+
+  /// No description provided for @mortgageSecureNote.
+  ///
+  /// In en, this message translates to:
+  /// **'All transactions are secure and recorded'**
+  String get mortgageSecureNote;
+
   /// No description provided for @mortgageEditLoan.
   ///
   /// In en, this message translates to:

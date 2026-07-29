@@ -1997,6 +1997,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get mortgageCall => 'Call';
+
+  @override
+  String get mortgageWhatsapp => 'WhatsApp';
+
+  @override
+  String get mortgageLastCollection => 'Last Collection';
+
+  @override
+  String get mortgagePerMonth => 'p.m.';
+
+  @override
+  String get mortgageTopupShort => 'Top-up';
+
+  @override
+  String get mortgagePrintShort => 'Print';
+
+  @override
+  String get mortgageSecureNote => 'All transactions are secure and recorded';
+
+  @override
   String get mortgageEditLoan => 'Edit Loan';
 
   @override

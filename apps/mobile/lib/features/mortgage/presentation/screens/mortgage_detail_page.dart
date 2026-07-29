@@ -11,6 +11,7 @@ import 'package:swarnbook/features/reports/presentation/report_pdf.dart';
 import 'package:swarnbook/features/tenant/data/models/tenant_profile.dart';
 import 'package:swarnbook/features/tenant/data/repositories/tenant_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
+import 'package:swarnbook/shared/application/data_image.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
 
@@ -212,6 +213,14 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
     ).difference(DateTime(now.year, now.month, now.day)).inDays;
   }
 
+  /// Most recent real collection (ignores the synthetic closure entry).
+  String? get _lastCollection {
+    for (final p in _loan.payments) {
+      if (p.paymentType != 'closure') return p.paymentDate;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -237,38 +246,15 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
                 onPressed: () => _run(widget.onEdit),
               ),
             IconButton(
-              tooltip: l10n.mortgagePrintStatement,
+              tooltip: l10n.mortgageShareStatement,
               icon: _busyPdf
                   ? const SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.print_outlined),
-              onPressed: _busyPdf ? null : () => _statement(share: false),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'ledger') {
-                  MortgageLedgerPage.open(
-                    context,
-                    loanId: loan.id,
-                    loanNumber: loan.loanNumber,
-                  );
-                } else if (v == 'share') {
-                  _statement(share: true);
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'ledger',
-                  child: Text(l10n.mortgageViewFullLedger),
-                ),
-                PopupMenuItem(
-                  value: 'share',
-                  child: Text(l10n.mortgageShareStatement),
-                ),
-              ],
+                  : const Icon(Icons.share_outlined),
+              onPressed: _busyPdf ? null : () => _statement(share: true),
             ),
           ],
         ),
@@ -281,31 +267,61 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
               const SizedBox(height: AppSpacing.md),
               _customerCard(context, l10n),
               const SizedBox(height: AppSpacing.md),
-              _overview(context, l10n),
+              _overviewCard(context, l10n),
               const SizedBox(height: AppSpacing.md),
-              _loanDetails(context, l10n),
-              if (loan.topups.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                _topupHistory(context, l10n),
-              ],
-              if (loan.ornaments.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                _goldDetails(context, l10n),
-              ],
-              if (_ledger.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                _ledgerSection(context, l10n),
-              ],
+              _twoCol(
+                context,
+                _loanDetailsCard(context, l10n),
+                loan.topups.isNotEmpty
+                    ? _topupHistoryCard(context, l10n)
+                    : null,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _twoCol(
+                context,
+                loan.ornaments.isNotEmpty ? _goldCard(context, l10n) : null,
+                _ledger.isNotEmpty ? _ledgerCard(context, l10n) : null,
+              ),
               if (loan.payments.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.md),
                 _payments(context, l10n),
               ],
-              const SizedBox(height: 96),
+              const SizedBox(height: AppSpacing.md),
+              _footer(context, l10n),
+              const SizedBox(height: 90),
             ],
           ),
         ),
         bottomNavigationBar: _actionBar(context, l10n),
       ),
+    );
+  }
+
+  /// Lays two section cards side by side on wider screens, stacked on narrow.
+  Widget _twoCol(BuildContext context, Widget? left, Widget? right) {
+    if (left == null && right == null) return const SizedBox.shrink();
+    if (left == null) return right!;
+    if (right == null) return left;
+    return LayoutBuilder(
+      builder: (context, c) {
+        if (c.maxWidth >= 380) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: left),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(child: right),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            left,
+            const SizedBox(height: AppSpacing.md),
+            right,
+          ],
+        );
+      },
     );
   }
 
@@ -344,103 +360,228 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
     final phone = _loan.customerPhone;
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
+      child: Column(
         children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                child: Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : '?',
                   style: const TextStyle(
+                    color: AppColors.primary,
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: 18,
                   ),
                 ),
-                if (phone != null)
-                  Text(
-                    phone,
-                    style: TextStyle(
-                      color: AppColors.text3(context),
-                      fontSize: 13,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-              ],
-            ),
+                    if (phone != null)
+                      Text(
+                        phone,
+                        style: TextStyle(
+                          color: AppColors.text3(context),
+                          fontSize: 13,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
           if (phone != null) ...[
-            _roundIcon(Icons.call_rounded, AppColors.success, () {
-              _launch('tel', phone);
-            }),
-            const SizedBox(width: AppSpacing.sm),
-            _roundIcon(Icons.chat_rounded, const Color(0xFF25D366), () {
-              _launch('wa', phone);
-            }),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                Expanded(
+                  child: _contactPill(
+                    Icons.call_rounded,
+                    l10n.mortgageCall,
+                    AppColors.success,
+                    () => _launch('tel', phone),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _contactPill(
+                    Icons.chat_rounded,
+                    l10n.mortgageWhatsapp,
+                    const Color(0xFF25D366),
+                    () => _launch('wa', phone),
+                  ),
+                ),
+              ],
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _roundIcon(IconData icon, Color color, VoidCallback onTap) {
+  Widget _contactPill(
+    IconData icon,
+    String label,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Material(
       color: color.withValues(alpha: 0.14),
-      shape: const CircleBorder(),
+      borderRadius: BorderRadius.circular(AppRadius.full),
       child: InkWell(
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(AppRadius.full),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(9),
-          child: Icon(icon, size: 20, color: color),
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(color: color, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _overview(BuildContext context, AppLocalizations l10n) {
+  // --- cards --------------------------------------------------------------
+
+  Widget _card(BuildContext context, String title, Widget child) {
+    return GlassCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: AppColors.text3(context),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _overviewCard(BuildContext context, AppLocalizations l10n) {
     final loan = _loan;
-    return _section(
+    return _card(
       context,
       l10n.mortgageLoanOverview,
-      [
-        _bigStat(
-          context,
-          l10n.mortgagePrincipalOutstanding,
-          mortgageMoney(loan.outstandingPrincipal),
+      Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _stat(
+                  context,
+                  l10n.mortgagePrincipalOutstanding,
+                  mortgageMoney(loan.outstandingPrincipal),
+                ),
+              ),
+              Expanded(
+                child: _stat(
+                  context,
+                  l10n.mortgagePendingInterest,
+                  mortgageMoney(loan.pendingInterestAmount),
+                ),
+              ),
+              Expanded(
+                child: _stat(
+                  context,
+                  l10n.mortgageTotalPayable,
+                  mortgageMoney(loan.totalPayableAmount),
+                  emphasize: true,
+                ),
+              ),
+            ],
+          ),
+          Divider(color: AppColors.brd(context), height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _stat(
+                  context,
+                  l10n.mortgageLastCollection,
+                  mortgageDate(_lastCollection),
+                  small: true,
+                ),
+              ),
+              Expanded(
+                child: _stat(
+                  context,
+                  l10n.mortgageNextDue,
+                  mortgageDate(loan.nextDueDate),
+                  small: true,
+                ),
+              ),
+              Expanded(
+                child: _stat(
+                  context,
+                  l10n.mortgageInterestRate,
+                  '${loan.interestRateMonthly}% ${l10n.mortgagePerMonth}',
+                  small: true,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stat(
+    BuildContext context,
+    String label,
+    String value, {
+    bool emphasize = false,
+    bool small = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: AppColors.text3(context), fontSize: 10.5),
+          maxLines: 2,
         ),
-        _bigStat(
-          context,
-          l10n.mortgagePendingInterest,
-          mortgageMoney(loan.pendingInterestAmount),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: small ? FontWeight.w600 : FontWeight.w800,
+            fontSize: small ? 12.5 : 15,
+            color: emphasize ? AppColors.primary : AppColors.text1(context),
+          ),
         ),
-        _bigStat(
-          context,
-          l10n.mortgageTotalPayable,
-          mortgageMoney(loan.totalPayableAmount),
-          emphasize: true,
-        ),
-      ],
-      extraRows: [
-        (l10n.mortgageNextDue, mortgageDate(loan.nextDueDate)),
-        (l10n.mortgageInterestRate, '${loan.interestRateMonthly}%'),
       ],
     );
   }
 
-  Widget _loanDetails(BuildContext context, AppLocalizations l10n) {
+  Widget _loanDetailsCard(BuildContext context, AppLocalizations l10n) {
     final loan = _loan;
     final rows = <(String, String)>[
       (l10n.reportsLoanAmount, mortgageMoney(loan.principalAmount)),
@@ -450,45 +591,46 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
         (l10n.mortgageTotalTopups, mortgageMoney(loan.totalTopups)),
       (l10n.mortgageInterestMonths, '${loan.interestMonths}'),
     ];
-    return _kvSection(context, l10n.mortgageLoanDetails, rows);
+    return _card(
+      context,
+      l10n.mortgageLoanDetails,
+      Column(children: [for (final r in rows) _kvRow(context, r.$1, r.$2)]),
+    );
   }
 
-  Widget _topupHistory(BuildContext context, AppLocalizations l10n) {
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
+  Widget _topupHistoryCard(BuildContext context, AppLocalizations l10n) {
+    final topups = _loan.topups;
+    return _card(
+      context,
+      l10n.mortgageTopupHistory,
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.mortgageTopupHistory,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              Text(
-                mortgageMoney(_loan.totalTopups),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
+          _kvRow(
+            context,
+            l10n.mortgageTotalTopups,
+            mortgageMoney(_loan.totalTopups),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          for (final t in _loan.topups)
+          const SizedBox(height: 2),
+          for (final t in topups.take(4))
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: 3),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Flexible(
+                    child: Text(
+                      mortgageMoney(t.amount),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
                   Text(
                     mortgageDate(t.topupDate),
-                    style: TextStyle(color: AppColors.text2(context)),
-                  ),
-                  Text(
-                    mortgageMoney(t.amount),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: AppColors.text3(context),
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -498,35 +640,79 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
     );
   }
 
-  Widget _goldDetails(BuildContext context, AppLocalizations l10n) {
-    final rows = <(String, String)>[];
+  Widget _goldCard(BuildContext context, AppLocalizations l10n) {
+    String? photo;
     for (final o in _loan.ornaments) {
-      rows.add((
-        '${o.ornamentType ?? '-'} · ${o.purity ?? '-'}',
-        '${o.netWeight ?? 0} g / ${o.grossWeight ?? 0} g',
-      ));
+      if (o.firstPhoto != null && isDataImage(o.firstPhoto!)) {
+        photo = o.firstPhoto;
+        break;
+      }
     }
-    return _kvSection(context, l10n.mortgageGoldDetails, rows);
-  }
-
-  Widget _ledgerSection(BuildContext context, AppLocalizations l10n) {
-    // Show the most recent few; the full ledger opens on its own page.
-    final recent = _ledger.reversed.take(4).toList();
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
+    return _card(
+      context,
+      l10n.mortgageGoldDetails,
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.mortgageLoanLedger,
-            style: const TextStyle(fontWeight: FontWeight.w700),
+          if (photo != null) ...[
+            GestureDetector(
+              onTap: () => _viewPhoto(photo!),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                child: Image.memory(
+                  decodeDataImage(photo),
+                  height: 90,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          for (final o in _loan.ornaments) ...[
+            _kvRow(
+              context,
+              o.ornamentType ?? l10n.mortgageGoldDetails,
+              o.purity ?? '-',
+            ),
+            _kvRow(context, l10n.mortgageNetWeight, '${o.netWeight ?? 0} g'),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _viewPhoto(String dataUri) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: InteractiveViewer(
+            child: Image.memory(decodeDataImage(dataUri)),
           ),
-          const SizedBox(height: 4),
+        ),
+      ),
+    );
+  }
+
+  Widget _ledgerCard(BuildContext context, AppLocalizations l10n) {
+    final recent = _ledger.reversed.take(4).toList();
+    return _card(
+      context,
+      l10n.mortgageLoanLedger,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           for (final e in recent) ledgerTile(context, l10n, e),
-          const SizedBox(height: AppSpacing.xs),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 32),
+              ),
               onPressed: () => MortgageLedgerPage.open(
                 context,
                 loanId: _loan.id,
@@ -548,19 +734,15 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
       };
 
   Widget _payments(BuildContext context, AppLocalizations l10n) {
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
+    return _card(
+      context,
+      l10n.mortgagePaymentHistory,
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.mortgagePaymentHistory,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
           for (final p in _loan.payments)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
                 children: [
                   Expanded(
@@ -606,41 +788,21 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
     );
   }
 
-  // --- section builders ---------------------------------------------------
-
-  Widget _section(
-    BuildContext context,
-    String title,
-    List<Widget> stats, {
-    List<(String, String)> extraRows = const [],
-  }) {
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _footer(BuildContext context, AppLocalizations l10n) {
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: AppSpacing.sm),
-          Row(children: [for (final s in stats) Expanded(child: s)]),
-          for (final r in extraRows) _kvRow(context, r.$1, r.$2),
-        ],
-      ),
-    );
-  }
-
-  Widget _kvSection(
-    BuildContext context,
-    String title,
-    List<(String, String)> rows,
-  ) {
-    return GlassCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          for (final r in rows) _kvRow(context, r.$1, r.$2),
+          Icon(
+            Icons.verified_user_outlined,
+            size: 14,
+            color: AppColors.text3(context),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            l10n.mortgageSecureNote,
+            style: TextStyle(color: AppColors.text3(context), fontSize: 11.5),
+          ),
         ],
       ),
     );
@@ -648,93 +810,125 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
 
   Widget _kvRow(BuildContext context, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Flexible(
             child: Text(
               label,
-              style: TextStyle(color: AppColors.text3(context), fontSize: 13),
+              style: TextStyle(color: AppColors.text3(context), fontSize: 12.5),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
+          ),
         ],
       ),
     );
   }
 
-  Widget _bigStat(
-    BuildContext context,
-    String label,
-    String value, {
-    bool emphasize = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(color: AppColors.text3(context), fontSize: 11),
-          maxLines: 2,
+  Widget _actionBar(BuildContext context, AppLocalizations l10n) {
+    final loan = _loan;
+    final buttons = <Widget>[];
+    if (loan.isActive) {
+      buttons.add(
+        _actBtn(
+          l10n.mortgageCollect,
+          Icons.payments_outlined,
+          AppColors.success,
+          () => _run(widget.onCollect),
         ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 15,
-            color: emphasize ? AppColors.primary : AppColors.text1(context),
+      );
+      if (widget.canManage) {
+        buttons.add(
+          _actBtn(
+            l10n.mortgageTopupShort,
+            Icons.add_card_outlined,
+            AppColors.primary,
+            () => _run(widget.onTopUp),
           ),
+        );
+        buttons.add(
+          _actBtn(
+            l10n.mortgagePrintShort,
+            Icons.print_outlined,
+            AppColors.info,
+            () => _statement(share: false),
+          ),
+        );
+        buttons.add(
+          _actBtn(
+            l10n.mortgageClose,
+            Icons.lock_outline_rounded,
+            AppColors.error,
+            () => _run(widget.onClose),
+          ),
+        );
+      }
+    } else if (widget.canManage) {
+      buttons.add(
+        _actBtn(
+          l10n.mortgageReopen,
+          Icons.lock_open_rounded,
+          AppColors.primary,
+          () => _run(widget.onReopen),
         ),
-      ],
+      );
+      buttons.add(
+        _actBtn(
+          l10n.mortgagePrintShort,
+          Icons.print_outlined,
+          AppColors.info,
+          () => _statement(share: false),
+        ),
+      );
+    }
+    if (buttons.isEmpty) return const SizedBox.shrink();
+    return SafeArea(
+      minimum: const EdgeInsets.all(AppSpacing.sm),
+      child: Row(
+        children: [
+          for (var i = 0; i < buttons.length; i++) ...[
+            if (i > 0) const SizedBox(width: 6),
+            Expanded(child: buttons[i]),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _actionBar(BuildContext context, AppLocalizations l10n) {
-    final loan = _loan;
-    return SafeArea(
-      minimum: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
-        children: [
-          if (loan.isActive) ...[
-            Expanded(
-              child: GoldButton(
-                label: l10n.mortgageCollect,
-                icon: Icons.payments_outlined,
-                onPressed: () => _run(widget.onCollect),
-              ),
-            ),
-            if (widget.canManage) ...[
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: GoldButton(
-                  label: l10n.mortgageAddTopup,
-                  icon: Icons.add_card_outlined,
-                  isOutlined: true,
-                  onPressed: () => _run(widget.onTopUp),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: GoldButton(
-                  label: l10n.mortgageClose,
-                  isOutlined: true,
-                  onPressed: () => _run(widget.onClose),
+  Widget _actBtn(String label, IconData icon, Color color, VoidCallback onTap) {
+    return Material(
+      color: color.withValues(alpha: 0.14),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20, color: color),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
-          ] else if (widget.canManage)
-            Expanded(
-              child: GoldButton(
-                label: l10n.mortgageReopen,
-                icon: Icons.lock_open_rounded,
-                isOutlined: true,
-                onPressed: () => _run(widget.onReopen),
-              ),
-            ),
-        ],
+          ),
+        ),
       ),
     );
   }

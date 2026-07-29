@@ -2003,6 +2003,27 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get mortgageCall => 'कॉल';
+
+  @override
+  String get mortgageWhatsapp => 'व्हाट्सएप';
+
+  @override
+  String get mortgageLastCollection => 'अंतिम वसूली';
+
+  @override
+  String get mortgagePerMonth => 'प्रति माह';
+
+  @override
+  String get mortgageTopupShort => 'टॉप-अप';
+
+  @override
+  String get mortgagePrintShort => 'प्रिंट';
+
+  @override
+  String get mortgageSecureNote => 'सभी लेन-देन सुरक्षित और दर्ज हैं';
+
+  @override
   String get mortgageEditLoan => 'लोन संपादित करें';
 
   @override

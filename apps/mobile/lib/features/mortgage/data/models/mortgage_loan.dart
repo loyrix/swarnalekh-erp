@@ -218,19 +218,27 @@ class MortgageOrnament {
     required this.purity,
     required this.grossWeight,
     required this.netWeight,
+    required this.photos,
   });
 
   final String? ornamentType;
   final String? purity;
   final double? grossWeight;
   final double? netWeight;
+  final List<String> photos;
+
+  String? get firstPhoto => photos.isNotEmpty ? photos.first : null;
 
   factory MortgageOrnament.fromJson(Map<String, dynamic> json) {
+    final raw = json['photos'];
     return MortgageOrnament(
       ornamentType: MortgageLoan._str(json['ornamentType']),
       purity: MortgageLoan._str(json['purity']),
       grossWeight: MortgageLoan._num(json['grossWeight']),
       netWeight: MortgageLoan._num(json['netWeight']),
+      photos: raw is List
+          ? raw.map((e) => e.toString()).where((s) => s.isNotEmpty).toList()
+          : const [],
     );
   }
 }

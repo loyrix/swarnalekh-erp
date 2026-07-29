@@ -1997,6 +1997,27 @@ class AppLocalizationsGu extends AppLocalizations {
   }
 
   @override
+  String get mortgageCall => 'કૉલ';
+
+  @override
+  String get mortgageWhatsapp => 'વોટ્સએપ';
+
+  @override
+  String get mortgageLastCollection => 'છેલ્લી વસૂલી';
+
+  @override
+  String get mortgagePerMonth => 'પ્રતિ મહિને';
+
+  @override
+  String get mortgageTopupShort => 'ટોપ-અપ';
+
+  @override
+  String get mortgagePrintShort => 'પ્રિન્ટ';
+
+  @override
+  String get mortgageSecureNote => 'બધા વ્યવહાર સુરક્ષિત અને નોંધાયેલા છે';
+
+  @override
   String get mortgageEditLoan => 'લોન સંપાદિત કરો';
 
   @override
