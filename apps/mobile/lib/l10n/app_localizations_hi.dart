@@ -2003,6 +2003,51 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get mortgageEditLoan => 'लोन संपादित करें';
+
+  @override
+  String get mortgageLoanUpdated => 'लोन अपडेट हुआ';
+
+  @override
+  String get mortgageFailedUpdateLoan => 'लोन अपडेट नहीं हो सका';
+
+  @override
+  String get mortgageInterestRatePercent => 'ब्याज दर (% प्रति माह)';
+
+  @override
+  String get mortgageLoanLedger => 'लोन बहीखाता';
+
+  @override
+  String get mortgageViewFullLedger => 'पूरा बहीखाता देखें';
+
+  @override
+  String get mortgageNoLedger => 'अभी कोई बहीखाता प्रविष्टि नहीं';
+
+  @override
+  String get mortgagePrintStatement => 'विवरण प्रिंट करें';
+
+  @override
+  String get mortgageShareStatement => 'विवरण साझा करें';
+
+  @override
+  String get mortgageStatementFailed => 'विवरण तैयार नहीं हो सका';
+
+  @override
+  String get mortgageLedgerLoanCreated => 'लोन बनाया गया';
+
+  @override
+  String get mortgageLedgerTopupAdded => 'टॉप-अप जोड़ा गया';
+
+  @override
+  String get mortgageLedgerInterestCollected => 'ब्याज वसूला गया';
+
+  @override
+  String get mortgageLedgerPrincipalCollected => 'मूलधन वसूला गया';
+
+  @override
+  String get mortgageLedgerClosed => 'लोन बंद हुआ';
+
+  @override
   String get mortgageCloseLoan => 'लोन बंद करें';
 
   @override

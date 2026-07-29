@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Request,
 } from '@nestjs/common';
@@ -22,6 +23,7 @@ import {
   MortgageDashboardQueryDto,
   ReopenMortgageLoanDto,
   TopUpMortgageLoanDto,
+  UpdateMortgageLoanDto,
   UpdateMortgagePaymentDto,
 } from './mortgage.dto.js';
 import { MortgageService } from './mortgage.service.js';
@@ -76,6 +78,23 @@ export class MortgageController {
   @ApiOperation({ summary: 'Get full mortgage loan details' })
   async findOne(@Request() req: any, @Param('id') id: string) {
     return this.mortgageService.findOne(req.tenantId, id);
+  }
+
+  @Get(':id/ledger')
+  @ApiOperation({ summary: 'Chronological transaction ledger for a loan' })
+  async getLedger(@Request() req: any, @Param('id') id: string) {
+    return this.mortgageService.getLedger(req.tenantId, id);
+  }
+
+  @Put(':id')
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({ summary: 'Edit a loan (customer details, rate, notes)' })
+  async updateLoan(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() dto: UpdateMortgageLoanDto,
+  ) {
+    return this.mortgageService.updateLoan(req.tenantId, id, dto);
   }
 
   @Post(':id/payments')

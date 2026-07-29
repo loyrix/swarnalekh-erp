@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/mortgage/data/models/mortgage_loan.dart';
 import 'package:swarnbook/features/mortgage/data/mortgage_repository.dart';
 import 'package:swarnbook/features/mortgage/presentation/mortgage_format.dart';
+import 'package:swarnbook/features/mortgage/presentation/mortgage_statement.dart';
+import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_ledger_page.dart';
+import 'package:swarnbook/features/reports/presentation/report_pdf.dart';
+import 'package:swarnbook/features/tenant/data/models/tenant_profile.dart';
+import 'package:swarnbook/features/tenant/data/repositories/tenant_repository.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
 import 'package:swarnbook/shared/widgets/app_kit.dart';
 import 'package:swarnbook/shared/widgets/error_toast.dart';
@@ -27,6 +33,7 @@ class MortgageDetailPage extends StatefulWidget {
     required this.onReopen,
     required this.onReceipt,
     required this.onEditPayment,
+    required this.onEdit,
   });
 
   final MortgageLoan loan;
@@ -37,6 +44,7 @@ class MortgageDetailPage extends StatefulWidget {
   final LoanAction onReopen;
   final PaymentAction onReceipt;
   final PaymentAction onEditPayment;
+  final LoanAction onEdit;
 
   static Future<bool?> open(
     BuildContext context, {
@@ -48,6 +56,7 @@ class MortgageDetailPage extends StatefulWidget {
     required LoanAction onReopen,
     required PaymentAction onReceipt,
     required PaymentAction onEditPayment,
+    required LoanAction onEdit,
   }) {
     return Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -60,6 +69,7 @@ class MortgageDetailPage extends StatefulWidget {
           onReopen: onReopen,
           onReceipt: onReceipt,
           onEditPayment: onEditPayment,
+          onEdit: onEdit,
         ),
       ),
     );
@@ -71,21 +81,97 @@ class MortgageDetailPage extends StatefulWidget {
 
 class _MortgageDetailPageState extends State<MortgageDetailPage> {
   final _repo = MortgageRepository();
+  final _tenantRepo = TenantRepository();
   late MortgageLoan _loan;
+  List<MortgageLedgerEvent> _ledger = const [];
   bool _changed = false;
+  bool _busyPdf = false;
 
   @override
   void initState() {
     super.initState();
     _loan = widget.loan;
+    _loadLedger();
+  }
+
+  Future<void> _loadLedger() async {
+    try {
+      final ledger = await _repo.getLedger(_loan.id);
+      if (mounted) setState(() => _ledger = ledger);
+    } catch (_) {
+      /* ledger stays empty */
+    }
   }
 
   Future<void> _refresh() async {
     try {
       final loan = await _repo.getLoan(_loan.id);
       if (mounted) setState(() => _loan = loan);
+      await _loadLedger();
     } catch (_) {
       /* keep the last known state */
+    }
+  }
+
+  /// Builds the loan-statement PDF, then prints or shares it.
+  Future<void> _statement({required bool share}) async {
+    if (_busyPdf) return;
+    setState(() => _busyPdf = true);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final events = _ledger.isNotEmpty
+          ? _ledger
+          : await _repo.getLedger(_loan.id);
+      ReportPdfShop shop = const ReportPdfShop();
+      try {
+        final TenantProfile p = await _tenantRepo.getProfile();
+        final address = [
+          p.address,
+          p.city,
+          p.state,
+          p.pincode,
+        ].where((s) => s != null && s.trim().isNotEmpty).join(', ');
+        shop = ReportPdfShop(
+          name: p.shopName.isEmpty ? null : p.shopName,
+          address: address.isEmpty ? null : address,
+          phone: p.phone,
+          gstin: p.gstin,
+          pan: p.pan,
+          logoUrl: p.logoUrl,
+        );
+      } catch (_) {
+        /* fall back to the app-name letterhead */
+      }
+      final bytes = await buildReportPdf(
+        shop: shop,
+        table: mortgageStatementTable(_loan, events),
+        fonts: await _statementFonts(),
+      );
+      final name = 'statement-${_loan.loanNumber ?? _loan.id}.pdf';
+      if (share) {
+        await Printing.sharePdf(bytes: bytes, filename: name);
+      } else {
+        await Printing.layoutPdf(onLayout: (_) async => bytes, name: name);
+      }
+    } catch (_) {
+      if (mounted) AppToast.error(context, l10n.mortgageStatementFailed);
+    } finally {
+      if (mounted) setState(() => _busyPdf = false);
+    }
+  }
+
+  Future<ReportPdfFonts> _statementFonts() async {
+    try {
+      return ReportPdfFonts(
+        base: await PdfGoogleFonts.notoSansRegular(),
+        bold: await PdfGoogleFonts.notoSansBold(),
+        fallback: [
+          await PdfGoogleFonts.notoSansDevanagariRegular(),
+          await PdfGoogleFonts.notoSansGujaratiRegular(),
+        ],
+      );
+    } catch (_) {
+      return const ReportPdfFonts();
     }
   }
 
@@ -143,6 +229,48 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: () => Navigator.of(context).pop(_changed),
           ),
+          actions: [
+            if (widget.canManage && loan.isActive)
+              IconButton(
+                tooltip: l10n.mortgageEditLoan,
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => _run(widget.onEdit),
+              ),
+            IconButton(
+              tooltip: l10n.mortgagePrintStatement,
+              icon: _busyPdf
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.print_outlined),
+              onPressed: _busyPdf ? null : () => _statement(share: false),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (v) {
+                if (v == 'ledger') {
+                  MortgageLedgerPage.open(
+                    context,
+                    loanId: loan.id,
+                    loanNumber: loan.loanNumber,
+                  );
+                } else if (v == 'share') {
+                  _statement(share: true);
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'ledger',
+                  child: Text(l10n.mortgageViewFullLedger),
+                ),
+                PopupMenuItem(
+                  value: 'share',
+                  child: Text(l10n.mortgageShareStatement),
+                ),
+              ],
+            ),
+          ],
         ),
         body: RefreshIndicator(
           onRefresh: _refresh,
@@ -163,6 +291,10 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
               if (loan.ornaments.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.md),
                 _goldDetails(context, l10n),
+              ],
+              if (_ledger.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                _ledgerSection(context, l10n),
               ],
               if (loan.payments.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -375,6 +507,37 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
       ));
     }
     return _kvSection(context, l10n.mortgageGoldDetails, rows);
+  }
+
+  Widget _ledgerSection(BuildContext context, AppLocalizations l10n) {
+    // Show the most recent few; the full ledger opens on its own page.
+    final recent = _ledger.reversed.take(4).toList();
+    return GlassCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.mortgageLoanLedger,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          for (final e in recent) ledgerTile(context, l10n, e),
+          const SizedBox(height: AppSpacing.xs),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => MortgageLedgerPage.open(
+                context,
+                loanId: _loan.id,
+                loanNumber: _loan.loanNumber,
+              ),
+              child: Text(l10n.mortgageViewFullLedger),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   String _paymentTypeLabel(AppLocalizations l10n, String? type) =>

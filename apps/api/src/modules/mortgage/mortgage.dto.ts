@@ -247,6 +247,43 @@ export class ReopenMortgageLoanDto {
   notes?: string;
 }
 
+export class UpdateMortgageLoanDto {
+  @ApiPropertyOptional({ example: 'Priya Shah' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  customerName?: string;
+
+  @ApiPropertyOptional({ example: '+919111222333' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(15)
+  customerPhone?: string;
+
+  @ApiPropertyOptional({ example: '1234 5678 9012' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  aadhaarNumber?: string;
+
+  @ApiPropertyOptional({ example: 'ABCDE1234F' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(15)
+  panNumber?: string;
+
+  @ApiPropertyOptional({ example: 2, description: 'Monthly interest rate %' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  interestRateMonthly?: number;
+
+  @ApiPropertyOptional({ example: 'Corrected the rate' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}
+
 export class TopUpMortgageLoanDto {
   @ApiProperty({ example: 25000, description: 'Principal added to the loan' })
   @IsNumber()

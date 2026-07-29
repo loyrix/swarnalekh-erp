@@ -207,6 +207,62 @@ describe('MortgageService', () => {
     expect(preview.totalTopups).toBe(0);
   });
 
+  it('assembles a chronological loan ledger', async () => {
+    const { service, prisma } = createService();
+    prisma.mortgageLoan.findFirst.mockResolvedValue(
+      makeLoan({
+        loanDate: new Date('2026-01-10'),
+        principalAmount: decimal(40000),
+        topups: [{ amount: decimal(5000), topupDate: new Date('2026-02-01') }],
+        payments: [
+          {
+            amount: decimal(800),
+            paymentType: 'interest',
+            paymentDate: new Date('2026-02-15'),
+          },
+        ],
+      }),
+    );
+
+    const ledger = await service.getLedger('tenant-1', 'loan-1');
+    expect(ledger.events.map((e) => e.type)).toEqual([
+      'loan_created',
+      'topup_added',
+      'interest_collected',
+    ]);
+    expect(ledger.events[0].amount).toBe(40000);
+    expect(ledger.events[2].direction).toBe('credit');
+  });
+
+  it('edits a loan rate and refreshes the snapshot', async () => {
+    const { service, tx } = createService();
+    tx.mortgageLoan.findFirst.mockResolvedValue(
+      makeLoan({ interestRateMonthly: decimal(2) }),
+    );
+    tx.mortgageLoan.update.mockImplementation(({ data }) =>
+      Promise.resolve(
+        makeLoan({
+          interestRateMonthly: data.interestRateMonthly ?? decimal(2),
+          customerName: data.customerName ?? 'Priya Shah',
+        }),
+      ),
+    );
+
+    await service.updateLoan('tenant-1', 'loan-1', {
+      customerName: 'Priya S',
+      interestRateMonthly: 1.5,
+    });
+
+    expect(tx.mortgageLoan.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          customerName: 'Priya S',
+          interestRateMonthly: decimal(1.5),
+        }),
+      }),
+    );
+  });
+
   it('filters and maps mortgage loan search results', async () => {
     const { service, prisma } = createService();
     prisma.mortgageLoan.findMany.mockResolvedValue([makeLoan()]);

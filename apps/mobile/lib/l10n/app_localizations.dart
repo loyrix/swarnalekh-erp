@@ -3928,6 +3928,96 @@ abstract class AppLocalizations {
   /// **'OVERDUE BY {days} DAYS'**
   String mortgageOverdueByDays(int days);
 
+  /// No description provided for @mortgageEditLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Loan'**
+  String get mortgageEditLoan;
+
+  /// No description provided for @mortgageLoanUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan updated'**
+  String get mortgageLoanUpdated;
+
+  /// No description provided for @mortgageFailedUpdateLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the loan'**
+  String get mortgageFailedUpdateLoan;
+
+  /// No description provided for @mortgageInterestRatePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Rate (% per month)'**
+  String get mortgageInterestRatePercent;
+
+  /// No description provided for @mortgageLoanLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Ledger'**
+  String get mortgageLoanLedger;
+
+  /// No description provided for @mortgageViewFullLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'View Full Ledger'**
+  String get mortgageViewFullLedger;
+
+  /// No description provided for @mortgageNoLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'No ledger entries yet'**
+  String get mortgageNoLedger;
+
+  /// No description provided for @mortgagePrintStatement.
+  ///
+  /// In en, this message translates to:
+  /// **'Print Statement'**
+  String get mortgagePrintStatement;
+
+  /// No description provided for @mortgageShareStatement.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Statement'**
+  String get mortgageShareStatement;
+
+  /// No description provided for @mortgageStatementFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not generate the statement'**
+  String get mortgageStatementFailed;
+
+  /// No description provided for @mortgageLedgerLoanCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Created'**
+  String get mortgageLedgerLoanCreated;
+
+  /// No description provided for @mortgageLedgerTopupAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-up Added'**
+  String get mortgageLedgerTopupAdded;
+
+  /// No description provided for @mortgageLedgerInterestCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Collected'**
+  String get mortgageLedgerInterestCollected;
+
+  /// No description provided for @mortgageLedgerPrincipalCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Principal Collected'**
+  String get mortgageLedgerPrincipalCollected;
+
+  /// No description provided for @mortgageLedgerClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Closed'**
+  String get mortgageLedgerClosed;
+
   /// No description provided for @mortgageCloseLoan.
   ///
   /// In en, this message translates to:

@@ -19,6 +19,7 @@ import {
   CreateMortgageLoanDto,
   MortgageDashboardQueryDto,
   TopUpMortgageLoanDto,
+  UpdateMortgageLoanDto,
   UpdateMortgagePaymentDto,
 } from './mortgage.dto.js';
 
@@ -560,6 +561,131 @@ export class MortgageService {
           outstandingPrincipal: new Prisma.Decimal(0),
           totalPayableAmount: new Prisma.Decimal(0),
           notes: dto.notes ?? loan.notes,
+        },
+        include: this.loanInclude,
+      });
+
+      return this.toLoanResponse(updated);
+    });
+  }
+
+  /**
+   * The loan's transaction ledger: disbursal, top-ups, collections and closure
+   * in chronological order — the source for the on-screen ledger and the
+   * printable statement.
+   */
+  async getLedger(tenantId: string, id: string) {
+    const loan = await this.prisma.mortgageLoan.findFirst({
+      where: { id, tenantId, deletedAt: null },
+      include: this.loanInclude,
+    });
+    if (!loan) throw new NotFoundException('Mortgage loan not found');
+
+    type Event = {
+      date: Date;
+      type: string;
+      amount: number;
+      direction: 'debit' | 'credit';
+      order: number;
+    };
+    const events: Event[] = [];
+    events.push({
+      date: loan.loanDate,
+      type: 'loan_created',
+      amount: this.toNumber(loan.principalAmount),
+      direction: 'debit',
+      order: 0,
+    });
+    for (const t of loan.topups ?? []) {
+      events.push({
+        date: t.topupDate,
+        type: 'topup_added',
+        amount: this.toNumber(t.amount),
+        direction: 'debit',
+        order: 1,
+      });
+    }
+    for (const p of loan.payments ?? []) {
+      const isClosure = p.paymentType === 'closure';
+      events.push({
+        date: p.paymentDate,
+        type: isClosure
+          ? 'closed'
+          : p.paymentType === 'principal'
+            ? 'principal_collected'
+            : 'interest_collected',
+        amount: this.toNumber(p.amount),
+        direction: 'credit',
+        order: isClosure ? 3 : 2,
+      });
+    }
+
+    events.sort((a, b) => {
+      const d = new Date(a.date).getTime() - new Date(b.date).getTime();
+      return d !== 0 ? d : a.order - b.order;
+    });
+
+    return {
+      loanId: loan.id,
+      loanNumber: loan.loanNumber,
+      events: events.map((e) => ({
+        date: e.date,
+        type: e.type,
+        amount: this.round2(e.amount),
+        direction: e.direction,
+      })),
+    };
+  }
+
+  /**
+   * Edit a loan's correctable fields (customer snapshot, interest rate, notes).
+   * Principal and loan date are immutable — changing them would rewrite the
+   * interest history. A rate change refreshes the snapshot.
+   */
+  async updateLoan(tenantId: string, id: string, dto: UpdateMortgageLoanDto) {
+    return this.prisma.$transaction(async (tx) => {
+      const loan = await tx.mortgageLoan.findFirst({
+        where: { id, tenantId, deletedAt: null },
+        include: this.loanInclude,
+      });
+      if (!loan) throw new NotFoundException('Mortgage loan not found');
+
+      const interestRateMonthly =
+        dto.interestRateMonthly != null
+          ? this.round2(dto.interestRateMonthly)
+          : this.toNumber(loan.interestRateMonthly);
+
+      const merged = { ...loan, interestRateMonthly };
+      const snapshot = this.calculateLoanSnapshot(merged, new Date());
+
+      const updated = await tx.mortgageLoan.update({
+        where: { id: loan.id },
+        data: {
+          ...(dto.customerName !== undefined
+            ? { customerName: dto.customerName }
+            : {}),
+          ...(dto.customerPhone !== undefined
+            ? { customerPhone: dto.customerPhone }
+            : {}),
+          ...(dto.aadhaarNumber !== undefined
+            ? { aadhaarNumber: dto.aadhaarNumber }
+            : {}),
+          ...(dto.panNumber !== undefined ? { panNumber: dto.panNumber } : {}),
+          ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+          ...(dto.interestRateMonthly != null
+            ? {
+                interestRateMonthly: new Prisma.Decimal(interestRateMonthly),
+                monthlyInterestAmount: new Prisma.Decimal(
+                  snapshot.monthlyInterestAmount,
+                ),
+                pendingInterestAmount: new Prisma.Decimal(
+                  snapshot.pendingInterestAmount,
+                ),
+                totalPayableAmount: new Prisma.Decimal(
+                  snapshot.totalPayableAmount,
+                ),
+              }
+            : {}),
         },
         include: this.loanInclude,
       });

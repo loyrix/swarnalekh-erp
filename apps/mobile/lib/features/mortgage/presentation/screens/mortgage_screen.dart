@@ -15,6 +15,7 @@ import 'package:swarnbook/features/mortgage/presentation/screens/close_loan_page
 import 'package:swarnbook/features/mortgage/presentation/screens/collect_payment_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/edit_payment_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_detail_page.dart';
+import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_edit_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/mortgage_form_page.dart';
 import 'package:swarnbook/features/mortgage/presentation/screens/topup_loan_page.dart';
 import 'package:swarnbook/l10n/app_localizations.dart';
@@ -156,8 +157,23 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
       onReopen: _openReopen,
       onReceipt: _openReceipt,
       onEditPayment: _openEditPayment,
+      onEdit: _openEdit,
     );
     if (changed == true && mounted) _invalidate();
+  }
+
+  Future<bool> _openEdit(MortgageLoan loan) async {
+    if (!_canManage) return false;
+    final done = await MortgageEditPage.open(context, loan: loan);
+    if (done == true && mounted) {
+      AppToast.success(
+        context,
+        AppLocalizations.of(context)!.mortgageLoanUpdated,
+      );
+      _invalidate();
+      return true;
+    }
+    return false;
   }
 
   Future<bool> _openTopUp(MortgageLoan loan) async {
@@ -353,6 +369,12 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
                   type: ItemActionType.payment,
                   customLabel: l10n.mortgageAddTopup,
                   onPressed: () => _openTopUp(loan),
+                ),
+              if (loan.isActive && _canManage)
+                ItemAction(
+                  type: ItemActionType.edit,
+                  customLabel: l10n.mortgageEditLoan,
+                  onPressed: () => _openEdit(loan),
                 ),
               if (loan.isActive && _canManage)
                 ItemAction(

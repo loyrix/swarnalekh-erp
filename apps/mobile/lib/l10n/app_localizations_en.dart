@@ -1997,6 +1997,51 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get mortgageEditLoan => 'Edit Loan';
+
+  @override
+  String get mortgageLoanUpdated => 'Loan updated';
+
+  @override
+  String get mortgageFailedUpdateLoan => 'Could not update the loan';
+
+  @override
+  String get mortgageInterestRatePercent => 'Interest Rate (% per month)';
+
+  @override
+  String get mortgageLoanLedger => 'Loan Ledger';
+
+  @override
+  String get mortgageViewFullLedger => 'View Full Ledger';
+
+  @override
+  String get mortgageNoLedger => 'No ledger entries yet';
+
+  @override
+  String get mortgagePrintStatement => 'Print Statement';
+
+  @override
+  String get mortgageShareStatement => 'Share Statement';
+
+  @override
+  String get mortgageStatementFailed => 'Could not generate the statement';
+
+  @override
+  String get mortgageLedgerLoanCreated => 'Loan Created';
+
+  @override
+  String get mortgageLedgerTopupAdded => 'Top-up Added';
+
+  @override
+  String get mortgageLedgerInterestCollected => 'Interest Collected';
+
+  @override
+  String get mortgageLedgerPrincipalCollected => 'Principal Collected';
+
+  @override
+  String get mortgageLedgerClosed => 'Loan Closed';
+
+  @override
   String get mortgageCloseLoan => 'Close Loan';
 
   @override

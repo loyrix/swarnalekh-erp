@@ -163,6 +163,32 @@ class MortgageClosePreview {
   }
 }
 
+/// One row of the loan ledger (`GET /mortgages/:id/ledger`).
+class MortgageLedgerEvent {
+  const MortgageLedgerEvent({
+    required this.date,
+    required this.type,
+    required this.amount,
+    required this.direction,
+  });
+
+  final String? date;
+  final String type;
+  final double amount;
+  final String direction; // 'debit' (out) | 'credit' (in)
+
+  bool get isCredit => direction == 'credit';
+
+  factory MortgageLedgerEvent.fromJson(Map<String, dynamic> json) {
+    return MortgageLedgerEvent(
+      date: MortgageLoan._str(json['date']),
+      type: (json['type'] ?? '').toString(),
+      amount: MortgageLoan._num(json['amount']),
+      direction: (json['direction'] ?? 'debit').toString(),
+    );
+  }
+}
+
 class MortgageTopup {
   const MortgageTopup({
     required this.id,

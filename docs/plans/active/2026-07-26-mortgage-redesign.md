@@ -34,10 +34,13 @@ screen, shown only when the loan has top-ups.
 
 ## C · Heavy new pieces
 
-- [ ] Loan Ledger: chronological events (created, top-up added, interest/principal
-      collected, closed) assembled from loan + payments + topups; View Full Ledger.
-- [ ] Print / Share Statement: a loan statement PDF (details + ledger).
-- [ ] Edit Loan: new `PUT /mortgages/:id` update endpoint + form.
+- [x] Loan Ledger: chronological events (created, top-up added, interest/principal
+      collected, closed) assembled from loan + payments + topups; detail preview +
+      full ledger page. New `GET /mortgages/:id/ledger`.
+- [x] Print / Share Statement: on-device loan statement PDF (letterhead + ledger
+      table) via the report PDF engine; print + WhatsApp share from the detail header.
+- [x] Edit Loan: `PUT /mortgages/:id` (customer, rate, notes; principal/date locked) +
+      edit form, reachable from the detail header and the list 3-dot menu.
 
 ## Decisions (owner, 26 Jul)
 

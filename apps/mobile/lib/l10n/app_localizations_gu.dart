@@ -1997,6 +1997,51 @@ class AppLocalizationsGu extends AppLocalizations {
   }
 
   @override
+  String get mortgageEditLoan => 'લોન સંપાદિત કરો';
+
+  @override
+  String get mortgageLoanUpdated => 'લોન અપડેટ થયું';
+
+  @override
+  String get mortgageFailedUpdateLoan => 'લોન અપડેટ થઈ શક્યું નહીં';
+
+  @override
+  String get mortgageInterestRatePercent => 'વ્યાજ દર (% પ્રતિ મહિને)';
+
+  @override
+  String get mortgageLoanLedger => 'લોન ખાતાવહી';
+
+  @override
+  String get mortgageViewFullLedger => 'સંપૂર્ણ ખાતાવહી જુઓ';
+
+  @override
+  String get mortgageNoLedger => 'હજી કોઈ ખાતાવહી પ્રવેશ નથી';
+
+  @override
+  String get mortgagePrintStatement => 'સ્ટેટમેન્ટ પ્રિન્ટ કરો';
+
+  @override
+  String get mortgageShareStatement => 'સ્ટેટમેન્ટ શેર કરો';
+
+  @override
+  String get mortgageStatementFailed => 'સ્ટેટમેન્ટ બનાવી શકાયું નહીં';
+
+  @override
+  String get mortgageLedgerLoanCreated => 'લોન બનાવ્યું';
+
+  @override
+  String get mortgageLedgerTopupAdded => 'ટોપ-અપ ઉમેરાયું';
+
+  @override
+  String get mortgageLedgerInterestCollected => 'વ્યાજ વસૂલ્યું';
+
+  @override
+  String get mortgageLedgerPrincipalCollected => 'મૂળધન વસૂલ્યું';
+
+  @override
+  String get mortgageLedgerClosed => 'લોન બંધ થયું';
+
+  @override
   String get mortgageCloseLoan => 'લોન બંધ કરો';
 
   @override

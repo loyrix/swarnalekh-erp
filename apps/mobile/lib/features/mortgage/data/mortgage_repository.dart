@@ -68,6 +68,20 @@ class MortgageRepository {
     );
   }
 
+  /// Edit a loan's correctable fields (customer, rate, notes).
+  Future<void> updateLoan(String loanId, Map<String, dynamic> payload) =>
+      _api.dio.put('/mortgages/$loanId', data: payload);
+
+  /// Chronological transaction ledger for a loan.
+  Future<List<MortgageLedgerEvent>> getLedger(String loanId) async {
+    final response = await _api.dio.get('/mortgages/$loanId/ledger');
+    final data = (response.data as Map?)?.cast<String, dynamic>() ?? const {};
+    return (data['events'] as List<dynamic>? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(MortgageLedgerEvent.fromJson)
+        .toList();
+  }
+
   /// Correct a recorded payment's amount/type (admin only).
   Future<void> updatePayment(
     String loanId,
