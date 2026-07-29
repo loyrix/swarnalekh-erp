@@ -1975,6 +1975,52 @@ class AppLocalizationsGu extends AppLocalizations {
   String get mortgageCloseLoan => 'લોન બંધ કરો';
 
   @override
+  String get mortgageProceedToClose => 'બંધ કરવા આગળ વધો';
+
+  @override
+  String get mortgageCloseInterestBanner =>
+      'આ લોનમાં ટોપ-અપ રકમ છે. બંધ કરતી વખતે વ્યાજ કેવી રીતે ગણવું તે પસંદ કરો — તેનાથી ગ્રાહકે ચૂકવવાની અંતિમ રકમ પર અસર થાય છે.';
+
+  @override
+  String get mortgageSelectInterestOption => 'વ્યાજ ગણતરી વિકલ્પ પસંદ કરો';
+
+  @override
+  String get mortgageFromOriginalLoanDate => 'મૂળ લોન તારીખથી';
+
+  @override
+  String get mortgageFromTopupDate => 'ટોપ-અપ તારીખથી';
+
+  @override
+  String get mortgageOriginalLoanDate => 'મૂળ લોન તારીખ';
+
+  @override
+  String get mortgageRecommended => 'ભલામણ કરેલ';
+
+  @override
+  String get mortgagePreviewCalculation => 'પૂર્વાવલોકન ગણતરી';
+
+  @override
+  String get mortgagePrincipalOutstanding => 'મૂળધન (બાકી)';
+
+  @override
+  String get mortgageInterestCalculated => 'વ્યાજ (ગણતરી કરેલ)';
+
+  @override
+  String mortgageInterestFromOriginalDesc(String date) {
+    return 'વ્યાજ મૂળ લોન તારીખ ($date) થી, ટોપ-અપ રકમ સહિત ગણાય છે.';
+  }
+
+  @override
+  String mortgageInterestFromTopupDesc(String date) {
+    return 'ટોપ-અપ પરનું વ્યાજ ટોપ-અપ તારીખ ($date) થી ગણાય છે.';
+  }
+
+  @override
+  String mortgageInterestFromLabel(String date) {
+    return 'વ્યાજ $date થી ગણાશે';
+  }
+
+  @override
   String get mortgageSettlementAmount => 'સેટલમેન્ટ રકમ *';
 
   @override

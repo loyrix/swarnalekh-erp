@@ -171,6 +171,42 @@ describe('MortgageService', () => {
     ).toBeUndefined();
   });
 
+  it('previews close settlement under both top-up interest policies', async () => {
+    const { service, prisma } = createService();
+    // ₹1,00,000 @ 2% from 10 Jan; ₹50,000 top-up on 15 Feb; as of 15 Mar.
+    prisma.mortgageLoan.findFirst.mockResolvedValue(
+      makeLoan({
+        loanDate: new Date('2026-01-10T00:00:00.000Z'),
+        principalAmount: decimal(100000),
+        outstandingPrincipal: decimal(150000),
+        topups: [{ amount: decimal(50000), topupDate: new Date('2026-02-15') }],
+      }),
+    );
+
+    const preview = await service.getClosePreview(
+      'tenant-1',
+      'loan-1',
+      new Date('2026-03-15T00:00:00.000Z'),
+    );
+
+    expect(preview.hasTopups).toBe(true);
+    expect(preview.totalTopups).toBe(50000);
+    // Separate: 2000+2000+3000 = 7000. Merge: 3000×3 = 9000.
+    expect(preview.separate.pendingInterest).toBe(7000);
+    expect(preview.merge.pendingInterest).toBe(9000);
+    expect(preview.merge.totalPayable).toBeGreaterThan(
+      preview.separate.totalPayable,
+    );
+  });
+
+  it('close preview reports no top-ups for a plain loan', async () => {
+    const { service, prisma } = createService();
+    prisma.mortgageLoan.findFirst.mockResolvedValue(makeLoan());
+    const preview = await service.getClosePreview('tenant-1', 'loan-1');
+    expect(preview.hasTopups).toBe(false);
+    expect(preview.totalTopups).toBe(0);
+  });
+
   it('filters and maps mortgage loan search results', async () => {
     const { service, prisma } = createService();
     prisma.mortgageLoan.findMany.mockResolvedValue([makeLoan()]);

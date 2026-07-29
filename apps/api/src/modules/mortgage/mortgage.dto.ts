@@ -228,6 +228,16 @@ export class CloseMortgageLoanDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({
+    example: 'merge',
+    description:
+      'For a loan with top-ups: how to accrue top-up interest at close — ' +
+      '"merge" (from the original loan date) or "separate" (from the top-up date).',
+  })
+  @IsOptional()
+  @IsIn(['separate', 'merge'])
+  topupInterestMode?: string;
 }
 
 export class ReopenMortgageLoanDto {

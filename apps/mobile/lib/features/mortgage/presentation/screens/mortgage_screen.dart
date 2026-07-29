@@ -155,85 +155,6 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
     );
   }
 
-  /// Global mortgage setting: how top-ups accrue interest.
-  Future<void> _openSettings() async {
-    final l10n = AppLocalizations.of(context)!;
-    final repo = ref.read(mortgageRepositoryProvider);
-    String mode;
-    try {
-      mode = await repo.getTopupMode();
-    } catch (_) {
-      mode = 'separate';
-    }
-    if (!mounted) return;
-
-    final picked = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                0,
-                AppSpacing.lg,
-                AppSpacing.sm,
-              ),
-              child: Text(
-                l10n.mortgageTopupPolicy,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            _topupModeTile(
-              context,
-              value: 'separate',
-              selected: mode == 'separate',
-              title: l10n.mortgageTopupSeparate,
-              subtitle: l10n.mortgageTopupSeparateHint,
-            ),
-            _topupModeTile(
-              context,
-              value: 'merge',
-              selected: mode == 'merge',
-              title: l10n.mortgageTopupMerge,
-              subtitle: l10n.mortgageTopupMergeHint,
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (picked == null || picked == mode || !mounted) return;
-    try {
-      await repo.setTopupMode(picked);
-      if (!mounted) return;
-      AppToast.success(context, l10n.mortgageSettingsSaved);
-      _invalidate();
-    } catch (_) {
-      if (mounted) AppToast.error(context, l10n.mortgageSettingsFailed);
-    }
-  }
-
-  Widget _topupModeTile(
-    BuildContext context, {
-    required String value,
-    required bool selected,
-    required String title,
-    required String subtitle,
-  }) {
-    return ListTile(
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: selected
-          ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
-          : const Icon(Icons.radio_button_unchecked_rounded),
-      onTap: () => Navigator.of(context).pop(value),
-    );
-  }
-
   Future<void> _openTopUp(MortgageLoan loan) async {
     final done = await TopUpLoanPage.open(context, loanId: loan.id);
     if (done == true && mounted) {
@@ -316,7 +237,6 @@ class _MortgageScreenState extends ConsumerState<MortgageScreen> {
         searchController: _searchController,
         onSearch: _onSearchChanged,
         onAdd: _openCreate,
-        onSettings: _openSettings,
         collectionsPeriod: _collectionsPeriod,
         onCollectionsPeriodChanged: (p) =>
             setState(() => _collectionsPeriod = p),
@@ -436,7 +356,6 @@ class _Header extends StatelessWidget {
     required this.searchController,
     required this.onSearch,
     required this.onAdd,
-    required this.onSettings,
     required this.collectionsPeriod,
     required this.onCollectionsPeriodChanged,
   });
@@ -446,7 +365,6 @@ class _Header extends StatelessWidget {
   final TextEditingController searchController;
   final ValueChanged<String> onSearch;
   final VoidCallback onAdd;
-  final VoidCallback onSettings;
   final StatPeriod collectionsPeriod;
   final ValueChanged<StatPeriod> onCollectionsPeriodChanged;
 
@@ -526,12 +444,6 @@ class _Header extends StatelessWidget {
               ),
             ),
             if (canManage) ...[
-              const SizedBox(width: AppSpacing.sm),
-              IconButton.filledTonal(
-                tooltip: l10n.mortgageSettings,
-                onPressed: onSettings,
-                icon: const Icon(Icons.tune_rounded),
-              ),
               const SizedBox(width: AppSpacing.sm),
               IconButton.filledTonal(
                 tooltip: l10n.mortgageAddMortgage,

@@ -1981,6 +1981,52 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mortgageCloseLoan => 'लोन बंद करें';
 
   @override
+  String get mortgageProceedToClose => 'बंद करने के लिए आगे बढ़ें';
+
+  @override
+  String get mortgageCloseInterestBanner =>
+      'इस लोन में टॉप-अप राशि है। बंद करते समय ब्याज की गणना कैसे करें चुनें — इससे ग्राहक द्वारा चुकाई जाने वाली अंतिम राशि प्रभावित होती है।';
+
+  @override
+  String get mortgageSelectInterestOption => 'ब्याज गणना विकल्प चुनें';
+
+  @override
+  String get mortgageFromOriginalLoanDate => 'मूल लोन तिथि से';
+
+  @override
+  String get mortgageFromTopupDate => 'टॉप-अप तिथि से';
+
+  @override
+  String get mortgageOriginalLoanDate => 'मूल लोन तिथि';
+
+  @override
+  String get mortgageRecommended => 'अनुशंसित';
+
+  @override
+  String get mortgagePreviewCalculation => 'पूर्वावलोकन गणना';
+
+  @override
+  String get mortgagePrincipalOutstanding => 'मूलधन (बकाया)';
+
+  @override
+  String get mortgageInterestCalculated => 'ब्याज (गणना की गई)';
+
+  @override
+  String mortgageInterestFromOriginalDesc(String date) {
+    return 'ब्याज मूल लोन तिथि ($date) से, टॉप-अप राशि सहित गणना किया जाता है।';
+  }
+
+  @override
+  String mortgageInterestFromTopupDesc(String date) {
+    return 'टॉप-अप पर ब्याज टॉप-अप तिथि ($date) से गणना किया जाता है।';
+  }
+
+  @override
+  String mortgageInterestFromLabel(String date) {
+    return 'ब्याज $date से गणना किया जाएगा';
+  }
+
+  @override
   String get mortgageSettlementAmount => 'निपटान राशि *';
 
   @override

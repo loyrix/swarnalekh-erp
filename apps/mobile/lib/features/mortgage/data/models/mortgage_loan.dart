@@ -108,6 +108,61 @@ class MortgageLoan {
   }
 }
 
+/// One policy's settlement figures in the close preview.
+class ClosePolicyFigures {
+  const ClosePolicyFigures({
+    required this.pendingInterest,
+    required this.outstandingPrincipal,
+    required this.totalPayable,
+  });
+
+  final double pendingInterest;
+  final double outstandingPrincipal;
+  final double totalPayable;
+
+  factory ClosePolicyFigures.fromJson(Map<String, dynamic> json) {
+    return ClosePolicyFigures(
+      pendingInterest: MortgageLoan._num(json['pendingInterest']),
+      outstandingPrincipal: MortgageLoan._num(json['outstandingPrincipal']),
+      totalPayable: MortgageLoan._num(json['totalPayable']),
+    );
+  }
+}
+
+/// `GET /mortgages/:id/close-preview` — settlement under both top-up policies.
+class MortgageClosePreview {
+  const MortgageClosePreview({
+    required this.hasTopups,
+    required this.loanDate,
+    required this.firstTopupDate,
+    required this.totalTopups,
+    required this.separate,
+    required this.merge,
+  });
+
+  final bool hasTopups;
+  final String? loanDate;
+  final String? firstTopupDate;
+  final double totalTopups;
+  final ClosePolicyFigures separate;
+  final ClosePolicyFigures merge;
+
+  factory MortgageClosePreview.fromJson(Map<String, dynamic> json) {
+    return MortgageClosePreview(
+      hasTopups: json['hasTopups'] == true,
+      loanDate: MortgageLoan._str(json['loanDate']),
+      firstTopupDate: MortgageLoan._str(json['firstTopupDate']),
+      totalTopups: MortgageLoan._num(json['totalTopups']),
+      separate: ClosePolicyFigures.fromJson(
+        (json['separate'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      merge: ClosePolicyFigures.fromJson(
+        (json['merge'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+    );
+  }
+}
+
 class MortgageTopup {
   const MortgageTopup({
     required this.id,

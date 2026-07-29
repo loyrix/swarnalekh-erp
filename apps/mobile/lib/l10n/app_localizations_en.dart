@@ -1975,6 +1975,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mortgageCloseLoan => 'Close Loan';
 
   @override
+  String get mortgageProceedToClose => 'Proceed to Close';
+
+  @override
+  String get mortgageCloseInterestBanner =>
+      'This loan has a top-up amount. Choose how to calculate interest while closing — this affects the final amount the customer pays.';
+
+  @override
+  String get mortgageSelectInterestOption =>
+      'Select Interest Calculation Option';
+
+  @override
+  String get mortgageFromOriginalLoanDate => 'From Original Loan Date';
+
+  @override
+  String get mortgageFromTopupDate => 'From Top-up Date';
+
+  @override
+  String get mortgageOriginalLoanDate => 'Original Loan Date';
+
+  @override
+  String get mortgageRecommended => 'RECOMMENDED';
+
+  @override
+  String get mortgagePreviewCalculation => 'Preview Calculation';
+
+  @override
+  String get mortgagePrincipalOutstanding => 'Principal (Outstanding)';
+
+  @override
+  String get mortgageInterestCalculated => 'Interest (Calculated)';
+
+  @override
+  String mortgageInterestFromOriginalDesc(String date) {
+    return 'Interest is calculated from the original loan date ($date), including the top-up amount.';
+  }
+
+  @override
+  String mortgageInterestFromTopupDesc(String date) {
+    return 'Interest on the top-up is calculated from the top-up date ($date).';
+  }
+
+  @override
+  String mortgageInterestFromLabel(String date) {
+    return 'Interest will be calculated from $date';
+  }
+
+  @override
   String get mortgageSettlementAmount => 'Settlement Amount *';
 
   @override

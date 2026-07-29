@@ -3892,6 +3892,84 @@ abstract class AppLocalizations {
   /// **'Close Loan'**
   String get mortgageCloseLoan;
 
+  /// No description provided for @mortgageProceedToClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed to Close'**
+  String get mortgageProceedToClose;
+
+  /// No description provided for @mortgageCloseInterestBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'This loan has a top-up amount. Choose how to calculate interest while closing — this affects the final amount the customer pays.'**
+  String get mortgageCloseInterestBanner;
+
+  /// No description provided for @mortgageSelectInterestOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Interest Calculation Option'**
+  String get mortgageSelectInterestOption;
+
+  /// No description provided for @mortgageFromOriginalLoanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'From Original Loan Date'**
+  String get mortgageFromOriginalLoanDate;
+
+  /// No description provided for @mortgageFromTopupDate.
+  ///
+  /// In en, this message translates to:
+  /// **'From Top-up Date'**
+  String get mortgageFromTopupDate;
+
+  /// No description provided for @mortgageOriginalLoanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Original Loan Date'**
+  String get mortgageOriginalLoanDate;
+
+  /// No description provided for @mortgageRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'RECOMMENDED'**
+  String get mortgageRecommended;
+
+  /// No description provided for @mortgagePreviewCalculation.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview Calculation'**
+  String get mortgagePreviewCalculation;
+
+  /// No description provided for @mortgagePrincipalOutstanding.
+  ///
+  /// In en, this message translates to:
+  /// **'Principal (Outstanding)'**
+  String get mortgagePrincipalOutstanding;
+
+  /// No description provided for @mortgageInterestCalculated.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest (Calculated)'**
+  String get mortgageInterestCalculated;
+
+  /// No description provided for @mortgageInterestFromOriginalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest is calculated from the original loan date ({date}), including the top-up amount.'**
+  String mortgageInterestFromOriginalDesc(String date);
+
+  /// No description provided for @mortgageInterestFromTopupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest on the top-up is calculated from the top-up date ({date}).'**
+  String mortgageInterestFromTopupDesc(String date);
+
+  /// No description provided for @mortgageInterestFromLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest will be calculated from {date}'**
+  String mortgageInterestFromLabel(String date);
+
   /// No description provided for @mortgageSettlementAmount.
   ///
   /// In en, this message translates to:

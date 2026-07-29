@@ -63,33 +63,33 @@ export class MortgageService {
       defaultPeriod: 'today',
     });
 
-    const [activeLoans, closedLoans, collectionPayments, topupMode] =
-      await Promise.all([
-        this.prisma.mortgageLoan.findMany({
-          where: { tenantId, status: 'active', deletedAt: null },
-          // Payment + top-up history feed cycle-wise interest accrual.
-          include: {
-            payments: {
-              select: { amount: true, paymentType: true, paymentDate: true },
-            },
-            topups: { select: { amount: true, topupDate: true } },
+    const [activeLoans, closedLoans, collectionPayments] = await Promise.all([
+      this.prisma.mortgageLoan.findMany({
+        where: { tenantId, status: 'active', deletedAt: null },
+        // Payment + top-up history feed cycle-wise interest accrual.
+        include: {
+          payments: {
+            select: { amount: true, paymentType: true, paymentDate: true },
           },
-        }),
-        this.prisma.mortgageLoan.count({
-          where: { tenantId, status: 'closed', deletedAt: null },
-        }),
-        this.prisma.mortgagePayment.findMany({
-          where: {
-            tenantId,
-            ...(range ? { paymentDate: range } : {}),
-          },
-          select: { amount: true },
-        }),
-        this.getTopupMode(this.prisma, tenantId),
-      ]);
+          topups: { select: { amount: true, topupDate: true } },
+        },
+      }),
+      this.prisma.mortgageLoan.count({
+        where: { tenantId, status: 'closed', deletedAt: null },
+      }),
+      this.prisma.mortgagePayment.findMany({
+        where: {
+          tenantId,
+          ...(range ? { paymentDate: range } : {}),
+        },
+        select: { amount: true },
+      }),
+    ]);
 
+    // Ongoing figures use the default "separate" policy; the merge/separate
+    // choice for a top-up loan is made at close time.
     const activeSnapshots = activeLoans.map((loan) =>
-      this.calculateLoanSnapshot(loan, new Date(), topupMode),
+      this.calculateLoanSnapshot(loan, new Date()),
     );
     const pendingInterest = activeSnapshots.reduce(
       (sum, snapshot) => sum + snapshot.pendingInterestAmount,
@@ -146,8 +146,7 @@ export class MortgageService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const topupMode = await this.getTopupMode(this.prisma, tenantId);
-    return loans.map((loan) => this.toLoanResponse(loan, topupMode));
+    return loans.map((loan) => this.toLoanResponse(loan));
   }
 
   async findOne(tenantId: string, id: string) {
@@ -160,8 +159,7 @@ export class MortgageService {
       throw new NotFoundException('Mortgage loan not found');
     }
 
-    const topupMode = await this.getTopupMode(this.prisma, tenantId);
-    return this.toLoanResponse(loan, topupMode);
+    return this.toLoanResponse(loan);
   }
 
   async createLoan(
@@ -248,15 +246,10 @@ export class MortgageService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       const loan = await this.findActiveLoanForUpdate(tx, tenantId, id);
-      const topupMode = await this.getTopupMode(tx, tenantId);
       const paymentType = dto.paymentType ?? 'interest';
       const paymentDate = dto.paymentDate ?? new Date();
       const amount = this.round2(dto.amount);
-      const currentSnapshot = this.calculateLoanSnapshot(
-        loan,
-        paymentDate,
-        topupMode,
-      );
+      const currentSnapshot = this.calculateLoanSnapshot(loan, paymentDate);
       let totalInterestPaid = this.toNumber(loan.totalInterestPaid);
       let totalPrincipalPaid = this.toNumber(loan.totalPrincipalPaid);
 
@@ -294,7 +287,6 @@ export class MortgageService {
         interestPaid: totalInterestPaid,
         principalPaid: totalPrincipalPaid,
         principalAdditions: this.principalAdditionsOf(loan.topups),
-        topupMode,
         // Include the payment created above — it's not in loan.payments yet.
         principalPayments: [
           ...this.principalPaymentsOf(loan.payments),
@@ -322,7 +314,7 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated, topupMode);
+      return this.toLoanResponse(updated);
     });
   }
 
@@ -340,7 +332,6 @@ export class MortgageService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       const loan = await this.findActiveLoanForUpdate(tx, tenantId, id);
-      const topupMode = await this.getTopupMode(tx, tenantId);
       const amount = this.round2(dto.amount);
       if (amount <= 0) {
         throw new BadRequestException(
@@ -373,7 +364,6 @@ export class MortgageService {
           ...this.principalAdditionsOf(loan.topups),
           { amount, date: topupDate },
         ],
-        topupMode,
       });
 
       const updated = await tx.mortgageLoan.update({
@@ -393,7 +383,7 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated, topupMode);
+      return this.toLoanResponse(updated);
     });
   }
 
@@ -410,7 +400,6 @@ export class MortgageService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       const loan = await this.findActiveLoanForUpdate(tx, tenantId, loanId);
-      const topupMode = await this.getTopupMode(tx, tenantId);
       const payment = await tx.mortgagePayment.findFirst({
         where: { id: paymentId, loanId: loan.id, tenantId },
       });
@@ -478,7 +467,6 @@ export class MortgageService {
         interestPaid: totalInterestPaid,
         principalPaid: totalPrincipalPaid,
         principalAdditions: this.principalAdditionsOf(loan.topups),
-        topupMode,
         // History with the edited payment's corrected amount/type applied.
         principalPayments: this.principalPaymentsOf(
           (loan.payments as any[]).map((p) =>
@@ -505,7 +493,7 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated, topupMode);
+      return this.toLoanResponse(updated);
     });
   }
 
@@ -517,7 +505,9 @@ export class MortgageService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       const loan = await this.findActiveLoanForUpdate(tx, tenantId, id);
-      const topupMode = await this.getTopupMode(tx, tenantId);
+      // The operator chooses how a top-up accrues interest at close time.
+      const topupMode: TopupMode =
+        dto.topupInterestMode === 'merge' ? 'merge' : 'separate';
       const closureDate = dto.closureDate ?? new Date();
       const snapshot = this.calculateLoanSnapshot(loan, closureDate, topupMode);
       const amountPaid = this.round2(dto.amountPaid);
@@ -574,8 +564,50 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated, topupMode);
+      return this.toLoanResponse(updated);
     });
+  }
+
+  /**
+   * Figures the Close screen needs to let the operator pick a top-up interest
+   * policy: the settlement under BOTH "separate" and "merge", plus the dates
+   * and total top-up that explain the difference. `hasTopups` is false when the
+   * loan has no top-ups (the screen then shows a plain close).
+   */
+  async getClosePreview(tenantId: string, id: string, asOf?: Date) {
+    const loan = await this.prisma.mortgageLoan.findFirst({
+      where: { id, tenantId, deletedAt: null },
+      include: this.loanInclude,
+    });
+    if (!loan) throw new NotFoundException('Mortgage loan not found');
+    const asOfDate = asOf ?? new Date();
+
+    const project = (mode: TopupMode) => {
+      const s = this.calculateLoanSnapshot(loan, asOfDate, mode);
+      return {
+        pendingInterest: s.pendingInterestAmount,
+        outstandingPrincipal: s.outstandingPrincipal,
+        totalPayable: s.totalPayableAmount,
+      };
+    };
+
+    const topups = (loan.topups ?? []) as Array<{
+      amount: unknown;
+      topupDate: Date;
+    }>;
+    const totalTopups = this.round2(
+      topups.reduce((sum, t) => sum + this.toNumber(t.amount), 0),
+    );
+
+    return {
+      loanId: loan.id,
+      hasTopups: topups.length > 0,
+      loanDate: loan.loanDate,
+      firstTopupDate: topups.length > 0 ? topups[0].topupDate : null,
+      totalTopups,
+      separate: project('separate'),
+      merge: project('merge'),
+    };
   }
 
   /**
@@ -596,7 +628,6 @@ export class MortgageService {
       if (loan.status !== 'closed') {
         throw new BadRequestException('Only a closed loan can be reopened');
       }
-      const topupMode = await this.getTopupMode(tx, tenantId);
 
       // Drop the settlement artifact created at close time.
       await tx.mortgagePayment.deleteMany({
@@ -632,7 +663,6 @@ export class MortgageService {
         principalPaid: totalPrincipalPaid,
         principalPayments: this.principalPaymentsOf(surviving),
         principalAdditions: this.principalAdditionsOf(loan.topups),
-        topupMode,
       });
 
       const updated = await tx.mortgageLoan.update({
@@ -655,7 +685,7 @@ export class MortgageService {
         include: this.loanInclude,
       });
 
-      return this.toLoanResponse(updated, topupMode);
+      return this.toLoanResponse(updated);
     });
   }
 
@@ -866,18 +896,6 @@ export class MortgageService {
       interestPaid: this.toNumber(loan.totalInterestPaid),
       principalPaid: this.toNumber(loan.totalPrincipalPaid),
     });
-  }
-
-  /** The shop's global top-up interest policy. */
-  private async getTopupMode(
-    client: { tenant: { findUnique: Function } },
-    tenantId: string,
-  ): Promise<TopupMode> {
-    const tenant = await client.tenant.findUnique({
-      where: { id: tenantId },
-      select: { mortgageTopupMode: true },
-    });
-    return tenant?.mortgageTopupMode === 'merge' ? 'merge' : 'separate';
   }
 
   private toLoanResponse(loan: any, topupMode: TopupMode = 'separate') {

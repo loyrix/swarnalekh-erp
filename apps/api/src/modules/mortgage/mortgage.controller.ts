@@ -121,6 +121,14 @@ export class MortgageController {
     );
   }
 
+  @Get(':id/close-preview')
+  @ApiOperation({
+    summary: 'Settlement figures under both top-up interest policies',
+  })
+  async getClosePreview(@Request() req: any, @Param('id') id: string) {
+    return this.mortgageService.getClosePreview(req.tenantId, id);
+  }
+
   @Post(':id/close')
   @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Close a mortgage loan after settlement' })
