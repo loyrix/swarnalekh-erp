@@ -201,25 +201,35 @@ class BillingInventoryItem {
     required this.id,
     required this.itemName,
     required this.tagNumber,
+    required this.huid,
     required this.metalType,
     required this.karat,
     required this.stockType,
+    required this.status,
     required this.availableQuantity,
     required this.netWeight,
+    required this.photos,
     required this.searchBlob,
   });
 
   final String id;
   final String? itemName;
   final String? tagNumber;
+  final String? huid;
   final String? metalType;
   final String? karat;
   final String stockType;
+  final String status;
   final int availableQuantity;
   final double netWeight;
+
+  /// Photo sources (data-URI or network URL); first one drives the thumbnail.
+  final List<String> photos;
   final String searchBlob;
 
   bool get isBulk => stockType == 'bulk';
+
+  String? get firstPhoto => photos.isNotEmpty ? photos.first : null;
 
   bool matches(String query) => searchBlob.contains(query.toLowerCase());
 
@@ -232,34 +242,68 @@ class BillingInventoryItem {
       json['categoryName'],
       json['metalType'],
       json['karat'],
+      json['huid'],
     ].whereType<Object>().map((v) => v.toString().toLowerCase()).join(' ');
+    final rawPhotos = json['photos'];
     return BillingInventoryItem(
       id: (json['id'] ?? '').toString(),
       itemName: _s(json['itemName']),
       tagNumber: _s(json['tagNumber']),
+      huid: _s(json['huid']),
       metalType: _s(json['metalType']),
       karat: _s(json['karat']),
       stockType: (json['stockType'] ?? 'unique').toString(),
+      status: (json['status'] ?? 'in_stock').toString(),
       availableQuantity: json['quantity'] == null ? 1 : _i(json['quantity']),
       netWeight: _d(json['netWeight']),
+      photos: rawPhotos is List
+          ? rawPhotos
+                .map((e) => e.toString())
+                .where((s) => s.isNotEmpty)
+                .toList()
+          : const [],
       searchBlob: blob,
     );
   }
 }
 
-/// A saved-customer option for the New Bill dropdown.
+/// A saved-customer option for the New Bill dropdown. Carries the denormalized
+/// relationship stats (`totalPurchases`, `totalVisits`, `lastVisitAt`) that the
+/// API keeps up to date on every invoice create, so the picker can show a rich
+/// customer card without an extra request.
 class BillingCustomerOption {
   const BillingCustomerOption({
     required this.id,
     required this.name,
     required this.phone,
     required this.address,
+    required this.city,
+    required this.totalPurchases,
+    required this.totalVisits,
+    required this.lastVisitAt,
   });
 
   final String id;
   final String? name;
   final String? phone;
   final String? address;
+  final String? city;
+
+  /// Lifetime amount billed to this customer (cumulative), not the last bill.
+  final double totalPurchases;
+
+  /// Number of invoices raised for this customer.
+  final int totalVisits;
+  final DateTime? lastVisitAt;
+
+  /// Human location line: "address, city" (either part may be missing).
+  String? get location {
+    final parts = [
+      address,
+      city,
+    ].where((p) => p != null && p.trim().isNotEmpty).toList();
+    return parts.isEmpty ? null : parts.join(', ');
+  }
 
   factory BillingCustomerOption.fromJson(Map<String, dynamic> json) {
     return BillingCustomerOption(
@@ -267,6 +311,10 @@ class BillingCustomerOption {
       name: _s(json['name']),
       phone: _s(json['phone']),
       address: _s(json['address']),
+      city: _s(json['city']),
+      totalPurchases: _d(json['totalPurchases']),
+      totalVisits: _i(json['totalVisits']),
+      lastVisitAt: DateTime.tryParse(json['lastVisitAt']?.toString() ?? ''),
     );
   }
 }

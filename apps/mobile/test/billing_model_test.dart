@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:swarnbook/features/billing/data/invoice_repository.dart';
 import 'package:swarnbook/features/billing/data/models/invoice.dart';
+import 'package:swarnbook/features/billing/presentation/billing_format.dart';
 
 void main() {
   group('Invoice.fromJson', () {
@@ -272,6 +273,75 @@ void main() {
       });
       expect(printable.invoice.hasBalance, isFalse);
       expect(printable.invoice.payments, isEmpty);
+    });
+  });
+
+  group('BillingInventoryItem.fromJson (billing card fields)', () {
+    test('parses photos, huid, status and exposes the first photo', () {
+      final item = BillingInventoryItem.fromJson({
+        'id': 'it1',
+        'itemName': 'Gold Ring',
+        'tagNumber': 'RG0004',
+        'huid': '6HJ324AB',
+        'metalType': 'gold',
+        'karat': '22K',
+        'stockType': 'unique',
+        'status': 'in_stock',
+        'netWeight': '6.420',
+        'photos': ['data:image/png;base64,AAA', '', 'https://x/y.jpg'],
+      });
+      expect(item.huid, '6HJ324AB');
+      expect(item.status, 'in_stock');
+      // Empty strings are dropped from the photo list.
+      expect(item.photos, ['data:image/png;base64,AAA', 'https://x/y.jpg']);
+      expect(item.firstPhoto, 'data:image/png;base64,AAA');
+      // HUID is searchable.
+      expect(item.matches('6hj324'), isTrue);
+    });
+
+    test('safe defaults when photos/huid/status are missing', () {
+      final item = BillingInventoryItem.fromJson({'id': 'it2'});
+      expect(item.photos, isEmpty);
+      expect(item.firstPhoto, isNull);
+      expect(item.huid, isNull);
+      expect(item.status, 'in_stock');
+    });
+  });
+
+  group('BillingCustomerOption.fromJson (relationship stats)', () {
+    test('parses denormalized stats and builds a location line', () {
+      final c = BillingCustomerOption.fromJson({
+        'id': 'c1',
+        'name': 'Ramesh',
+        'phone': '9876543210',
+        'address': 'Dombivli',
+        'city': 'Maharashtra',
+        'totalPurchases': '245000',
+        'totalVisits': 12,
+        'lastVisitAt': '2024-05-12T00:00:00.000Z',
+      });
+      expect(c.totalPurchases, 245000);
+      expect(c.totalVisits, 12);
+      expect(c.lastVisitAt, isNotNull);
+      expect(c.location, 'Dombivli, Maharashtra');
+    });
+
+    test('location falls back and stats default to zero', () {
+      final c = BillingCustomerOption.fromJson({'id': 'c2', 'name': 'Asha'});
+      expect(c.location, isNull);
+      expect(c.totalPurchases, 0);
+      expect(c.totalVisits, 0);
+      expect(c.lastVisitAt, isNull);
+    });
+  });
+
+  group('billingMoneyGrouped', () {
+    test('applies Indian digit grouping', () {
+      expect(billingMoneyGrouped(131485), '₹1,31,485');
+      expect(billingMoneyGrouped(1000000), '₹10,00,000');
+      expect(billingMoneyGrouped(12345), '₹12,345');
+      expect(billingMoneyGrouped(500), '₹500');
+      expect(billingMoneyGrouped(0), '₹0');
     });
   });
 }

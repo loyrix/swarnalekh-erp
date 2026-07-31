@@ -3,6 +3,23 @@
 
 String billingMoney(double value) => '₹${value.toStringAsFixed(0)}';
 
+/// Rupees with Indian digit grouping (₹1,31,485) for prominent totals.
+String billingMoneyGrouped(double value) {
+  final negative = value < 0;
+  final digits = value.abs().toStringAsFixed(0);
+  final buffer = StringBuffer();
+  final length = digits.length;
+  for (var i = 0; i < length; i++) {
+    buffer.write(digits[i]);
+    final remaining = length - i - 1;
+    if (remaining > 0 &&
+        (remaining == 3 || (remaining > 3 && remaining.isOdd))) {
+      buffer.write(',');
+    }
+  }
+  return '${negative ? '-' : ''}₹$buffer';
+}
+
 String billingMoney2(double value) => '₹${value.toStringAsFixed(2)}';
 
 String billingWeight(double value) => '${value.toStringAsFixed(3)} g';
