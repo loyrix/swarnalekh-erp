@@ -21,6 +21,7 @@ import { UserManagementModule } from './modules/user-management/user-management.
 import { ExportModule } from './modules/export/export.module.js';
 import { SearchModule } from './modules/search/search.module.js';
 import { CategoryModule } from './modules/category/category.module.js';
+import { LegalModule } from './modules/legal/legal.module.js';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { CategoryModule } from './modules/category/category.module.js';
     ExportModule,
     SearchModule,
     CategoryModule,
+    LegalModule,
   ],
   controllers: [AppController],
   providers: [

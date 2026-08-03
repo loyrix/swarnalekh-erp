@@ -5,7 +5,9 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter.js
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 
 export function configureApp(app: INestApplication) {
-  app.setGlobalPrefix('api/v1');
+  // privacy-policy is excluded so it is reachable at the site root — Google Play
+  // Console needs a plain, public URL for it, not one buried under api/v1.
+  app.setGlobalPrefix('api/v1', { exclude: ['privacy-policy'] });
   app.enableCors({ origin: true, credentials: true });
   // Entries create the app with `bodyParser: false`; register parsers here with
   // a limit that accommodates base64 product/KYC images (default is 100 KB,
