@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:swarnbook/features/auth/application/auth_controller.dart';
 import 'package:swarnbook/features/auth/presentation/screens/login_screen.dart';
 import 'package:swarnbook/features/auth/presentation/screens/signup_screen.dart';
+import 'package:swarnbook/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:swarnbook/shared/layouts/app_shell.dart';
 import 'package:swarnbook/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:swarnbook/features/customers/presentation/screens/customer_list_screen.dart';
@@ -29,11 +30,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/dashboard',
     redirect: (context, state) {
       final matchedLocation = state.matchedLocation;
-      final isAuthRoute =
-          matchedLocation == '/login' || matchedLocation == '/signup';
+      // Welcome is the unauthenticated landing page; login and signup are
+      // reached from it, so all three must stay open to signed-out visitors.
+      const authRoutes = {'/welcome', '/login', '/signup'};
+      final isAuthRoute = authRoutes.contains(matchedLocation);
 
       if (!isAuth && !isAuthRoute) {
-        return '/login';
+        return '/welcome';
       }
       if (isAuth && isAuthRoute) {
         return '/dashboard';
@@ -41,6 +44,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/welcome',
+        pageBuilder: (context, state) => _fadeTransitionPage(
+          key: state.pageKey,
+          child: const WelcomeScreen(),
+        ),
+      ),
       GoRoute(
         path: '/login',
         pageBuilder: (context, state) =>

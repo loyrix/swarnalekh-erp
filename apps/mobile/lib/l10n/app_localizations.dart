@@ -208,6 +208,54 @@ abstract class AppLocalizations {
   /// **'Welcome back'**
   String get loginWelcomeBack;
 
+  /// No description provided for @welcomeBrandName.
+  ///
+  /// In en, this message translates to:
+  /// **'SWARNALEKH'**
+  String get welcomeBrandName;
+
+  /// No description provided for @welcomeTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'The complete ledger for your jewellery shop — stock, billing, mortgage and reports in one place.'**
+  String get welcomeTagline;
+
+  /// No description provided for @welcomeRegisterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Register your shop'**
+  String get welcomeRegisterTitle;
+
+  /// No description provided for @welcomeRegisterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New here? Create an account for your jewellery business.'**
+  String get welcomeRegisterSubtitle;
+
+  /// No description provided for @welcomeSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get welcomeSignInTitle;
+
+  /// No description provided for @welcomeSignInSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Owners, managers and staff of a registered shop.'**
+  String get welcomeSignInSubtitle;
+
+  /// No description provided for @welcomeStaffNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff members don\'t register here — ask your shop owner to create your account, then sign in.'**
+  String get welcomeStaffNote;
+
+  /// No description provided for @welcomeSecureNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shop\'s data stays private and protected.'**
+  String get welcomeSecureNote;
+
   /// No description provided for @loginSubtitle.
   ///
   /// In en, this message translates to:

@@ -63,6 +63,35 @@ class AppLocalizationsHi extends AppLocalizations {
   String get loginWelcomeBack => 'वापसी पर स्वागत है';
 
   @override
+  String get welcomeBrandName => 'स्वर्णलेख';
+
+  @override
+  String get welcomeTagline =>
+      'आपकी ज्वेलरी दुकान का पूरा हिसाब — स्टॉक, बिलिंग, गिरवी और रिपोर्ट, सब एक जगह।';
+
+  @override
+  String get welcomeRegisterTitle => 'अपनी दुकान रजिस्टर करें';
+
+  @override
+  String get welcomeRegisterSubtitle =>
+      'नए हैं? अपने ज्वेलरी व्यवसाय के लिए खाता बनाएं।';
+
+  @override
+  String get welcomeSignInTitle => 'साइन इन करें';
+
+  @override
+  String get welcomeSignInSubtitle =>
+      'रजिस्टर्ड दुकान के मालिक, मैनेजर और स्टाफ।';
+
+  @override
+  String get welcomeStaffNote =>
+      'स्टाफ यहां रजिस्टर नहीं करते — अपने दुकान मालिक से खाता बनवाएं, फिर साइन इन करें।';
+
+  @override
+  String get welcomeSecureNote =>
+      'आपकी दुकान का डेटा निजी और सुरक्षित रहता है।';
+
+  @override
   String get loginSubtitle =>
       'अपने ज्वेलरी बिज़नेस को मैनेज करने के लिए साइन इन करें';
 

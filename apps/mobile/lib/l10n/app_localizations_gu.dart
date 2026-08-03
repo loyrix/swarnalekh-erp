@@ -63,6 +63,35 @@ class AppLocalizationsGu extends AppLocalizations {
   String get loginWelcomeBack => 'ફરીથી સ્વાગત છે';
 
   @override
+  String get welcomeBrandName => 'સ્વર્ણલેખ';
+
+  @override
+  String get welcomeTagline =>
+      'તમારી જ્વેલરી દુકાનનો સંપૂર્ણ હિસાબ — સ્ટોક, બિલિંગ, ગીરવી અને રિપોર્ટ, બધું એક જગ્યાએ.';
+
+  @override
+  String get welcomeRegisterTitle => 'તમારી દુકાન રજિસ્ટર કરો';
+
+  @override
+  String get welcomeRegisterSubtitle =>
+      'નવા છો? તમારા જ્વેલરી વ્યવસાય માટે ખાતું બનાવો.';
+
+  @override
+  String get welcomeSignInTitle => 'સાઇન ઇન કરો';
+
+  @override
+  String get welcomeSignInSubtitle =>
+      'રજિસ્ટર્ડ દુકાનના માલિક, મેનેજર અને સ્ટાફ.';
+
+  @override
+  String get welcomeStaffNote =>
+      'સ્ટાફ અહીં રજિસ્ટર કરતા નથી — તમારા દુકાન માલિક પાસે ખાતું બનાવડાવો, પછી સાઇન ઇન કરો.';
+
+  @override
+  String get welcomeSecureNote =>
+      'તમારી દુકાનનો ડેટા ખાનગી અને સુરક્ષિત રહે છે.';
+
+  @override
   String get loginSubtitle => 'તમારો જ્વેલરી વ્યવસાય સંચાલિત કરવા સાઇન ઇન કરો';
 
   @override

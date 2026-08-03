@@ -63,6 +63,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginWelcomeBack => 'Welcome back';
 
   @override
+  String get welcomeBrandName => 'SWARNALEKH';
+
+  @override
+  String get welcomeTagline =>
+      'The complete ledger for your jewellery shop — stock, billing, mortgage and reports in one place.';
+
+  @override
+  String get welcomeRegisterTitle => 'Register your shop';
+
+  @override
+  String get welcomeRegisterSubtitle =>
+      'New here? Create an account for your jewellery business.';
+
+  @override
+  String get welcomeSignInTitle => 'Sign in';
+
+  @override
+  String get welcomeSignInSubtitle =>
+      'Owners, managers and staff of a registered shop.';
+
+  @override
+  String get welcomeStaffNote =>
+      'Staff members don\'t register here — ask your shop owner to create your account, then sign in.';
+
+  @override
+  String get welcomeSecureNote =>
+      'Your shop\'s data stays private and protected.';
+
+  @override
   String get loginSubtitle => 'Sign in to manage your jewellery business';
 
   @override

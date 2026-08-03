@@ -253,7 +253,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ),
+          _backToWelcome(),
         ],
+      ),
+    );
+  }
+
+  /// Returns to the welcome screen, so neither entry form is a dead end for
+  /// someone who picked the wrong path.
+  Widget _backToWelcome() {
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: IconButton(
+            onPressed: () => context.go('/welcome'),
+            icon: const Icon(Icons.arrow_back_rounded),
+            color: AppColors.text2(context),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          ),
+        ),
       ),
     );
   }
