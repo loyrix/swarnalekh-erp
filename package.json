@@ -23,6 +23,7 @@
     "mobile:web": "bash scripts/flutter_with_env.sh build web --release",
     "mobile:apk": "bash scripts/flutter_with_env.sh build apk --release",
     "mobile:aab": "bash scripts/flutter_with_env.sh build appbundle --release",
+    "mobile:play": "bash scripts/mobile/build-android-play-release.sh",
     "mobile:run": "bash scripts/flutter_with_env.sh run",
     "verify:precommit": "pnpm format:check && pnpm test && pnpm build && pnpm mobile:analyze && pnpm mobile:test && pnpm mobile:build",
     "hooks:install": "git config core.hooksPath .githooks",
