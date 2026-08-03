@@ -66,6 +66,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   final Map<String, int> _selectedQuantities = {};
   // Made-to-order lines: things the customer asked for that we don't stock.
   final List<_OnDemandLine> _onDemandLines = [];
+  // Which item picker is on screen. Selling from stock is the common case, so
+  // it opens first. Switching modes never discards lines already added.
+  String _itemMode = 'stock';
   bool _oldGoldEnabled = false;
   String _paymentMode = 'cash';
 
@@ -855,12 +858,54 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
   // ------- Inventory -------
 
+  /// Item selection, one mode at a time.
+  ///
+  /// Showing the stock picker and the made-to-order list together filled the
+  /// screen before the user had chosen anything. The toggle picks which input is
+  /// visible; it does **not** restrict the bill — lines added in either mode
+  /// stay on the invoice, so a ready chain and a custom ring can share one bill.
   Widget _inventorySection(AppLocalizations l10n) {
+    final stockCount = _selectedItemIds.length;
+    final customCount = _onDemandLines.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeader(title: l10n.billingSelectInventoryItems),
+        SectionHeader(title: l10n.billingSelectItems),
         const SizedBox(height: AppSpacing.sm),
+        SectionSwitch(
+          activeValue: _itemMode,
+          onChanged: (v) => setState(() => _itemMode = v),
+          items: [
+            SectionItem(
+              value: 'stock',
+              // Counts keep the hidden mode's contribution visible.
+              label: stockCount > 0
+                  ? '${l10n.billingModeFromStock} ($stockCount)'
+                  : l10n.billingModeFromStock,
+              icon: Icons.inventory_2_rounded,
+            ),
+            SectionItem(
+              value: 'custom',
+              label: customCount > 0
+                  ? '${l10n.billingModeMadeToOrder} ($customCount)'
+                  : l10n.billingModeMadeToOrder,
+              icon: Icons.design_services_rounded,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        if (_itemMode == 'stock')
+          _stockPicker(l10n)
+        else
+          _onDemandSection(l10n),
+      ],
+    );
+  }
+
+  Widget _stockPicker(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         TextField(
           controller: _inventorySearch,
           onChanged: (_) => setState(() {}),
@@ -894,8 +939,6 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       _itemRow(l10n, _filteredItems[index]),
                 ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        _onDemandSection(l10n),
       ],
     );
   }
@@ -908,33 +951,32 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.billingOnDemandSectionTitle,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.text1(context),
-                ),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: _addOnDemandLine,
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text(l10n.billingOnDemandAddShort),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              ),
-            ),
-          ],
-        ),
         if (_onDemandLines.isEmpty)
-          Text(
-            l10n.billingOnDemandEmpty,
-            style: TextStyle(fontSize: 11.5, color: AppColors.text3(context)),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.brd(context)),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.design_services_rounded,
+                  size: 26,
+                  color: AppColors.text3(context),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  l10n.billingOnDemandEmpty,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: AppColors.text3(context),
+                  ),
+                ),
+              ],
+            ),
           )
         else
           ...List.generate(_onDemandLines.length, (i) {
@@ -995,6 +1037,17 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               ),
             );
           }),
+        const SizedBox(height: AppSpacing.sm),
+        OutlinedButton.icon(
+          onPressed: _addOnDemandLine,
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: Text(l10n.billingOnDemandAddShort),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+        ),
       ],
     );
   }

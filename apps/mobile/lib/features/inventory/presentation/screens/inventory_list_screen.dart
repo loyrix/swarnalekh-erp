@@ -98,6 +98,16 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
     });
   }
 
+  /// Whether the visible list is narrowed by anything the user chose. Drives
+  /// which empty state to show: an empty shop, or a search that matched nothing.
+  bool get _isFiltering =>
+      _query.search.trim().isNotEmpty ||
+      _query.metal != 'all' ||
+      _query.categoryId.isNotEmpty ||
+      _query.branch.isNotEmpty ||
+      _query.dateFrom.isNotEmpty ||
+      _query.dateTo.isNotEmpty;
+
   Future<void> _refresh() async {
     if (_section == 'sold') {
       ref.invalidate(soldProductsProvider(_soldQuery));
@@ -474,9 +484,14 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
             _searchRow(l10n.inventorySearchHintStock),
             _metalChipsRow(l10n),
             if (overview.items.isEmpty)
-              EmptyState.inventory(
-                onAction: _canManage ? () => _openForm() : null,
-              )
+              // "Add your first item" is only true when the shop really has no
+              // stock. With a search or filter active it's a no-results state —
+              // offering "Add First Item" there reads as if the stock vanished.
+              _isFiltering
+                  ? EmptyState.noResults(query: _query.search)
+                  : EmptyState.inventory(
+                      onAction: _canManage ? () => _openForm() : null,
+                    )
             else ...[
               for (final item in overview.items) _itemRow(item),
             ],

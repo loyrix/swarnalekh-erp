@@ -490,6 +490,15 @@ class AppLocalizationsGu extends AppLocalizations {
   String get commonSilver => 'ચાંદી';
 
   @override
+  String get billingSelectItems => 'વસ્તુઓ પસંદ કરો';
+
+  @override
+  String get billingModeFromStock => 'સ્ટોકમાંથી';
+
+  @override
+  String get billingModeMadeToOrder => 'ઓર્ડર પર';
+
+  @override
   String get billingOldGoldTitle => 'જૂનું સોનું બદલી';
 
   @override
@@ -853,6 +862,9 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get dashboardBusinessOverview => 'વ્યવસાય ઝાંખી';
+
+  @override
+  String get dashboardSecurityBadge => 'સુરક્ષિત';
 
   @override
   String get dashboardSecurityTitle => 'તમારી દુકાનનો ડેટા સુરક્ષિત છે';

@@ -469,39 +469,52 @@ class _SecurityAssuranceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return GlassCard(
+    return Container(
+      decoration: BoxDecoration(
+        // A soft champagne wash instead of a flat surface, so the panel reads
+        // as a seal closing the page rather than one more stat card.
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary.withValues(alpha: 0.14),
+            AppColors.primary.withValues(alpha: 0.03),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.32)),
+      ),
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppColors.successMuted,
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: const Icon(
-                  Icons.verified_user_rounded,
-                  size: 19,
-                  color: AppColors.success,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
+              _emblem(),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      l10n.dashboardSecurityTitle,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.text1(context),
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.dashboardSecurityTitle,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              height: 1.25,
+                              color: AppColors.text1(context),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        _badge(context, l10n.dashboardSecurityBadge),
+                      ],
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       l10n.dashboardSecuritySubtitle,
                       style: TextStyle(
@@ -516,14 +529,19 @@ class _SecurityAssuranceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
+          Container(
+            height: 1,
+            color: AppColors.primary.withValues(alpha: 0.18),
+          ),
+          const SizedBox(height: AppSpacing.md),
           _point(context, Icons.lock_rounded, l10n.dashboardSecurityPointLogin),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: 10),
           _point(
             context,
             Icons.phonelink_lock_rounded,
             l10n.dashboardSecurityPointDevice,
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: 10),
           _point(
             context,
             Icons.storefront_rounded,
@@ -534,19 +552,91 @@ class _SecurityAssuranceCard extends StatelessWidget {
     );
   }
 
+  /// Gold shield plate — the single focal point that carries the reassurance.
+  Widget _emblem() {
+    return Container(
+      width: 46,
+      height: 46,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primaryLight, AppColors.primaryDark],
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: const Icon(
+        Icons.verified_user_rounded,
+        size: 24,
+        color: AppColors.textOnPrimary,
+      ),
+    );
+  }
+
+  /// Small "Protected" pill. Success green is the one non-gold accent allowed
+  /// here, because it is a status and not decoration.
+  Widget _badge(BuildContext context, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.successMuted,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 11,
+            color: AppColors.success,
+          ),
+          const SizedBox(width: 3),
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+              color: AppColors.success,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _point(BuildContext context, IconData icon, String text) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 15, color: AppColors.primary),
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(AppRadius.full),
+          ),
+          child: Icon(icon, size: 13, color: AppColors.primary),
+        ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 12.5,
-              height: 1.4,
-              color: AppColors.text2(context),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.4,
+                color: AppColors.text2(context),
+              ),
             ),
           ),
         ),

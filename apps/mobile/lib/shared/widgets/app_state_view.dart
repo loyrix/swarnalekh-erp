@@ -20,7 +20,21 @@ import 'package:swarnbook/shared/widgets/shimmer_loading.dart';
 ///   data: (items) => ItemList(items),
 /// )
 /// ```
-class AppStateView<T> extends StatelessWidget {
+///
+/// ## Why this keeps the last result on screen
+///
+/// Most list screens watch a *family* provider keyed by their query
+/// (`itemsProvider(query)`). Changing the search text builds a **new** provider
+/// instance, which starts life as `AsyncLoading` with no previous value — so a
+/// naive `value.when(...)` swaps the entire body for a skeleton on every
+/// keystroke. Because these screens render their search field and filters
+/// *inside* the data builder, that teardown takes the search box with it and
+/// the page visibly reloads while typing.
+///
+/// So this widget retains the last resolved value and keeps rendering it while
+/// the next one loads, surfacing a thin progress bar instead. The skeleton is
+/// reserved for the genuine first load, when there is nothing to show yet.
+class AppStateView<T> extends StatefulWidget {
   const AppStateView({
     super.key,
     required this.value,
@@ -29,6 +43,7 @@ class AppStateView<T> extends StatelessWidget {
     this.loading,
     this.empty,
     this.onRetry,
+    this.resetKey,
   });
 
   /// The async state to render.
@@ -49,18 +64,81 @@ class AppStateView<T> extends StatelessWidget {
   /// Invoked by the error view's retry button. Hidden when null.
   final VoidCallback? onRetry;
 
+  /// Change this to drop the retained value and show the skeleton again.
+  ///
+  /// Pass it when the same view switches to genuinely unrelated content (a tab
+  /// or section change), where briefly showing the old list would be wrong.
+  /// Query and filter changes should *not* reset — holding the previous results
+  /// through those is the entire point.
+  final Object? resetKey;
+
+  @override
+  State<AppStateView<T>> createState() => _AppStateViewState<T>();
+}
+
+class _AppStateViewState<T> extends State<AppStateView<T>> {
+  /// Last successfully resolved value, kept so an in-flight reload doesn't
+  /// blank the screen.
+  T? _retained;
+
+  @override
+  void didUpdateWidget(covariant AppStateView<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.resetKey != oldWidget.resetKey) {
+      _retained = null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return value.when(
-      skipLoadingOnRefresh: false,
-      loading: () => loading ?? const _ShimmerList(),
-      error: (error, _) => AppErrorView(error: error, onRetry: onRetry),
-      data: (resolved) {
-        if (isEmpty?.call(resolved) ?? false) {
-          return empty ?? EmptyState.noResults();
-        }
-        return data(resolved);
-      },
+    final value = widget.value;
+
+    // Cache on the way through. Safe during build: it only ever feeds the very
+    // next frame, and never triggers a rebuild of its own.
+    if (value.hasValue && !value.hasError) {
+      _retained = value.value;
+    }
+
+    if (value.hasError && !value.hasValue) {
+      return AppErrorView(error: value.error, onRetry: widget.onRetry);
+    }
+
+    final resolved = value.hasValue ? value.value as T : _retained;
+
+    // Genuine first load — nothing worth keeping on screen.
+    if (resolved == null) {
+      return widget.loading ?? const _ShimmerList();
+    }
+
+    final body = (widget.isEmpty?.call(resolved) ?? false)
+        ? (widget.empty ?? EmptyState.noResults())
+        : widget.data(resolved);
+
+    if (!value.isLoading) return body;
+
+    // Reloading over results already on screen: keep them, and say so quietly.
+    return Stack(
+      children: [
+        body,
+        const Positioned(top: 0, left: 0, right: 0, child: _RefreshingBar()),
+      ],
+    );
+  }
+}
+
+/// Hairline progress bar shown while results already on screen are refreshed.
+class _RefreshingBar extends StatelessWidget {
+  const _RefreshingBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 2,
+      child: LinearProgressIndicator(
+        minHeight: 2,
+        backgroundColor: Colors.transparent,
+        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+      ),
     );
   }
 }

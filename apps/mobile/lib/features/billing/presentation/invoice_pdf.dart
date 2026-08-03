@@ -18,12 +18,23 @@ class InvoicePdfFonts {
   bool get hasEmbeddedFonts => base != null && bold != null;
 }
 
-// Letterhead palette — deep antique gold with a pale gold wash, print-safe.
-final PdfColor _gold = PdfColor.fromHex('#8A6A1F');
-final PdfColor _goldWash = PdfColor.fromHex('#F5EEDC');
+// Navy-and-gold letterhead palette. Navy carries the structural blocks (table
+// headers, footer band) and gold the accents, which is what gives the bill its
+// weight in print without relying on large flat fills of colour.
+final PdfColor _navy = PdfColor.fromHex('#16233F');
+final PdfColor _gold = PdfColor.fromHex('#A8863C');
+final PdfColor _goldDeep = PdfColor.fromHex('#8A6A1F');
+final PdfColor _goldWash = PdfColor.fromHex('#F7F1E1');
 final PdfColor _ink = PdfColor.fromHex('#221C10');
 final PdfColor _mutedInk = PdfColor.fromHex('#6A6252');
 final PdfColor _hairline = PdfColor.fromHex('#D8CFB8');
+
+/// Brand strip printed along the foot of every page.
+///
+/// Separated with a middot (U+00B7) rather than a bullet (U+2022): the middot
+/// is in the standard PDF encoding, so it still renders if the embedded Noto
+/// fonts fail to load and the document falls back to Helvetica.
+const String _brandStrip = 'SWARN LEKH   ·   PRECISION IN GOLD, TRUST FOR LIFE';
 
 String _money(double v) => 'Rs. ${v.toStringAsFixed(2)}';
 String _weight(double v) => '${v.toStringAsFixed(3)} g';
@@ -34,6 +45,16 @@ String _date(DateTime? value) {
   final d = value.toLocal();
   return '${d.day.toString().padLeft(2, '0')}/'
       '${d.month.toString().padLeft(2, '0')}/${d.year}';
+}
+
+/// 12-hour clock line printed under the invoice date. Null when there's no
+/// timestamp to show.
+String? _time(DateTime? value) {
+  if (value == null) return null;
+  final d = value.toLocal();
+  final hour12 = d.hour % 12 == 0 ? 12 : d.hour % 12;
+  final minute = d.minute.toString().padLeft(2, '0');
+  return '$hour12:$minute ${d.hour < 12 ? 'AM' : 'PM'}';
 }
 
 const List<String> _ones = [
@@ -117,10 +138,14 @@ String amountInWordsIndian(double amount) {
   return 'Rupees $rupeePart$paisePart Only';
 }
 
-/// Builds the customer-facing tax invoice PDF: gold letterhead with the shop's
-/// identity, invoice meta, itemised table (purity, weights, rate, making),
-/// GST split, amount in words, payments, declaration + signature blocks, and
-/// the verification QR. Handles missing shop-profile fields gracefully.
+/// Builds the customer-facing tax invoice PDF: navy-and-gold letterhead with
+/// the shop's identity, invoice meta, itemised table (purity, weights, rate,
+/// making), GST split, amount in words, payments, declaration, signature
+/// blocks, and the brand footer band. Handles missing shop-profile fields
+/// gracefully.
+///
+/// The verification code and QR are intentionally not printed — they remain on
+/// [PrintableInvoice] for in-app use.
 Future<Uint8List> buildInvoicePdf(
   PrintableInvoice printable, {
   InvoicePdfFonts fonts = const InvoicePdfFonts(),
@@ -151,24 +176,26 @@ Future<Uint8List> buildInvoicePdf(
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(30, 26, 30, 30),
-      footer: (context) => pw.Column(
-        children: [
-          pw.Divider(color: _hairline, height: 8),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                shop.name ?? 'SwarnaLekh',
-                style: pw.TextStyle(fontSize: 7.5, color: _mutedInk),
+      // Page numbering only carries on multi-page bills; a single-page invoice
+      // ends on the brand band instead of a stray "Page 1 of 1".
+      footer: (context) => context.pagesCount <= 1
+          ? pw.SizedBox()
+          : pw.Padding(
+              padding: const pw.EdgeInsets.only(top: 6),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    shop.name ?? 'SwarnaLekh',
+                    style: pw.TextStyle(fontSize: 7.5, color: _mutedInk),
+                  ),
+                  pw.Text(
+                    'Page ${context.pageNumber} of ${context.pagesCount}',
+                    style: pw.TextStyle(fontSize: 7.5, color: _mutedInk),
+                  ),
+                ],
               ),
-              pw.Text(
-                'Page ${context.pageNumber} of ${context.pagesCount}',
-                style: pw.TextStyle(fontSize: 7.5, color: _mutedInk),
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
       build: (context) => [
         _letterhead(shop, logo),
         pw.SizedBox(height: 10),
@@ -193,9 +220,13 @@ Future<Uint8List> buildInvoicePdf(
           ),
         ],
         pw.SizedBox(height: 14),
-        _declarationAndProtection(printable, shop),
-        pw.SizedBox(height: 22),
+        _declaration(printable),
+        pw.SizedBox(height: 16),
+        _thankYou(),
+        pw.SizedBox(height: 14),
         _signatures(shop),
+        pw.SizedBox(height: 18),
+        _contactFooter(shop),
       ],
     ),
   );
@@ -203,67 +234,82 @@ Future<Uint8List> buildInvoicePdf(
   return doc.save();
 }
 
-/// Centred letterhead: shop name in large type over the address/contact line
-/// and a GSTIN/PAN strip, closed by the classic double rule.
+/// Letterhead: framed logo at the left, shop name and city centred between
+/// ornamental rules, GSTIN/PAN underneath, closed by a gold double rule.
 pw.Widget _letterhead(PrintableShop shop, pw.MemoryImage? logo) {
-  final contact = [
-    if (shop.address != null) shop.address!,
-    if (shop.phone != null) 'Ph: ${shop.phone}',
-  ].join('  ·  ');
   final tax = [
     if (shop.gstin != null) 'GSTIN: ${shop.gstin}',
     if (shop.pan != null) 'PAN: ${shop.pan}',
-  ].join('    ');
+  ].join('     ');
 
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.stretch,
     children: [
       pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
+          // Framed logo plate — navy card with a gold keyline, as in the mock.
           if (logo != null)
-            pw.Container(width: 52, height: 52, child: pw.Image(logo))
+            pw.Container(
+              width: 62,
+              height: 62,
+              padding: const pw.EdgeInsets.all(3),
+              decoration: pw.BoxDecoration(
+                color: _navy,
+                border: pw.Border.all(color: _gold, width: 1.2),
+              ),
+              child: pw.Image(logo, fit: pw.BoxFit.contain),
+            )
           else
-            pw.SizedBox(width: 52),
+            pw.SizedBox(width: 62),
           pw.Expanded(
-            child: pw.Column(
-              children: [
-                pw.Text(
-                  shop.name ?? 'SwarnaLekh',
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(
-                    fontSize: 22,
-                    fontWeight: pw.FontWeight.bold,
-                    color: _gold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                if (contact.isNotEmpty)
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.only(top: 3),
-                    child: pw.Text(
-                      contact,
-                      textAlign: pw.TextAlign.center,
-                      style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
+            child: pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(horizontal: 10),
+              child: pw.Column(
+                children: [
+                  pw.Text(
+                    (shop.name ?? 'SwarnaLekh').toUpperCase(),
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                      fontSize: 30,
+                      fontWeight: pw.FontWeight.bold,
+                      color: _gold,
+                      letterSpacing: 3,
                     ),
                   ),
-                if (tax.isNotEmpty)
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.only(top: 2),
-                    child: pw.Text(
-                      tax,
-                      textAlign: pw.TextAlign.center,
-                      style: pw.TextStyle(
-                        fontSize: 8.5,
-                        fontWeight: pw.FontWeight.bold,
-                        color: _ink,
+                  if (shop.city != null)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 1),
+                      child: pw.Text(
+                        shop.city!.toUpperCase(),
+                        textAlign: pw.TextAlign.center,
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          color: _mutedInk,
+                          letterSpacing: 3,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                  pw.SizedBox(height: 5),
+                  _ornamentRule(),
+                  if (tax.isNotEmpty)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 4),
+                      child: pw.Text(
+                        tax,
+                        textAlign: pw.TextAlign.center,
+                        style: pw.TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: pw.FontWeight.bold,
+                          color: _ink,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
-          pw.SizedBox(width: 52),
+          pw.SizedBox(width: 62),
         ],
       ),
       pw.SizedBox(height: 8),
@@ -274,22 +320,40 @@ pw.Widget _letterhead(PrintableShop shop, pw.MemoryImage? logo) {
   );
 }
 
+/// A hairline broken by a small diamond, the divider used under the shop name.
+pw.Widget _ornamentRule() {
+  return pw.Row(
+    mainAxisAlignment: pw.MainAxisAlignment.center,
+    crossAxisAlignment: pw.CrossAxisAlignment.center,
+    children: [
+      pw.Expanded(child: pw.Container(height: 0.7, color: _gold)),
+      pw.Padding(
+        padding: const pw.EdgeInsets.symmetric(horizontal: 5),
+        child: pw.Transform.rotate(
+          angle: 0.785398, // 45° — a square on its corner reads as a diamond.
+          child: pw.Container(width: 4, height: 4, color: _gold),
+        ),
+      ),
+      pw.Expanded(child: pw.Container(height: 0.7, color: _gold)),
+    ],
+  );
+}
+
 pw.Widget _invoiceBanner() {
   return pw.Center(
     child: pw.Container(
-      padding: const pw.EdgeInsets.symmetric(horizontal: 22, vertical: 4),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 34, vertical: 6),
       decoration: pw.BoxDecoration(
-        color: _goldWash,
-        border: pw.Border.all(color: _gold, width: 0.7),
-        borderRadius: pw.BorderRadius.circular(3),
+        color: _gold,
+        borderRadius: pw.BorderRadius.circular(11),
       ),
       child: pw.Text(
         'TAX INVOICE',
         style: pw.TextStyle(
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: pw.FontWeight.bold,
-          color: _gold,
-          letterSpacing: 2,
+          color: PdfColors.white,
+          letterSpacing: 2.4,
         ),
       ),
     ),
@@ -312,78 +376,60 @@ pw.Widget _metaGrid(PrintableInvoiceDetail inv) {
     ),
   );
 
+  pw.Widget divider() => pw.Container(width: 0.7, height: 42, color: _hairline);
+
+  pw.Widget cell(String heading, List<pw.Widget> body, {int flex = 1}) =>
+      pw.Expanded(
+        flex: flex,
+        child: pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 10),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [label(heading), pw.SizedBox(height: 3), ...body],
+          ),
+        ),
+      );
+
   return pw.Container(
     decoration: pw.BoxDecoration(
       border: pw.Border.all(color: _hairline, width: 0.7),
-      borderRadius: pw.BorderRadius.circular(4),
+      borderRadius: pw.BorderRadius.circular(5),
     ),
-    padding: const pw.EdgeInsets.all(10),
+    padding: const pw.EdgeInsets.symmetric(vertical: 10),
     child: pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Expanded(
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              label('BILLED TO'),
-              pw.SizedBox(height: 2),
-              value(inv.customerName ?? 'Walk-in Customer', size: 11),
-              if (inv.customerPhone != null)
-                pw.Text(
-                  'Mobile: ${inv.customerPhone}',
-                  style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
-                ),
-              if (inv.customerAddress != null)
-                pw.Text(
-                  inv.customerAddress!,
-                  style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
-                ),
-              if (inv.customerGstin != null)
-                pw.Text(
-                  'GSTIN: ${inv.customerGstin}',
-                  style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
-                ),
-            ],
-          ),
-        ),
-        pw.Container(width: 0.7, height: 40, color: _hairline),
-        pw.SizedBox(width: 10),
-        pw.Expanded(
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      label('INVOICE NO'),
-                      pw.SizedBox(height: 2),
-                      value(inv.invoiceNumber ?? '-'),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      label('DATE'),
-                      pw.SizedBox(height: 2),
-                      value(_date(inv.invoiceDate)),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      label('PAYMENT'),
-                      pw.SizedBox(height: 2),
-                      value((inv.paymentMode ?? '-').toUpperCase()),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        cell('BILLED TO', [
+          value(inv.customerName ?? 'Walk-in Customer', size: 12),
+          if (inv.customerPhone != null)
+            pw.Text(
+              'Mobile: ${inv.customerPhone}',
+              style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
+            ),
+          if (inv.customerAddress != null)
+            pw.Text(
+              inv.customerAddress!,
+              style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
+            ),
+          if (inv.customerGstin != null)
+            pw.Text(
+              'GSTIN: ${inv.customerGstin}',
+              style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
+            ),
+        ], flex: 2),
+        divider(),
+        cell('INVOICE NO', [value(inv.invoiceNumber ?? '-')]),
+        divider(),
+        cell('DATE', [
+          value(_date(inv.invoiceDate)),
+          if (_time(inv.invoiceDate) != null)
+            pw.Text(
+              _time(inv.invoiceDate)!,
+              style: pw.TextStyle(fontSize: 8.5, color: _mutedInk),
+            ),
+        ]),
+        divider(),
+        cell('PAYMENT MODE', [value((inv.paymentMode ?? '-').toUpperCase())]),
       ],
     ),
   );
@@ -422,12 +468,13 @@ pw.Widget _itemsTable(PrintableInvoiceDetail inv) {
     headerStyle: pw.TextStyle(
       fontSize: 8.5,
       fontWeight: pw.FontWeight.bold,
-      color: _ink,
+      color: PdfColors.white,
+      letterSpacing: 0.4,
     ),
-    headerDecoration: pw.BoxDecoration(color: _goldWash),
-    oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey50),
+    headerDecoration: pw.BoxDecoration(color: _navy),
+    oddRowDecoration: pw.BoxDecoration(color: _goldWash),
     cellStyle: pw.TextStyle(fontSize: 8, color: _ink),
-    cellHeight: 18,
+    cellHeight: 20,
     columnWidths: {
       0: const pw.FixedColumnWidth(16),
       1: const pw.FlexColumnWidth(3),
@@ -604,7 +651,7 @@ pw.Widget _paymentsTable(PrintableInvoiceDetail inv) {
             .map(
               (p) => [
                 _date(p.paymentDate),
-                p.paymentMode,
+                _titleCase(p.paymentMode),
                 p.referenceNumber ?? '-',
                 _money(p.amount),
               ],
@@ -614,83 +661,166 @@ pw.Widget _paymentsTable(PrintableInvoiceDetail inv) {
         headerStyle: pw.TextStyle(
           fontSize: 8,
           fontWeight: pw.FontWeight.bold,
-          color: _ink,
+          color: PdfColors.white,
+          letterSpacing: 0.4,
         ),
-        headerDecoration: pw.BoxDecoration(color: _goldWash),
+        headerDecoration: pw.BoxDecoration(color: _navy),
         cellStyle: pw.TextStyle(fontSize: 8, color: _ink),
-        cellHeight: 16,
+        cellHeight: 18,
         cellAlignments: {3: pw.Alignment.centerRight},
+      ),
+      // Running total, so the customer can reconcile the rows above at a glance.
+      pw.Container(
+        width: double.infinity,
+        padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: pw.BoxDecoration(
+          color: _goldWash,
+          border: pw.Border(
+            left: pw.BorderSide(color: _hairline, width: 0.5),
+            right: pw.BorderSide(color: _hairline, width: 0.5),
+            bottom: pw.BorderSide(color: _hairline, width: 0.5),
+          ),
+        ),
+        child: pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.end,
+          children: [
+            pw.Text(
+              'TOTAL PAID',
+              style: pw.TextStyle(
+                fontSize: 8,
+                fontWeight: pw.FontWeight.bold,
+                color: _goldDeep,
+                letterSpacing: 0.6,
+              ),
+            ),
+            pw.SizedBox(width: 14),
+            pw.Text(
+              _money(inv.payments.fold<double>(0, (sum, p) => sum + p.amount)),
+              style: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+                color: _ink,
+              ),
+            ),
+          ],
+        ),
       ),
     ],
   );
 }
 
-/// Declaration/terms small print alongside the verification code + QR.
-pw.Widget _declarationAndProtection(
-  PrintableInvoice printable,
-  PrintableShop shop,
-) {
-  final code = printable.verificationCode;
-  final qr = printable.qrPayload;
+String _titleCase(String value) {
+  if (value.isEmpty) return value;
+  return value[0].toUpperCase() + value.substring(1).toLowerCase();
+}
+
+/// Declaration / terms small print.
+///
+/// The verification code and QR were dropped from the printed bill on request.
+/// `PrintableInvoice` still carries both, so in-app verification is unaffected.
+pw.Widget _declaration(PrintableInvoice printable) {
   return pw.Container(
-    padding: const pw.EdgeInsets.all(9),
+    width: double.infinity,
+    padding: const pw.EdgeInsets.all(10),
     decoration: pw.BoxDecoration(
       border: pw.Border.all(color: _hairline, width: 0.7),
-      borderRadius: pw.BorderRadius.circular(4),
+      borderRadius: pw.BorderRadius.circular(5),
     ),
-    child: pw.Row(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Expanded(
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                'DECLARATION',
-                style: pw.TextStyle(
-                  fontSize: 8,
-                  fontWeight: pw.FontWeight.bold,
-                  color: _gold,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              pw.SizedBox(height: 3),
-              pw.Text(
-                'We declare that this invoice shows the actual price of the '
-                'goods described and that all particulars are true and '
-                'correct. Weights are as per BIS standards. Goods once sold '
-                'will be exchanged as per store policy.',
-                style: pw.TextStyle(fontSize: 7.5, color: _mutedInk),
-              ),
-              pw.SizedBox(height: 5),
-              if (code != null)
-                pw.Text(
-                  'Verification code: $code',
-                  style: pw.TextStyle(
-                    fontSize: 8,
-                    fontWeight: pw.FontWeight.bold,
-                    color: _ink,
-                  ),
-                ),
-              pw.Text(
-                'Generated: ${_date(printable.generatedAt)} · Scan the QR to verify this invoice.',
-                style: pw.TextStyle(fontSize: 7.5, color: _mutedInk),
-              ),
-            ],
+        pw.Text(
+          'DECLARATION',
+          style: pw.TextStyle(
+            fontSize: 8,
+            fontWeight: pw.FontWeight.bold,
+            color: _goldDeep,
+            letterSpacing: 0.8,
           ),
         ),
-        if (qr != null) ...[
-          pw.SizedBox(width: 10),
-          pw.BarcodeWidget(
-            barcode: pw.Barcode.qrCode(),
-            data: qr,
-            width: 58,
-            height: 58,
-            drawText: false,
+        pw.SizedBox(height: 3),
+        pw.Text(
+          'We declare that this invoice shows the actual price of the goods '
+          'described and that all particulars are true and correct. Weights '
+          'are as per BIS standards. Goods once sold will be exchanged as per '
+          'store policy.',
+          style: pw.TextStyle(
+            fontSize: 7.5,
+            color: _mutedInk,
+            lineSpacing: 1.5,
           ),
-        ],
+        ),
+        pw.SizedBox(height: 4),
+        pw.Text(
+          'Generated: ${_date(printable.generatedAt)}',
+          style: pw.TextStyle(fontSize: 7.5, color: _mutedInk),
+        ),
       ],
     ),
+  );
+}
+
+/// Thank-you line above the signature blocks.
+pw.Widget _thankYou() {
+  return pw.Column(
+    children: [
+      pw.Text(
+        'Thank you for your trust.',
+        style: pw.TextStyle(fontSize: 9.5, color: _ink),
+      ),
+      pw.SizedBox(height: 2),
+      pw.Text(
+        'We look forward to serving you again!',
+        style: pw.TextStyle(fontSize: 9.5, color: _goldDeep),
+      ),
+    ],
+  );
+}
+
+/// Shop contact strip and the brand band that close the bill.
+pw.Widget _contactFooter(PrintableShop shop) {
+  final bits = <String>[
+    if (shop.phone != null) shop.phone!,
+    if (shop.address != null) shop.address!,
+    if (shop.email != null) shop.email!,
+  ];
+
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+    children: [
+      if (bits.isNotEmpty) ...[
+        pw.Container(height: 0.7, color: _hairline),
+        pw.SizedBox(height: 6),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+          children: [
+            for (final bit in bits)
+              pw.Flexible(
+                child: pw.Text(
+                  bit,
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: 8, color: _mutedInk),
+                ),
+              ),
+          ],
+        ),
+        pw.SizedBox(height: 6),
+      ],
+      pw.Container(
+        color: _navy,
+        padding: const pw.EdgeInsets.symmetric(vertical: 6),
+        child: pw.Center(
+          child: pw.Text(
+            _brandStrip,
+            style: pw.TextStyle(
+              fontSize: 7.5,
+              color: _gold,
+              letterSpacing: 1.6,
+            ),
+          ),
+        ),
+      ),
+    ],
   );
 }
 

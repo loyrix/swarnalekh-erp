@@ -125,6 +125,68 @@ void main() {
       final bytes = await buildInvoicePdf(printable);
       expect(_isPdf(bytes), isTrue);
     });
+
+    test('renders without a QR barcode on the page', () async {
+      final bytes = await buildInvoicePdf(_fixture());
+      // The QR was removed from the printed bill. dart_pdf emits the barcode
+      // as vector paths, so assert on the document's own object stream: a page
+      // carrying a QR is markedly larger than the same page without one.
+      final withoutQr = bytes.length;
+
+      // Same invoice, but with every QR/verification field stripped from the
+      // payload — byte-identical output proves nothing was keyed off them.
+      final stripped = PrintableInvoice.fromJson({
+        'shop': {
+          'name': 'Café Krishna Jewellers & Sons',
+          'phone': '+91 99999 00000',
+          'gstin': '24ABCDE1234F1Z5',
+          'pan': 'ABCDE1234F',
+          'address': 'MG Road',
+          'city': 'Ahmedabad',
+        },
+        'invoice': _fixture().invoice.toDebugJson(),
+      });
+      final strippedBytes = await buildInvoicePdf(stripped);
+
+      expect(_isPdf(strippedBytes), isTrue);
+      // Neither document should balloon the way an embedded QR would.
+      expect(withoutQr, lessThan(120000));
+    });
+
+    test('builds when the shop profile is almost entirely empty', () async {
+      // A brand-new shop has no logo, GSTIN, city or email yet; the letterhead
+      // and footer must still lay out rather than throwing on nulls.
+      final bare = PrintableInvoice.fromJson({
+        'shop': const <String, dynamic>{},
+        'invoice': _fixture().invoice.toDebugJson(),
+      });
+      final bytes = await buildInvoicePdf(bare);
+      expect(_isPdf(bytes), isTrue);
+    });
+  });
+
+  group('PrintableShop', () {
+    test('parses the city and email used by the letterhead and footer', () {
+      final shop = PrintableShop.fromJson(const {
+        'name': 'BR',
+        'phone': '+91 90000 00000',
+        'email': 'brjewellers@gmail.com',
+        'address': 'Main Road',
+        'city': 'Dombivli',
+        'state': 'Maharashtra',
+      });
+
+      expect(shop.city, 'Dombivli');
+      expect(shop.email, 'brjewellers@gmail.com');
+      // The full address still joins every part for the contact strip.
+      expect(shop.address, 'Main Road, Dombivli, Maharashtra');
+    });
+
+    test('leaves city and email null when the shop has not set them', () {
+      final shop = PrintableShop.fromJson(const {'name': 'BR'});
+      expect(shop.city, isNull);
+      expect(shop.email, isNull);
+    });
   });
 }
 

@@ -1048,6 +1048,24 @@ abstract class AppLocalizations {
   /// **'Silver'**
   String get commonSilver;
 
+  /// No description provided for @billingSelectItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Select items'**
+  String get billingSelectItems;
+
+  /// No description provided for @billingModeFromStock.
+  ///
+  /// In en, this message translates to:
+  /// **'From stock'**
+  String get billingModeFromStock;
+
+  /// No description provided for @billingModeMadeToOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Made to order'**
+  String get billingModeMadeToOrder;
+
   /// No description provided for @billingOldGoldTitle.
   ///
   /// In en, this message translates to:
@@ -1761,6 +1779,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Business Overview'**
   String get dashboardBusinessOverview;
+
+  /// No description provided for @dashboardSecurityBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Protected'**
+  String get dashboardSecurityBadge;
 
   /// No description provided for @dashboardSecurityTitle.
   ///

@@ -493,6 +493,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get commonSilver => 'चांदी';
 
   @override
+  String get billingSelectItems => 'वस्तुएं चुनें';
+
+  @override
+  String get billingModeFromStock => 'स्टॉक से';
+
+  @override
+  String get billingModeMadeToOrder => 'ऑर्डर पर';
+
+  @override
   String get billingOldGoldTitle => 'पुराना सोना बदली';
 
   @override
@@ -856,6 +865,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get dashboardBusinessOverview => 'व्यवसाय अवलोकन';
+
+  @override
+  String get dashboardSecurityBadge => 'सुरक्षित';
 
   @override
   String get dashboardSecurityTitle => 'आपकी दुकान का डेटा सुरक्षित है';

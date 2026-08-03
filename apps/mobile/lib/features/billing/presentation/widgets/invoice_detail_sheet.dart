@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:swarnbook/core/theme/app_theme.dart';
 import 'package:swarnbook/features/billing/data/models/invoice.dart';
 import 'package:swarnbook/features/billing/presentation/billing_format.dart';
@@ -8,7 +7,7 @@ import 'package:swarnbook/shared/widgets/app_kit.dart';
 
 /// Read-only invoice detail as an [AppDetailSheet] — replaces the old
 /// full-width `DataTable` dialog. Items render as compact rows; GST + bill
-/// summary as label/value sections; the verification code + QR as an extra.
+/// summary as label/value sections.
 Future<void> showInvoiceDetail(
   BuildContext context,
   PrintableInvoice printable, {
@@ -213,8 +212,6 @@ class _InvoiceExtras extends StatelessWidget {
               ),
             ),
           ),
-        const SizedBox(height: AppSpacing.md),
-        _ProtectionBlock(printable: printable),
       ],
     );
   }
@@ -227,77 +224,6 @@ class _InvoiceExtras extends StatelessWidget {
         fontWeight: FontWeight.w700,
         letterSpacing: 0.6,
         color: AppColors.text3(context),
-      ),
-    );
-  }
-}
-
-class _ProtectionBlock extends StatelessWidget {
-  const _ProtectionBlock({required this.printable});
-
-  final PrintableInvoice printable;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final code = printable.verificationCode;
-    final qr = printable.qrPayload;
-    if (code == null && qr == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.24)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (code != null) ...[
-                  Text(
-                    l10n.billingVerification,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.text3(context),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    code,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.text1(context),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  '${l10n.billingGenerated}: ${billingDate(printable.generatedAt)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.text3(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (qr != null) ...[
-            const SizedBox(width: AppSpacing.md),
-            SizedBox(
-              width: 72,
-              height: 72,
-              child: QrImageView(
-                data: qr,
-                version: QrVersions.auto,
-                backgroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }

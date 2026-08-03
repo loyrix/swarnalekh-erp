@@ -491,6 +491,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonSilver => 'Silver';
 
   @override
+  String get billingSelectItems => 'Select items';
+
+  @override
+  String get billingModeFromStock => 'From stock';
+
+  @override
+  String get billingModeMadeToOrder => 'Made to order';
+
+  @override
   String get billingOldGoldTitle => 'Old gold exchange';
 
   @override
@@ -854,6 +863,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardBusinessOverview => 'Business Overview';
+
+  @override
+  String get dashboardSecurityBadge => 'Protected';
 
   @override
   String get dashboardSecurityTitle => 'Your shop\'s data is protected';

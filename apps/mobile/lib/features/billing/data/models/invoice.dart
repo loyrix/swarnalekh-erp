@@ -340,17 +340,25 @@ class PrintableShop {
   const PrintableShop({
     required this.name,
     required this.phone,
+    required this.email,
     required this.gstin,
     required this.pan,
     required this.address,
+    required this.city,
     required this.logoUrl,
   });
 
   final String? name;
   final String? phone;
+  final String? email;
   final String? gstin;
   final String? pan;
+
+  /// Full single-line address (street, city, state, pincode).
   final String? address;
+
+  /// City on its own, printed under the shop name on the letterhead.
+  final String? city;
   final String? logoUrl;
 
   factory PrintableShop.fromJson(Map<String, dynamic> json) {
@@ -363,9 +371,11 @@ class PrintableShop {
     return PrintableShop(
       name: _s(json['name']),
       phone: _s(json['phone']),
+      email: _s(json['email']),
       gstin: _s(json['gstin']),
       pan: _s(json['pan']),
       address: address.isEmpty ? null : address,
+      city: _s(json['city']),
       logoUrl: _s(json['logoUrl']),
     );
   }

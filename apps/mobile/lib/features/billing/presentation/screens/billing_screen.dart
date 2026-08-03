@@ -72,6 +72,13 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
     });
   }
 
+  /// Whether the history list is narrowed by a search or date window. Decides
+  /// between the "no invoices yet" and "nothing matched" empty states.
+  bool get _isFiltering =>
+      _query.search.trim().isNotEmpty ||
+      (_query.dateFrom?.isNotEmpty ?? false) ||
+      (_query.dateTo?.isNotEmpty ?? false);
+
   Future<void> _refresh() async {
     if (_section == 'dashboard') {
       ref.invalidate(billingDashboardProvider);
@@ -459,7 +466,12 @@ class _BillingScreenState extends ConsumerState<BillingScreen> {
           return ListView(
             children: [
               const SizedBox(height: 60),
-              EmptyState.billing(onAction: _openCreate),
+              // A search that matched nothing is not "no invoices yet" — don't
+              // invite the user to create their first bill when they have many.
+              if (_isFiltering)
+                EmptyState.noResults(query: _query.search)
+              else
+                EmptyState.billing(onAction: _openCreate),
             ],
           );
         }
