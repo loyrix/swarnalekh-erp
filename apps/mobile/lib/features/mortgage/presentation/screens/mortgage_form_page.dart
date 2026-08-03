@@ -261,7 +261,7 @@ class _MortgageFormPageState extends State<MortgageFormPage> {
             controller: _loanDate,
             readOnly: true,
             decoration: InputDecoration(
-              labelText: l10n.mortgageLoanDate,
+              labelText: l10n.mortgageLoanDateRequired,
               suffixIcon: IconButton(
                 tooltip: l10n.mortgageSelectLoanDate,
                 onPressed: _pickLoanDate,

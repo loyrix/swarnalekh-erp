@@ -501,6 +501,7 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
                   mortgageMoney(loan.outstandingPrincipal),
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _stat(
                   context,
@@ -508,6 +509,7 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
                   mortgageMoney(loan.pendingInterestAmount),
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _stat(
                   context,
@@ -530,6 +532,7 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
                   small: true,
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _stat(
                   context,
@@ -538,6 +541,7 @@ class _MortgageDetailPageState extends State<MortgageDetailPage> {
                   small: true,
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _stat(
                   context,

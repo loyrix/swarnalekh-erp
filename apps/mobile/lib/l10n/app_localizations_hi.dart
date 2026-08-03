@@ -1141,7 +1141,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'टैग नंबर श्रेणी से अपने-आप बनता है (जैसे RG-01)';
 
   @override
-  String get inventoryTakePhoto => 'फोटो लें';
+  String get inventoryTakePhoto => 'फोटो खींचें';
 
   @override
   String get inventoryNetWeightHint =>
@@ -1995,7 +1995,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mortgageNextDue => 'अगली नियत तारीख';
 
   @override
-  String get mortgageLoanDate => 'लोन तिथि *';
+  String get mortgageLoanDate => 'लोन तिथि';
 
   @override
   String get mortgageTenure => 'अवधि';
@@ -2138,6 +2138,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get mortgageMonthlyInterestRate => 'मासिक ब्याज दर % *';
+
+  @override
+  String get mortgageLoanDateRequired => 'लोन तिथि *';
 
   @override
   String get mortgageSaveLoan => 'लोन सहेजें';

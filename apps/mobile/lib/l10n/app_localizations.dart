@@ -2305,7 +2305,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryTakePhoto.
   ///
   /// In en, this message translates to:
-  /// **'Take photo'**
+  /// **'Take Photo'**
   String get inventoryTakePhoto;
 
   /// No description provided for @inventoryNetWeightHint.
@@ -3913,7 +3913,7 @@ abstract class AppLocalizations {
   /// No description provided for @mortgageLoanDate.
   ///
   /// In en, this message translates to:
-  /// **'Loan Date *'**
+  /// **'Loan Date'**
   String get mortgageLoanDate;
 
   /// No description provided for @mortgageTenure.
@@ -4191,6 +4191,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Monthly Interest Rate % *'**
   String get mortgageMonthlyInterestRate;
+
+  /// No description provided for @mortgageLoanDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Date *'**
+  String get mortgageLoanDateRequired;
 
   /// No description provided for @mortgageSaveLoan.
   ///

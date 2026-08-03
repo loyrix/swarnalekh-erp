@@ -1139,7 +1139,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tag number is auto-generated from the category (e.g. RG-01)';
 
   @override
-  String get inventoryTakePhoto => 'Take photo';
+  String get inventoryTakePhoto => 'Take Photo';
 
   @override
   String get inventoryNetWeightHint =>
@@ -1989,7 +1989,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mortgageNextDue => 'Next Due';
 
   @override
-  String get mortgageLoanDate => 'Loan Date *';
+  String get mortgageLoanDate => 'Loan Date';
 
   @override
   String get mortgageTenure => 'Tenure';
@@ -2133,6 +2133,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mortgageMonthlyInterestRate => 'Monthly Interest Rate % *';
+
+  @override
+  String get mortgageLoanDateRequired => 'Loan Date *';
 
   @override
   String get mortgageSaveLoan => 'Save Loan';
