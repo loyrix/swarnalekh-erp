@@ -171,8 +171,9 @@ void main() {
       final draft = InvoiceDraft(
         customerId: 'c1',
         customerName: 'ignored',
-        items: const [InvoiceDraftItem(inventoryItemId: 'a', quantity: 1)],
-        discountAmount: 100,
+        items: const [
+          InvoiceDraftItem.inventory(inventoryItemId: 'a', quantity: 1),
+        ],
         amountPaid: 500,
         paymentMode: 'upi',
       );
@@ -181,7 +182,6 @@ void main() {
       expect(json.containsKey('customerName'), isFalse);
       expect(json['idempotencyKey'], 'key-1');
       expect((json['items'] as List).first['quantity'], 1);
-      expect(json['discountAmount'], 100);
       expect(json['paymentMode'], 'upi');
     });
 
@@ -189,13 +189,119 @@ void main() {
       final draft = InvoiceDraft(
         customerName: 'Walk In',
         customerPhone: '99999',
-        items: const [InvoiceDraftItem(inventoryItemId: 'a', quantity: 2)],
+        items: const [
+          InvoiceDraftItem.inventory(inventoryItemId: 'a', quantity: 2),
+        ],
       );
       final json = draft.toJson();
       expect(json['customerName'], 'Walk In');
       expect(json['customerPhone'], '99999');
       expect(json.containsKey('customerId'), isFalse);
       expect(json.containsKey('idempotencyKey'), isFalse);
+    });
+
+    test('never sends a discount — the field is gone from the bill', () {
+      final draft = InvoiceDraft(
+        customerName: 'Walk In',
+        items: const [
+          InvoiceDraftItem.inventory(inventoryItemId: 'a', quantity: 1),
+        ],
+      );
+      expect(draft.toJson().containsKey('discountAmount'), isFalse);
+    });
+
+    test('sends the old gold amount only when it is greater than zero', () {
+      const items = [
+        InvoiceDraftItem.inventory(inventoryItemId: 'a', quantity: 1),
+      ];
+      expect(
+        InvoiceDraft(
+          customerName: 'Walk In',
+          items: items,
+          oldGoldValue: 12000,
+        ).toJson()['oldGoldValue'],
+        12000,
+      );
+      // Switched off, or typed as zero, sends nothing at all.
+      expect(
+        InvoiceDraft(
+          customerName: 'Walk In',
+          items: items,
+        ).toJson().containsKey('oldGoldValue'),
+        isFalse,
+      );
+      expect(
+        InvoiceDraft(
+          customerName: 'Walk In',
+          items: items,
+          oldGoldValue: 0,
+        ).toJson().containsKey('oldGoldValue'),
+        isFalse,
+      );
+    });
+  });
+
+  group('InvoiceDraftItem', () {
+    test('an inventory line sends only its id and quantity', () {
+      const line = InvoiceDraftItem.inventory(
+        inventoryItemId: 'item-1',
+        quantity: 3,
+      );
+      final json = line.toJson();
+      expect(line.isOnDemand, isFalse);
+      expect(json['inventoryItemId'], 'item-1');
+      expect(json['quantity'], 3);
+      expect(json.containsKey('itemName'), isFalse);
+      expect(json.containsKey('netWeight'), isFalse);
+    });
+
+    test('an on-demand line sends its own specs and no inventory id', () {
+      const line = InvoiceDraftItem.onDemand(
+        itemName: 'Custom ring',
+        metalType: 'gold',
+        karat: '22K',
+        netWeight: 8.5,
+        makingCharges: 1500,
+      );
+      final json = line.toJson();
+      expect(line.isOnDemand, isTrue);
+      expect(json.containsKey('inventoryItemId'), isFalse);
+      expect(json['itemName'], 'Custom ring');
+      expect(json['metalType'], 'gold');
+      expect(json['karat'], '22K');
+      expect(json['netWeight'], 8.5);
+      expect(json['makingCharges'], 1500);
+      expect(json['quantity'], 1);
+    });
+
+    test('an on-demand line omits making charges when not typed', () {
+      const line = InvoiceDraftItem.onDemand(
+        itemName: 'Custom bangle',
+        metalType: 'gold',
+        karat: '22K',
+        netWeight: 4,
+      );
+      expect(line.toJson().containsKey('makingCharges'), isFalse);
+    });
+
+    test('inventory and on-demand lines ride on one bill', () {
+      final draft = InvoiceDraft(
+        customerName: 'Walk In',
+        items: const [
+          InvoiceDraftItem.inventory(inventoryItemId: 'a', quantity: 1),
+          InvoiceDraftItem.onDemand(
+            itemName: 'Custom ring',
+            metalType: 'gold',
+            karat: '22K',
+            netWeight: 4,
+          ),
+        ],
+      );
+      final items = draft.toJson()['items'] as List;
+      expect(items, hasLength(2));
+      expect(items.first['inventoryItemId'], 'a');
+      expect(items.last.containsKey('inventoryItemId'), isFalse);
+      expect(items.last['itemName'], 'Custom ring');
     });
   });
 

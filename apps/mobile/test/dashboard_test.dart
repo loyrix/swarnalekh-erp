@@ -189,7 +189,7 @@ void main() {
       expect(find.text('₹40.0K'), findsOneWidget); // monthly revenue
     });
 
-    testWidgets('owner sees the admin-only Add Stock quick action', (
+    testWidgets('owner sees the admin-only Set Rates quick action', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -200,10 +200,10 @@ void main() {
         ]),
       );
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.add_box_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.sell_rounded), findsOneWidget);
     });
 
-    testWidgets('staff does not see the admin-only Add Stock quick action', (
+    testWidgets('staff does not see the admin-only Set Rates quick action', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -214,7 +214,72 @@ void main() {
         ]),
       );
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.add_box_rounded), findsNothing);
+      expect(find.byIcon(Icons.sell_rounded), findsNothing);
+      // Staff keep the two search actions.
+      expect(find.byIcon(Icons.search_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.person_search_rounded), findsOneWidget);
+    });
+
+    testWidgets(
+      'quick actions duplicated in the menu bar are gone for every role',
+      (tester) async {
+        for (final role in ['owner', 'staff']) {
+          await tester.pumpWidget(
+            _host([
+              dashboardProvider.overrideWith(
+                (ref) async => _fixture(role: role),
+              ),
+            ]),
+          );
+          await tester.pumpAndSettle();
+          // Scoped to the tappable chips: the stat strip legitimately reuses
+          // some of these icons (e.g. receipt_long for "Total Bills").
+          expect(
+            find.widgetWithText(InkWell, 'New Bill'),
+            findsNothing,
+            reason: 'New Bill lives in the menu bar ($role)',
+          );
+          expect(
+            find.widgetWithText(InkWell, 'Add Item'),
+            findsNothing,
+            reason: 'Add Item lives in the menu bar ($role)',
+          );
+          expect(
+            find.widgetWithText(InkWell, 'Add Mortgage'),
+            findsNothing,
+            reason: 'Add Mortgage lives in the menu bar ($role)',
+          );
+        }
+      },
+    );
+
+    testWidgets('sales trend chart is no longer rendered', (tester) async {
+      await tester.pumpWidget(
+        _host([
+          dashboardProvider.overrideWith(
+            (ref) async => _fixture(role: 'owner'),
+          ),
+        ]),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.show_chart_rounded), findsNothing);
+    });
+
+    testWidgets('security assurance card is shown to every role', (
+      tester,
+    ) async {
+      for (final role in ['owner', 'staff']) {
+        await tester.pumpWidget(
+          _host([
+            dashboardProvider.overrideWith((ref) async => _fixture(role: role)),
+          ]),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byIcon(Icons.verified_user_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.lock_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.phonelink_lock_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.storefront_rounded), findsOneWidget);
+      }
     });
 
     testWidgets('loading shows shimmer, not data', (tester) async {

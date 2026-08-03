@@ -411,6 +411,250 @@ describe('InvoiceService', () => {
     expect(tx.dailyRate.findFirst).not.toHaveBeenCalled();
   });
 
+  describe('old gold exchange', () => {
+    const goldRingItem = {
+      id: 'item-1',
+      tagNumber: 'INV-0001',
+      itemName: 'Gold Ring',
+      metalType: 'gold',
+      karat: '22K',
+      stockType: 'unique',
+      quantity: 1,
+      status: 'in_stock',
+      grossWeight: decimal(10),
+      netWeight: decimal(10),
+      sellingPrice: decimal(0),
+      purchaseRate: decimal(5000),
+      wastagePercent: decimal(0),
+      stoneValue: decimal(0),
+      makingChargesFixed: null,
+      makingChargesPerGram: null,
+      makingChargesPercent: null,
+      hallmarkNumber: null,
+      huid: null,
+    };
+
+    it('deducts a directly-supplied old gold amount before GST', async () => {
+      const { service, tx } = createService();
+      tx.inventoryItem.findFirst.mockResolvedValue(goldRingItem);
+
+      const preview = await service.previewInvoice('tenant-1', {
+        customerName: 'Asha',
+        ratePerGramOverride: 6000,
+        gstPercentOverride: 5,
+        oldGoldValue: 10000,
+        items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+      });
+
+      // Line 10g * 6000 = 60000, less 10000 old gold = 50000 taxable.
+      expect(preview.subtotal).toBe(60000);
+      expect(preview.oldGoldValue).toBe(10000);
+      expect(preview.taxableAmount).toBe(50000);
+      // GST is charged on the reduced base: 5% of 50000 = 2500.
+      expect(preview.totalTax).toBe(2500);
+      expect(preview.grandTotal).toBe(52500);
+    });
+
+    it('prefers the typed rupee amount over legacy weight x rate', async () => {
+      const { service, tx } = createService();
+      tx.inventoryItem.findFirst.mockResolvedValue(goldRingItem);
+
+      const preview = await service.previewInvoice('tenant-1', {
+        customerName: 'Asha',
+        ratePerGramOverride: 6000,
+        gstPercentOverride: 0,
+        // Both supplied: the counter-agreed amount must win.
+        oldGoldValue: 10000,
+        oldGoldWeight: 5,
+        oldGoldRate: 5000,
+        items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+      });
+
+      expect(preview.oldGoldValue).toBe(10000);
+    });
+
+    it('still supports legacy weight x rate when no amount is given', async () => {
+      const { service, tx } = createService();
+      tx.inventoryItem.findFirst.mockResolvedValue(goldRingItem);
+
+      const preview = await service.previewInvoice('tenant-1', {
+        customerName: 'Asha',
+        ratePerGramOverride: 6000,
+        gstPercentOverride: 0,
+        oldGoldWeight: 5,
+        oldGoldRate: 5000,
+        items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+      });
+
+      expect(preview.oldGoldValue).toBe(25000);
+    });
+
+    it('never lets old gold push the taxable amount below zero', async () => {
+      const { service, tx } = createService();
+      tx.inventoryItem.findFirst.mockResolvedValue(goldRingItem);
+
+      const preview = await service.previewInvoice('tenant-1', {
+        customerName: 'Asha',
+        ratePerGramOverride: 6000,
+        gstPercentOverride: 5,
+        // Exchange worth more than the purchase.
+        oldGoldValue: 90000,
+        items: [{ inventoryItemId: 'item-1', quantity: 1 }],
+      });
+
+      expect(preview.taxableAmount).toBe(0);
+      expect(preview.totalTax).toBe(0);
+      expect(preview.grandTotal).toBe(0);
+    });
+  });
+
+  describe('on-demand (made-to-order) lines', () => {
+    it('prices an on-demand line from the daily rate for its karat', async () => {
+      const { service, tx } = createService();
+      tx.dailyRate.findFirst.mockResolvedValue({ ratePerGram: decimal(6000) });
+
+      const preview = await service.previewInvoice('tenant-1', {
+        customerName: 'Asha',
+        gstPercentOverride: 0,
+        items: [
+          {
+            itemName: 'Custom bangle',
+            metalType: 'gold',
+            karat: '22K',
+            netWeight: 8,
+            makingCharges: 1500,
+          },
+        ],
+      });
+
+      // 8g * 6000 = 48000 metal + 1500 making = 49500.
+      expect(preview.items[0].inventoryItemId).toBeNull();
+      expect(preview.items[0].itemName).toBe('Custom bangle');
+      expect(preview.items[0].metalValue).toBe(48000);
+      expect(preview.items[0].makingCharges).toBe(1500);
+      expect(preview.items[0].itemTotal).toBe(49500);
+      // Nothing in stock backs it, so inventory is never touched.
+      expect(tx.inventoryItem.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('bills inventory and on-demand lines together on one invoice', async () => {
+      const { service, tx } = createService();
+      tx.invoice.count.mockResolvedValue(0);
+      tx.inventoryItem.findFirst.mockResolvedValue({
+        id: 'item-1',
+        tagNumber: 'INV-0001',
+        itemName: 'Gold Chain',
+        metalType: 'gold',
+        karat: '22K',
+        stockType: 'unique',
+        quantity: 1,
+        status: 'in_stock',
+        grossWeight: decimal(5),
+        netWeight: decimal(5),
+        sellingPrice: decimal(0),
+        purchaseRate: decimal(5000),
+        wastagePercent: decimal(0),
+        stoneValue: decimal(0),
+        makingChargesFixed: null,
+        makingChargesPerGram: null,
+        makingChargesPercent: null,
+        hallmarkNumber: null,
+        huid: null,
+      });
+      tx.dailyRate.findFirst.mockResolvedValue({ ratePerGram: decimal(6000) });
+      tx.invoice.create.mockResolvedValue({
+        id: 'invoice-1',
+        invoiceNumber: 'INV-1',
+        items: [],
+      });
+
+      await service.createInvoice('tenant-1', 'user-1', {
+        customerName: 'Asha',
+        gstPercentOverride: 0,
+        items: [
+          { inventoryItemId: 'item-1', quantity: 1 },
+          {
+            itemName: 'Custom ring',
+            metalType: 'gold',
+            karat: '22K',
+            netWeight: 4,
+          },
+        ],
+      });
+
+      // Only the inventory line moves stock — the custom line has none.
+      expect(tx.inventoryItem.update).toHaveBeenCalledTimes(1);
+      expect(tx.inventoryItem.update).toHaveBeenCalledWith({
+        where: { id: 'item-1' },
+        data: { status: 'sold' },
+      });
+    });
+
+    it('rejects an on-demand line with no item name', async () => {
+      const { service } = createService();
+      await expect(
+        service.previewInvoice('tenant-1', {
+          customerName: 'Asha',
+          items: [{ metalType: 'gold', karat: '22K', netWeight: 8 }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('rejects an on-demand line with no weight', async () => {
+      const { service } = createService();
+      await expect(
+        service.previewInvoice('tenant-1', {
+          customerName: 'Asha',
+          items: [{ itemName: 'Custom bangle', karat: '22K' }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('rejects an on-demand line when no rate is set for the metal', async () => {
+      const { service, tx } = createService();
+      tx.dailyRate.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.previewInvoice('tenant-1', {
+          customerName: 'Asha',
+          items: [
+            {
+              itemName: 'Custom bangle',
+              metalType: 'gold',
+              karat: '22K',
+              netWeight: 8,
+            },
+          ],
+        }),
+      ).rejects.toThrow(/No rate set for gold 22K/);
+    });
+
+    it('applies a bill-wide making-per-gram override to on-demand lines', async () => {
+      const { service, tx } = createService();
+      tx.dailyRate.findFirst.mockResolvedValue({ ratePerGram: decimal(6000) });
+
+      const preview = await service.previewInvoice('tenant-1', {
+        customerName: 'Asha',
+        gstPercentOverride: 0,
+        makingPerGramOverride: 300,
+        items: [
+          {
+            itemName: 'Custom bangle',
+            metalType: 'gold',
+            karat: '22K',
+            netWeight: 8,
+            // Overridden by the bill-wide per-gram making charge.
+            makingCharges: 9999,
+          },
+        ],
+      });
+
+      // 8g * 300 = 2400 making, not the 9999 typed on the line.
+      expect(preview.items[0].makingCharges).toBe(2400);
+      expect(preview.items[0].itemTotal).toBe(50400);
+    });
+  });
+
   it('returns the existing invoice for a repeated idempotency key', async () => {
     const { service, prisma } = createService();
     prisma.invoice.findFirst.mockResolvedValue({

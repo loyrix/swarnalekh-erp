@@ -485,6 +485,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingGoldRatePerGram => 'Gold Rate (₹/g)';
 
   @override
+  String get commonGold => 'Gold';
+
+  @override
+  String get commonSilver => 'Silver';
+
+  @override
+  String get billingOldGoldTitle => 'Old gold exchange';
+
+  @override
+  String get billingOldGoldSubtitle =>
+      'Deduct the value of old gold the customer is giving back.';
+
+  @override
+  String get billingOldGoldAmount => 'Old gold amount';
+
+  @override
+  String get billingOldGoldAmountHint => 'Amount agreed with the customer';
+
+  @override
+  String get billingOnDemandSectionTitle => 'Made-to-order items';
+
+  @override
+  String get billingOnDemandAddShort => 'Add custom';
+
+  @override
+  String get billingOnDemandEmpty =>
+      'For something the customer wants made that isn\'t in stock.';
+
+  @override
+  String get billingOnDemandTitle => 'Add a made-to-order item';
+
+  @override
+  String get billingOnDemandSubtitle =>
+      'Priced from today\'s rate for the purity you choose.';
+
+  @override
+  String get billingOnDemandItemName => 'What is being made';
+
+  @override
+  String get billingOnDemandItemNameHint => 'e.g. Custom ring';
+
+  @override
+  String get billingOnDemandMetal => 'Metal';
+
+  @override
+  String get billingOnDemandPurity => 'Purity';
+
+  @override
+  String get billingOnDemandWeight => 'Weight';
+
+  @override
+  String get billingOnDemandWeightHint => 'e.g. 8.5';
+
+  @override
+  String get billingOnDemandMaking => 'Making';
+
+  @override
+  String get billingOnDemandOptionalHint => 'Optional';
+
+  @override
+  String get billingOnDemandPriceNote =>
+      'The price is calculated on the server from the weight and today\'s rate, so it matches the final bill.';
+
+  @override
+  String get billingOnDemandAdd => 'Add to bill';
+
+  @override
+  String get billingOnDemandNameRequired => 'Enter what is being made.';
+
+  @override
+  String get billingOnDemandWeightRequired =>
+      'Enter a weight greater than zero.';
+
+  @override
   String get billingMakingPerGram => 'Making (₹/g)';
 
   @override
@@ -780,6 +854,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardBusinessOverview => 'Business Overview';
+
+  @override
+  String get dashboardSecurityTitle => 'Your shop\'s data is protected';
+
+  @override
+  String get dashboardSecuritySubtitle =>
+      'Security built in from day one, so your books stay yours.';
+
+  @override
+  String get dashboardSecurityPointLogin =>
+      'Passwords are stored as one-way encrypted hashes — unreadable to anyone, including us.';
+
+  @override
+  String get dashboardSecurityPointDevice =>
+      'Your sign-in is kept in your phone\'s secure hardware vault, not in plain text.';
+
+  @override
+  String get dashboardSecurityPointIsolation =>
+      'Your shop\'s records are fully isolated — no other shop can ever see them.';
 
   @override
   String get dashboardQuickActions => 'Quick Actions';

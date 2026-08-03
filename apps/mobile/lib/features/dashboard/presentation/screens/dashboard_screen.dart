@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,8 +48,7 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         StaggeredSection(index: 1, child: _QuickActions(role: data.role)),
         const SizedBox(height: AppSpacing.lg),
-        // Overview before the trend graph (req §5.1) — the numbers are what
-        // the owner checks first.
+        // The overview numbers are what the owner checks first.
         StaggeredSection(
           index: 2,
           child: Column(
@@ -72,10 +70,7 @@ class _DashboardContent extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppSpacing.lg),
-        StaggeredSection(
-          index: 4,
-          child: _SalesTrendChart(points: data.stats.salesTrend),
-        ),
+        const StaggeredSection(index: 4, child: _SecurityAssuranceCard()),
       ],
     );
   }
@@ -377,27 +372,9 @@ class _QuickActions extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final canManage = isAdminRole(role);
 
+    // New Bill / Add Item / Add Mortgage deliberately omitted — they already sit
+    // in the main menu bar, so repeating them here is pure duplication.
     final actions = <Widget>[
-      _chip(
-        context,
-        Icons.receipt_long_rounded,
-        l10n.dashboardNewBill,
-        () => context.go('/billing'),
-      ),
-      if (canManage)
-        _chip(
-          context,
-          Icons.add_box_rounded,
-          l10n.inventoryAddItem,
-          () => context.go('/inventory'),
-        ),
-      if (canManage)
-        _chip(
-          context,
-          Icons.account_balance_rounded,
-          l10n.dashboardAddMortgage,
-          () => context.go('/mortgage'),
-        ),
       if (canManage)
         _chip(
           context,
@@ -472,149 +449,108 @@ class _QuickActions extends StatelessWidget {
 }
 
 // ==========================================================================
-// SALES TREND CHART (real 7-day data)
+// SECURITY ASSURANCE
 // ==========================================================================
 
-class _SalesTrendChart extends StatelessWidget {
-  const _SalesTrendChart({required this.points});
-
-  final List<SalesTrendPoint> points;
+/// Quiet trust panel for the shop owner.
+///
+/// Every line here states something the app **actually does today**:
+///   - passwords are hashed with bcrypt (`bcryptjs`, apps/api)
+///   - session tokens live in `flutter_secure_storage` (Keychain / Keystore)
+///   - every API query is tenant-scoped, so shops cannot see each other's data
+///
+/// Do not add claims here (encryption at rest, backups, device lock,
+/// certifications) until they are genuinely implemented — an overstated promise
+/// about a jeweller's business records is worse than saying nothing.
+class _SecurityAssuranceCard extends StatelessWidget {
+  const _SecurityAssuranceCard();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context).toString();
-    final maxTotal = points.fold<double>(
-      0,
-      (m, p) => p.total > m ? p.total : m,
-    );
 
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.dashboardSalesLast7Days,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.text1(context),
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.successMuted,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: const Icon(
+                  Icons.verified_user_rounded,
+                  size: 19,
+                  color: AppColors.success,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.dashboardSecurityTitle,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.text1(context),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.dashboardSecuritySubtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: AppColors.text2(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
-          if (maxTotal <= 0)
-            // Compact empty state — no giant dead box.
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.show_chart_rounded,
-                    size: 18,
-                    color: AppColors.text3(context),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    l10n.dashboardNoRecentSales,
-                    style: TextStyle(color: AppColors.text3(context)),
-                  ),
-                ],
-              ),
-            )
-          else
-            SizedBox(
-              height: 240,
-              child: _buildChart(context, locale, maxTotal),
-            ),
+          _point(context, Icons.lock_rounded, l10n.dashboardSecurityPointLogin),
+          const SizedBox(height: AppSpacing.sm),
+          _point(
+            context,
+            Icons.phonelink_lock_rounded,
+            l10n.dashboardSecurityPointDevice,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _point(
+            context,
+            Icons.storefront_rounded,
+            l10n.dashboardSecurityPointIsolation,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildChart(BuildContext context, String locale, double maxTotal) {
-    final interval = maxTotal / 4;
-    return LineChart(
-      LineChartData(
-        minY: 0,
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: interval,
-          getDrawingHorizontalLine: (value) =>
-              FlLine(color: AppColors.div(context), strokeWidth: 1),
-        ),
-        titlesData: FlTitlesData(
-          show: true,
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 22,
-              interval: 1,
-              getTitlesWidget: (value, meta) {
-                final i = value.toInt();
-                if (i < 0 || i >= points.length) return const SizedBox.shrink();
-                final date = points[i].parsedDate;
-                final label = date == null
-                    ? ''
-                    : DateFormat.E(locale).format(date);
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: AppColors.text3(context),
-                      fontSize: 10,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: interval,
-              reservedSize: 44,
-              getTitlesWidget: (value, meta) => Text(
-                _formatMoney(value),
-                style: TextStyle(color: AppColors.text3(context), fontSize: 10),
-              ),
+  Widget _point(BuildContext context, IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 15, color: AppColors.primary),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 12.5,
+              height: 1.4,
+              color: AppColors.text2(context),
             ),
           ),
         ),
-        borderData: FlBorderData(show: false),
-        lineBarsData: [
-          LineChartBarData(
-            spots: [
-              for (var i = 0; i < points.length; i++)
-                FlSpot(i.toDouble(), points[i].total),
-            ],
-            isCurved: true,
-            color: AppColors.primary,
-            barWidth: 3,
-            isStrokeCapRound: true,
-            dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(
-              show: true,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.2),
-                  AppColors.primary.withValues(alpha: 0.01),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

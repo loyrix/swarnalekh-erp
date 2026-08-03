@@ -40,19 +40,52 @@ class InvoiceQuery {
   int get hashCode => Object.hash(search, dateFrom, dateTo);
 }
 
-/// A single selected line in the New Bill form.
+/// A single line in the New Bill form.
+///
+/// Two kinds of line share this shape and may sit on the same bill:
+///  * **inventory** — `inventoryItemId` set; the server prices it from stock.
+///  * **on-demand** — `inventoryItemId` null; the customer ordered something we
+///    don't stock, so name/weight/purity are typed and the server prices them
+///    from the daily rate. No stock is reserved.
 class InvoiceDraftItem {
-  const InvoiceDraftItem({
-    required this.inventoryItemId,
+  const InvoiceDraftItem.inventory({
+    required String this.inventoryItemId,
     required this.quantity,
-  });
+  }) : itemName = null,
+       metalType = null,
+       karat = null,
+       netWeight = null,
+       makingCharges = null;
 
-  final String inventoryItemId;
+  const InvoiceDraftItem.onDemand({
+    required String this.itemName,
+    required String this.metalType,
+    required String this.karat,
+    required double this.netWeight,
+    this.makingCharges,
+  }) : inventoryItemId = null,
+       quantity = 1;
+
+  final String? inventoryItemId;
   final int quantity;
 
+  // On-demand only.
+  final String? itemName;
+  final String? metalType;
+  final String? karat;
+  final double? netWeight;
+  final double? makingCharges;
+
+  bool get isOnDemand => inventoryItemId == null;
+
   Map<String, dynamic> toJson() => {
-    'inventoryItemId': inventoryItemId,
+    if (inventoryItemId != null) 'inventoryItemId': inventoryItemId,
     'quantity': quantity,
+    if (itemName != null) 'itemName': itemName,
+    if (metalType != null) 'metalType': metalType,
+    if (karat != null) 'karat': karat,
+    if (netWeight != null) 'netWeight': netWeight,
+    if (makingCharges != null) 'makingCharges': makingCharges,
   };
 }
 
@@ -65,13 +98,13 @@ class InvoiceDraft {
     this.customerPhone,
     this.customerAddress,
     required this.items,
-    this.discountAmount = 0,
     this.amountPaid = 0,
     this.paymentMode = 'cash',
     this.notes,
     this.ratePerGramOverride,
     this.makingPerGramOverride,
     this.gstPercentOverride,
+    this.oldGoldValue,
   });
 
   final String? customerId;
@@ -79,7 +112,6 @@ class InvoiceDraft {
   final String? customerPhone;
   final String? customerAddress;
   final List<InvoiceDraftItem> items;
-  final double discountAmount;
   final double amountPaid;
   final String paymentMode;
   final String? notes;
@@ -93,6 +125,10 @@ class InvoiceDraft {
   /// Total GST % typed on the bill (split evenly into CGST/SGST).
   final double? gstPercentOverride;
 
+  /// Old gold exchanged, as the rupee amount agreed at the counter. The server
+  /// deducts it from the taxable amount before GST, like a discount.
+  final double? oldGoldValue;
+
   Map<String, dynamic> toJson({String? idempotencyKey}) {
     return {
       if (customerId != null) 'customerId': customerId,
@@ -105,7 +141,6 @@ class InvoiceDraft {
       if (customerAddress != null && customerAddress!.isNotEmpty)
         'customerAddress': customerAddress,
       'items': items.map((i) => i.toJson()).toList(),
-      'discountAmount': discountAmount,
       'amountPaid': amountPaid,
       'paymentMode': paymentMode,
       if (notes != null && notes!.isNotEmpty) 'notes': notes,
@@ -115,6 +150,8 @@ class InvoiceDraft {
         'makingPerGramOverride': makingPerGramOverride,
       if (gstPercentOverride != null && gstPercentOverride! >= 0)
         'gstPercentOverride': gstPercentOverride,
+      if (oldGoldValue != null && oldGoldValue! > 0)
+        'oldGoldValue': oldGoldValue,
       if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
     };
   }

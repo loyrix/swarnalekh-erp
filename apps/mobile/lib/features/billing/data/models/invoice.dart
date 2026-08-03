@@ -151,6 +151,7 @@ class InvoicePreview {
     required this.totalMakingCharges,
     required this.totalStoneValue,
     required this.discountAmount,
+    required this.oldGoldValue,
     required this.taxableAmount,
     required this.totalTax,
     required this.grandTotal,
@@ -162,6 +163,9 @@ class InvoicePreview {
   final double totalMakingCharges;
   final double totalStoneValue;
   final double discountAmount;
+
+  /// Old gold taken in exchange, deducted from the taxable amount before GST.
+  final double oldGoldValue;
   final double taxableAmount;
   final double totalTax;
   final double grandTotal;
@@ -186,6 +190,7 @@ class InvoicePreview {
       totalMakingCharges: _d(json['totalMakingCharges']),
       totalStoneValue: _d(json['totalStoneValue']),
       discountAmount: _d(json['discountAmount']),
+      oldGoldValue: _d(json['oldGoldValue']),
       taxableAmount: _d(json['taxableAmount']),
       totalTax: _d(json['totalTax']),
       grandTotal: _d(json['grandTotal']),

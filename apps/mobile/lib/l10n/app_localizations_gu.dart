@@ -484,6 +484,79 @@ class AppLocalizationsGu extends AppLocalizations {
   String get billingGoldRatePerGram => 'સોનાનો ભાવ (₹/ગ્રામ)';
 
   @override
+  String get commonGold => 'સોનું';
+
+  @override
+  String get commonSilver => 'ચાંદી';
+
+  @override
+  String get billingOldGoldTitle => 'જૂનું સોનું બદલી';
+
+  @override
+  String get billingOldGoldSubtitle =>
+      'ગ્રાહક જે જૂનું સોનું આપે છે તેની કિંમત બાદ કરો.';
+
+  @override
+  String get billingOldGoldAmount => 'જૂના સોનાની રકમ';
+
+  @override
+  String get billingOldGoldAmountHint => 'ગ્રાહક સાથે નક્કી થયેલી રકમ';
+
+  @override
+  String get billingOnDemandSectionTitle => 'ઓર્ડર પર બનતી વસ્તુઓ';
+
+  @override
+  String get billingOnDemandAddShort => 'કસ્ટમ ઉમેરો';
+
+  @override
+  String get billingOnDemandEmpty =>
+      'ગ્રાહકને જે બનાવડાવવું છે અને સ્ટોકમાં નથી તેના માટે.';
+
+  @override
+  String get billingOnDemandTitle => 'ઓર્ડર પર બનતી વસ્તુ ઉમેરો';
+
+  @override
+  String get billingOnDemandSubtitle =>
+      'તમે પસંદ કરેલી શુદ્ધતાના આજના ભાવથી કિંમત થશે.';
+
+  @override
+  String get billingOnDemandItemName => 'શું બનાવવાનું છે';
+
+  @override
+  String get billingOnDemandItemNameHint => 'દા.ત. કસ્ટમ વીંટી';
+
+  @override
+  String get billingOnDemandMetal => 'ધાતુ';
+
+  @override
+  String get billingOnDemandPurity => 'શુદ્ધતા';
+
+  @override
+  String get billingOnDemandWeight => 'વજન';
+
+  @override
+  String get billingOnDemandWeightHint => 'દા.ત. 8.5';
+
+  @override
+  String get billingOnDemandMaking => 'મજૂરી';
+
+  @override
+  String get billingOnDemandOptionalHint => 'વૈકલ્પિક';
+
+  @override
+  String get billingOnDemandPriceNote =>
+      'કિંમત સર્વર પર વજન અને આજના ભાવથી ગણાય છે, જેથી તે અંતિમ બિલ સાથે મળે.';
+
+  @override
+  String get billingOnDemandAdd => 'બિલમાં ઉમેરો';
+
+  @override
+  String get billingOnDemandNameRequired => 'શું બનાવવાનું છે તે દાખલ કરો.';
+
+  @override
+  String get billingOnDemandWeightRequired => 'શૂન્યથી વધુ વજન દાખલ કરો.';
+
+  @override
   String get billingMakingPerGram => 'મજૂરી (₹/ગ્રામ)';
 
   @override
@@ -780,6 +853,25 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get dashboardBusinessOverview => 'વ્યવસાય ઝાંખી';
+
+  @override
+  String get dashboardSecurityTitle => 'તમારી દુકાનનો ડેટા સુરક્ષિત છે';
+
+  @override
+  String get dashboardSecuritySubtitle =>
+      'શરૂઆતથી જ સુરક્ષા ગોઠવામાં આવી છે, જેથી તમારો હિસાબ તમારો જ રહે.';
+
+  @override
+  String get dashboardSecurityPointLogin =>
+      'પાસવર્ડ એક-દિશાના એન્ક્રિપ્શનમાં સંગ્રહાય છે — અમારા સહિત કોઈ તે વાંચી શકતું નથી.';
+
+  @override
+  String get dashboardSecurityPointDevice =>
+      'તમારું સાઇન-ઇન ફોનની સુરક્ષિત હાર્ડવેર વોલ્ટમાં રહે છે, સાદા લેખમાં નહિં.';
+
+  @override
+  String get dashboardSecurityPointIsolation =>
+      'તમારી દુકાનના રેકોર્ડ સંપૂર્ણ અલગ છે — બીજી કોઈ દુકાન ક્યારેય જોઈ શકતી નથી.';
 
   @override
   String get dashboardQuickActions => 'ઝડપી ક્રિયાઓ';

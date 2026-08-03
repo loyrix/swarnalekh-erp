@@ -8,6 +8,7 @@ import {
   IsPositive,
   IsString,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -39,10 +40,15 @@ export class AddInvoicePaymentDto {
 }
 
 export class CreateInvoiceItemDto {
-  @ApiProperty({ description: 'Inventory Item ID' })
+  @ApiPropertyOptional({
+    description:
+      'Inventory Item ID. Omit for an on-demand (made-to-order) line, which ' +
+      'carries its own weight/karat instead of drawing from stock.',
+  })
   @IsString()
   @IsNotEmpty()
-  inventoryItemId: string;
+  @IsOptional()
+  inventoryItemId?: string;
 
   @ApiProperty({
     description: 'Quantity to sell from the selected inventory row',
@@ -60,6 +66,47 @@ export class CreateInvoiceItemDto {
   @IsNumber()
   @IsOptional()
   makingCharges?: number;
+
+  // ---- On-demand (made-to-order) line -------------------------------------
+  // Used only when `inventoryItemId` is absent. The line is priced from the
+  // weight below at the tenant's daily rate for the metal/karat, and no stock
+  // is reserved or decremented.
+
+  @ApiPropertyOptional({
+    description: 'On-demand line: what is being made (e.g. "Custom ring")',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @MaxLength(200)
+  itemName?: string;
+
+  @ApiPropertyOptional({
+    description: 'On-demand line: metal type — gold or silver',
+    example: 'gold',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(20)
+  metalType?: string;
+
+  @ApiPropertyOptional({
+    description: 'On-demand line: purity / karat, e.g. 22K',
+    example: '22K',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(10)
+  karat?: string;
+
+  @ApiPropertyOptional({
+    description: 'On-demand line: metal weight in grams',
+    example: 8.5,
+  })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  netWeight?: number;
 }
 
 export class CreateInvoiceDto {
@@ -139,6 +186,18 @@ export class CreateInvoiceDto {
   @IsNumber()
   @IsOptional()
   oldGoldRate?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Old gold exchange value in rupees, agreed at the counter. When present ' +
+      'this is used as-is and the weight x rate calculation is skipped. Like ' +
+      'a discount, it reduces the taxable amount before GST.',
+    example: 12000,
+  })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  oldGoldValue?: number;
 
   @ApiProperty({ description: 'Amount paid immediately' })
   @IsNumber()

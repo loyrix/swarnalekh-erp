@@ -1036,6 +1036,144 @@ abstract class AppLocalizations {
   /// **'Gold Rate (₹/g)'**
   String get billingGoldRatePerGram;
 
+  /// No description provided for @commonGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get commonGold;
+
+  /// No description provided for @commonSilver.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver'**
+  String get commonSilver;
+
+  /// No description provided for @billingOldGoldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Old gold exchange'**
+  String get billingOldGoldTitle;
+
+  /// No description provided for @billingOldGoldSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduct the value of old gold the customer is giving back.'**
+  String get billingOldGoldSubtitle;
+
+  /// No description provided for @billingOldGoldAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Old gold amount'**
+  String get billingOldGoldAmount;
+
+  /// No description provided for @billingOldGoldAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount agreed with the customer'**
+  String get billingOldGoldAmountHint;
+
+  /// No description provided for @billingOnDemandSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Made-to-order items'**
+  String get billingOnDemandSectionTitle;
+
+  /// No description provided for @billingOnDemandAddShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom'**
+  String get billingOnDemandAddShort;
+
+  /// No description provided for @billingOnDemandEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'For something the customer wants made that isn\'t in stock.'**
+  String get billingOnDemandEmpty;
+
+  /// No description provided for @billingOnDemandTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a made-to-order item'**
+  String get billingOnDemandTitle;
+
+  /// No description provided for @billingOnDemandSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Priced from today\'s rate for the purity you choose.'**
+  String get billingOnDemandSubtitle;
+
+  /// No description provided for @billingOnDemandItemName.
+  ///
+  /// In en, this message translates to:
+  /// **'What is being made'**
+  String get billingOnDemandItemName;
+
+  /// No description provided for @billingOnDemandItemNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Custom ring'**
+  String get billingOnDemandItemNameHint;
+
+  /// No description provided for @billingOnDemandMetal.
+  ///
+  /// In en, this message translates to:
+  /// **'Metal'**
+  String get billingOnDemandMetal;
+
+  /// No description provided for @billingOnDemandPurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Purity'**
+  String get billingOnDemandPurity;
+
+  /// No description provided for @billingOnDemandWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get billingOnDemandWeight;
+
+  /// No description provided for @billingOnDemandWeightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 8.5'**
+  String get billingOnDemandWeightHint;
+
+  /// No description provided for @billingOnDemandMaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Making'**
+  String get billingOnDemandMaking;
+
+  /// No description provided for @billingOnDemandOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get billingOnDemandOptionalHint;
+
+  /// No description provided for @billingOnDemandPriceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The price is calculated on the server from the weight and today\'s rate, so it matches the final bill.'**
+  String get billingOnDemandPriceNote;
+
+  /// No description provided for @billingOnDemandAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to bill'**
+  String get billingOnDemandAdd;
+
+  /// No description provided for @billingOnDemandNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter what is being made.'**
+  String get billingOnDemandNameRequired;
+
+  /// No description provided for @billingOnDemandWeightRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a weight greater than zero.'**
+  String get billingOnDemandWeightRequired;
+
   /// No description provided for @billingMakingPerGram.
   ///
   /// In en, this message translates to:
@@ -1623,6 +1761,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Business Overview'**
   String get dashboardBusinessOverview;
+
+  /// No description provided for @dashboardSecurityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shop\'s data is protected'**
+  String get dashboardSecurityTitle;
+
+  /// No description provided for @dashboardSecuritySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Security built in from day one, so your books stay yours.'**
+  String get dashboardSecuritySubtitle;
+
+  /// No description provided for @dashboardSecurityPointLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords are stored as one-way encrypted hashes — unreadable to anyone, including us.'**
+  String get dashboardSecurityPointLogin;
+
+  /// No description provided for @dashboardSecurityPointDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in is kept in your phone\'s secure hardware vault, not in plain text.'**
+  String get dashboardSecurityPointDevice;
+
+  /// No description provided for @dashboardSecurityPointIsolation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shop\'s records are fully isolated — no other shop can ever see them.'**
+  String get dashboardSecurityPointIsolation;
 
   /// No description provided for @dashboardQuickActions.
   ///

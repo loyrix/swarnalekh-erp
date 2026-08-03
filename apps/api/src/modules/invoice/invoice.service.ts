@@ -163,7 +163,8 @@ export class InvoiceService {
     let totalStoneValue = new Prisma.Decimal(0);
 
     const lines: Array<{
-      invItemId: string;
+      // null for an on-demand line — nothing in stock backs it.
+      invItemId: string | null;
       stockType: string;
       availableQuantity: number;
       requestedQuantity: number;
@@ -171,6 +172,30 @@ export class InvoiceService {
     }> = [];
 
     for (const itemDto of dto.items) {
+      // ---- On-demand (made-to-order) line ---------------------------------
+      // No inventory row: the customer ordered something we don't stock. Price
+      // it from the typed weight at the tenant's daily rate, and never touch
+      // stock. Inventory and on-demand lines may sit on the same invoice.
+      if (!itemDto.inventoryItemId) {
+        lines.push(
+          await this.buildOnDemandLine(tx, tenantId, itemDto, {
+            rateOverride,
+            makingPerGramOverride,
+          }),
+        );
+        const last = lines[lines.length - 1].input;
+        subtotal = new Prisma.Decimal(
+          subtotal.toNumber() + this.toNumber(last.itemTotal),
+        );
+        totalMakingCharges = new Prisma.Decimal(
+          totalMakingCharges.toNumber() + this.toNumber(last.makingCharges),
+        );
+        totalStoneValue = new Prisma.Decimal(
+          totalStoneValue.toNumber() + this.toNumber(last.stoneValue),
+        );
+        continue;
+      }
+
       // Lock the inventory row for the duration of the transaction so a
       // concurrent invoice for the same item waits and re-reads a fresh status.
       if (options.lock) {
@@ -338,8 +363,14 @@ export class InvoiceService {
       });
     }
 
+    // Old gold exchange. A directly-supplied rupee value is what the counter
+    // agreed, so it wins outright; the weight x rate path stays for older
+    // clients that still send weight + rate.
     let oldGoldValue = 0;
-    if (dto.oldGoldWeight && dto.oldGoldRate) {
+    if (dto.oldGoldValue != null && dto.oldGoldValue > 0) {
+      // calculateInvoiceTotals rounds this to 2dp itself.
+      oldGoldValue = dto.oldGoldValue;
+    } else if (dto.oldGoldWeight && dto.oldGoldRate) {
       oldGoldValue = calculateOldGoldValue(dto.oldGoldWeight, dto.oldGoldRate);
     }
 
@@ -363,6 +394,117 @@ export class InvoiceService {
       oldGoldValue,
       totals,
       lines,
+    };
+  }
+
+  /**
+   * Build an on-demand (made-to-order) invoice line.
+   *
+   * The customer asked for something that isn't in stock and isn't in the
+   * catalogue, so there is no inventory row to price from — the weight, purity
+   * and name are typed at the counter. Pricing still happens on the server at
+   * the tenant's daily rate so the charged total can't be steered from the
+   * client. No stock is reserved or decremented.
+   */
+  private async buildOnDemandLine(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    itemDto: CreateInvoiceDto['items'][number],
+    overrides: {
+      rateOverride: number | null;
+      makingPerGramOverride: number | null;
+    },
+  ) {
+    const itemName = itemDto.itemName?.trim();
+    if (!itemName) {
+      throw new BadRequestException(
+        'Item name is required for a made-to-order item',
+      );
+    }
+
+    const netWeight = itemDto.netWeight ?? 0;
+    if (netWeight <= 0) {
+      throw new BadRequestException(
+        `Weight is required for made-to-order item "${itemName}"`,
+      );
+    }
+
+    const metalType = itemDto.metalType?.trim() || 'gold';
+    const karat = itemDto.karat?.trim() ? itemDto.karat.trim() : null;
+
+    // Same rate resolution as an inventory line: exact karat, then a legacy
+    // metal-wide rate, then any rate for the metal when no karat was given.
+    const orderBy = [
+      { rateDate: 'desc' as const },
+      { createdAt: 'desc' as const },
+    ];
+    const findRate = (k: string | null | undefined) =>
+      tx.dailyRate.findFirst({
+        where: {
+          tenantId,
+          metalType: { equals: metalType, mode: 'insensitive' },
+          ...(k === undefined ? {} : { karat: k }),
+        },
+        orderBy,
+      });
+
+    const rateRecord =
+      overrides.rateOverride != null
+        ? null
+        : ((await findRate(karat)) ??
+          (await findRate(null)) ??
+          (karat === null ? await findRate(undefined) : null));
+
+    if (overrides.rateOverride == null && !rateRecord) {
+      const metalLabel = karat ? `${metalType} ${karat}` : metalType;
+      throw new BadRequestException(
+        `No rate set for ${metalLabel}. Please set rates first.`,
+      );
+    }
+
+    const effectiveRatePerGram =
+      overrides.rateOverride ?? rateRecord?.ratePerGram?.toNumber() ?? 0;
+    const ratePerGram =
+      overrides.rateOverride != null
+        ? new Prisma.Decimal(overrides.rateOverride)
+        : (rateRecord?.ratePerGram ?? null);
+
+    // A per-gram making override applies to every line on the bill; otherwise
+    // use whatever was typed for this line.
+    const makingCharges =
+      overrides.makingPerGramOverride != null
+        ? overrides.makingPerGramOverride * netWeight
+        : (itemDto.makingCharges ?? 0);
+
+    const breakdown = calculateItemPrice({
+      netWeight,
+      ratePerGram: effectiveRatePerGram,
+      makingCharges,
+      stoneValue: 0,
+      wastagePercent: 0,
+    });
+
+    return {
+      invItemId: null,
+      stockType: 'on_demand',
+      availableQuantity: 0,
+      requestedQuantity: 1,
+      input: {
+        inventoryItemId: null,
+        itemName,
+        quantity: 1,
+        metalType,
+        karat: karat ?? undefined,
+        // No stones and no wastage on a made-to-order line, so gross == net.
+        grossWeight: new Prisma.Decimal(netWeight),
+        netWeight: new Prisma.Decimal(netWeight),
+        ratePerGram,
+        metalValue: new Prisma.Decimal(breakdown.metalValue),
+        makingCharges: new Prisma.Decimal(breakdown.makingCharges),
+        stoneValue: new Prisma.Decimal(breakdown.stoneValue),
+        wastageValue: new Prisma.Decimal(breakdown.wastageValue),
+        itemTotal: new Prisma.Decimal(breakdown.itemTotal),
+      } satisfies Prisma.InvoiceItemUncheckedCreateWithoutInvoiceInput,
     };
   }
 
@@ -469,8 +611,10 @@ export class InvoiceService {
           include: { items: true },
         });
 
-        // Reduce stock for each sold line.
+        // Reduce stock for each sold line. On-demand lines have no inventory
+        // row behind them, so there is nothing to decrement.
         for (const line of computed.lines) {
+          if (line.invItemId == null) continue;
           if (line.stockType === 'bulk') {
             const remainingQuantity =
               line.availableQuantity - line.requestedQuantity;

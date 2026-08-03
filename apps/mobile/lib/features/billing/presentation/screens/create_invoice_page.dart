@@ -46,8 +46,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   final _goldRate = TextEditingController();
   final _makingPerGram = TextEditingController();
   final _gstPercent = TextEditingController();
-  final _discount = TextEditingController(text: '0');
-  final _amountPaid = TextEditingController(text: '0');
+  // No pre-filled values: an input the user has to clear before typing is a
+  // papercut on every bill. Empty parses as 0 at submit time.
+  final _amountPaid = TextEditingController();
+  final _oldGoldAmount = TextEditingController();
   final _notes = TextEditingController();
 
   late final String _idempotencyKey;
@@ -62,6 +64,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   String? _selectedCustomerId;
   final Set<String> _selectedItemIds = {};
   final Map<String, int> _selectedQuantities = {};
+  // Made-to-order lines: things the customer asked for that we don't stock.
+  final List<_OnDemandLine> _onDemandLines = [];
+  bool _oldGoldEnabled = false;
   String _paymentMode = 'cash';
 
   Timer? _previewDebounce;
@@ -88,8 +93,8 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     _goldRate.dispose();
     _makingPerGram.dispose();
     _gstPercent.dispose();
-    _discount.dispose();
     _amountPaid.dispose();
+    _oldGoldAmount.dispose();
     _notes.dispose();
     super.dispose();
   }
@@ -177,11 +182,35 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     return null;
   }
 
+  /// True when the bill has nothing on it yet — neither stock nor a custom order.
+  bool get _hasNoLines => _selectedItemIds.isEmpty && _onDemandLines.isEmpty;
+
+  double? get _oldGoldValue {
+    if (!_oldGoldEnabled) return null;
+    final v = _parse(_oldGoldAmount);
+    return (v != null && v > 0) ? v : null;
+  }
+
   List<InvoiceDraftItem> _selectedDraftItems() {
     final rows = <InvoiceDraftItem>[];
     for (final item in _selectedItems) {
       rows.add(
-        InvoiceDraftItem(inventoryItemId: item.id, quantity: _qtyOf(item)),
+        InvoiceDraftItem.inventory(
+          inventoryItemId: item.id,
+          quantity: _qtyOf(item),
+        ),
+      );
+    }
+    // Custom orders ride on the same bill as stock items.
+    for (final line in _onDemandLines) {
+      rows.add(
+        InvoiceDraftItem.onDemand(
+          itemName: line.name,
+          metalType: line.metalType,
+          karat: line.karat,
+          netWeight: line.weight,
+          makingCharges: line.makingCharges,
+        ),
       );
     }
     return rows;
@@ -213,13 +242,13 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           ? null
           : (address.isEmpty ? null : address),
       items: _selectedDraftItems(),
-      discountAmount: double.tryParse(_discount.text.trim()) ?? 0,
       amountPaid: double.tryParse(_amountPaid.text.trim()) ?? 0,
       paymentMode: _paymentMode,
       notes: _notes.text.trim(),
       ratePerGramOverride: _parse(_goldRate),
       makingPerGramOverride: _parse(_makingPerGram),
       gstPercentOverride: _parse(_gstPercent),
+      oldGoldValue: _oldGoldValue,
     );
   }
 
@@ -229,7 +258,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
   void _schedulePreview() {
     _previewDebounce?.cancel();
-    if (_selectedItemIds.isEmpty) {
+    if (_hasNoLines) {
       setState(() {
         _preview = null;
         _isPreviewing = false;
@@ -285,7 +314,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       AppToast.error(context, l10n.validationCustomerNameRequired);
       return;
     }
-    if (_selectedItemIds.isEmpty) {
+    if (_hasNoLines) {
       AppToast.error(context, l10n.errorSelectInventoryItem);
       return;
     }
@@ -359,70 +388,54 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     _schedulePreview();
   }
 
-  Future<void> _editPricing({
-    required TextEditingController controller,
-    required String title,
-    required String prefix,
-    required String suffix,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final field = TextEditingController(text: controller.text);
-    final saved = await showModalBottomSheet<bool>(
+  Future<void> _addOnDemandLine() async {
+    final line = await showModalBottomSheet<_OnDemandLine>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surf(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: AppSpacing.lg,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-                color: AppColors.text1(ctx),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: field,
-              autofocus: true,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: InputDecoration(
-                labelText: l10n.billingEditValue,
-                prefixText: prefix.isEmpty ? null : prefix,
-                suffixText: suffix.isEmpty ? null : suffix,
-                border: const OutlineInputBorder(),
-              ),
-              onSubmitted: (_) => Navigator.of(ctx).pop(true),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            GoldButton(
-              label: l10n.commonSave,
-              icon: Icons.check_rounded,
-              onPressed: () => Navigator.of(ctx).pop(true),
-            ),
-          ],
-        ),
+      builder: (ctx) => const _OnDemandLineSheet(),
+    );
+    if (!mounted || line == null) return;
+    setState(() => _onDemandLines.add(line));
+    _schedulePreview();
+  }
+
+  void _removeOnDemandLine(int index) {
+    setState(() => _onDemandLines.removeAt(index));
+    _schedulePreview();
+  }
+
+  Future<void> _editPricing({
+    required TextEditingController controller,
+    required String title,
+    required String prefix,
+    required String suffix,
+  }) async {
+    // The sheet owns its own TextEditingController and disposes it in its own
+    // dispose(). Creating it here and disposing it after `await` returns tore
+    // the controller down while the sheet route was still animating out and its
+    // TextField was still mounted, which trips the framework's
+    // `_dependents.isEmpty` assertion.
+    final saved = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surf(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (ctx) => _EditValueSheet(
+        initialValue: controller.text,
+        title: title,
+        prefix: prefix,
+        suffix: suffix,
       ),
     );
-    if (saved == true) {
-      controller.text = field.text.trim();
-      _schedulePreview();
-    }
-    field.dispose();
+    if (!mounted || saved == null) return;
+    controller.text = saved;
+    _schedulePreview();
   }
 
   void _showFullPreview() {
@@ -881,6 +894,107 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       _itemRow(l10n, _filteredItems[index]),
                 ),
         ),
+        const SizedBox(height: AppSpacing.md),
+        _onDemandSection(l10n),
+      ],
+    );
+  }
+
+  // ------- Made-to-order -------
+
+  /// Custom orders live alongside stock items on the same bill: a customer can
+  /// buy a ready chain and order a ring to be made in one transaction.
+  Widget _onDemandSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.billingOnDemandSectionTitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.text1(context),
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _addOnDemandLine,
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: Text(l10n.billingOnDemandAddShort),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              ),
+            ),
+          ],
+        ),
+        if (_onDemandLines.isEmpty)
+          Text(
+            l10n.billingOnDemandEmpty,
+            style: TextStyle(fontSize: 11.5, color: AppColors.text3(context)),
+          )
+        else
+          ...List.generate(_onDemandLines.length, (i) {
+            final line = _onDemandLines[i];
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.design_services_rounded,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          line.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.text1(context),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${line.karat} · ${billingWeight(line.weight)}'
+                          '${line.makingCharges != null ? ' · ${l10n.billingMakingCharges} ${billingMoney(line.makingCharges!)}' : ''}',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.text3(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _removeOnDemandLine(i),
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    color: AppColors.text3(context),
+                    tooltip: l10n.commonDelete,
+                  ),
+                ],
+              ),
+            );
+          }),
       ],
     );
   }
@@ -1329,10 +1443,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               l10n.billingStoneValue,
               billingMoneyGrouped(p.totalStoneValue),
             ),
-          if (p.discountAmount > 0)
+          if (p.oldGoldValue > 0)
             _totalRow(
-              l10n.billingDiscount,
-              '− ${billingMoneyGrouped(p.discountAmount)}',
+              l10n.billingOldGoldTitle,
+              '− ${billingMoneyGrouped(p.oldGoldValue)}',
             ),
           _totalRow(
             '${l10n.billingGst} (${gstPercent.toStringAsFixed(gstPercent.truncateToDouble() == gstPercent ? 0 : 1)}%)',
@@ -1446,7 +1560,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        _discountField(l10n),
+        _oldGoldSection(l10n),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: _notes,
@@ -1489,16 +1603,57 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     );
   }
 
-  Widget _discountField(AppLocalizations l10n) {
-    return TextFormField(
-      controller: _discount,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: l10n.billingDiscountAmount,
-        prefixText: '₹ ',
-        border: const OutlineInputBorder(),
-      ),
-      onChanged: (_) => _schedulePreview(),
+  /// Old gold exchange — off by default, one rupee amount when switched on.
+  /// The shop and customer agree a figure at the counter; we just deduct it.
+  Widget _oldGoldSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SwitchListTile.adaptive(
+          value: _oldGoldEnabled,
+          onChanged: (v) {
+            setState(() {
+              _oldGoldEnabled = v;
+              if (!v) _oldGoldAmount.clear();
+            });
+            _schedulePreview();
+          },
+          contentPadding: EdgeInsets.zero,
+          activeThumbColor: AppColors.primary,
+          title: Text(
+            l10n.billingOldGoldTitle,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.text1(context),
+            ),
+          ),
+          subtitle: Text(
+            l10n.billingOldGoldSubtitle,
+            style: TextStyle(fontSize: 11.5, color: AppColors.text3(context)),
+          ),
+          secondary: Icon(
+            Icons.swap_horiz_rounded,
+            color: _oldGoldEnabled
+                ? AppColors.primary
+                : AppColors.text3(context),
+          ),
+        ),
+        if (_oldGoldEnabled) ...[
+          const SizedBox(height: AppSpacing.sm),
+          TextFormField(
+            controller: _oldGoldAmount,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: l10n.billingOldGoldAmount,
+              hintText: l10n.billingOldGoldAmountHint,
+              prefixText: '₹ ',
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (_) => _schedulePreview(),
+          ),
+        ],
+      ],
     );
   }
 
@@ -1701,6 +1856,308 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   }
 }
 
+/// Single-value editor used by the pricing cards.
+///
+/// Owns its controller so the field's lifetime matches the sheet's, which is
+/// what keeps the route teardown clean.
+class _EditValueSheet extends StatefulWidget {
+  const _EditValueSheet({
+    required this.initialValue,
+    required this.title,
+    required this.prefix,
+    required this.suffix,
+  });
+
+  final String initialValue;
+  final String title;
+  final String prefix;
+  final String suffix;
+
+  @override
+  State<_EditValueSheet> createState() => _EditValueSheetState();
+}
+
+class _EditValueSheetState extends State<_EditValueSheet> {
+  late final TextEditingController _field = TextEditingController(
+    text: widget.initialValue,
+  );
+
+  @override
+  void dispose() {
+    _field.dispose();
+    super.dispose();
+  }
+
+  void _submit() => Navigator.of(context).pop(_field.text.trim());
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.lg,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            widget.title,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              color: AppColors.text1(context),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _field,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: l10n.billingEditValue,
+              prefixText: widget.prefix.isEmpty ? null : widget.prefix,
+              suffixText: widget.suffix.isEmpty ? null : widget.suffix,
+              border: const OutlineInputBorder(),
+            ),
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          GoldButton(
+            label: l10n.commonSave,
+            icon: Icons.check_rounded,
+            onPressed: _submit,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A made-to-order line: something the customer asked for that isn't in stock
+/// and isn't in the catalogue. Priced on the server from weight x daily rate.
+class _OnDemandLine {
+  const _OnDemandLine({
+    required this.name,
+    required this.metalType,
+    required this.karat,
+    required this.weight,
+    this.makingCharges,
+  });
+
+  final String name;
+  final String metalType;
+  final String karat;
+  final double weight;
+  final double? makingCharges;
+}
+
+/// Entry form for a made-to-order line. Deliberately minimal — name, purity,
+/// weight, and an optional making charge. Everything else the bill already
+/// handles (rate, GST, old gold) applies to this line too.
+class _OnDemandLineSheet extends StatefulWidget {
+  const _OnDemandLineSheet();
+
+  @override
+  State<_OnDemandLineSheet> createState() => _OnDemandLineSheetState();
+}
+
+class _OnDemandLineSheetState extends State<_OnDemandLineSheet> {
+  final _name = TextEditingController();
+  final _weight = TextEditingController();
+  final _making = TextEditingController();
+  String _metalType = 'gold';
+  String _karat = '22K';
+  String? _error;
+
+  static const _goldKarats = ['24K', '22K', '18K', '14K'];
+  static const _silverKarats = ['999', '925'];
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _weight.dispose();
+    _making.dispose();
+    super.dispose();
+  }
+
+  List<String> get _karatOptions =>
+      _metalType == 'silver' ? _silverKarats : _goldKarats;
+
+  void _submit() {
+    final l10n = AppLocalizations.of(context)!;
+    final name = _name.text.trim();
+    final weight = double.tryParse(_weight.text.trim()) ?? 0;
+    if (name.isEmpty) {
+      setState(() => _error = l10n.billingOnDemandNameRequired);
+      return;
+    }
+    if (weight <= 0) {
+      setState(() => _error = l10n.billingOnDemandWeightRequired);
+      return;
+    }
+    Navigator.of(context).pop(
+      _OnDemandLine(
+        name: name,
+        metalType: _metalType,
+        karat: _karat,
+        weight: weight,
+        makingCharges: double.tryParse(_making.text.trim()),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.lg,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.billingOnDemandTitle,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: AppColors.text1(context),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.billingOnDemandSubtitle,
+              style: TextStyle(fontSize: 12, color: AppColors.text2(context)),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+              controller: _name,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: l10n.billingOnDemandItemName,
+                hintText: l10n.billingOnDemandItemNameHint,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _metalType,
+                    decoration: InputDecoration(
+                      labelText: l10n.billingOnDemandMetal,
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                        value: 'gold',
+                        child: Text(l10n.commonGold),
+                      ),
+                      DropdownMenuItem(
+                        value: 'silver',
+                        child: Text(l10n.commonSilver),
+                      ),
+                    ],
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() {
+                        _metalType = v;
+                        // Karat lists differ per metal — reset to a valid one.
+                        _karat = _karatOptions.first;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _karat,
+                    decoration: InputDecoration(
+                      labelText: l10n.billingOnDemandPurity,
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: _karatOptions
+                        .map((k) => DropdownMenuItem(value: k, child: Text(k)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _karat = v ?? _karat),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _weight,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: l10n.billingOnDemandWeight,
+                      hintText: l10n.billingOnDemandWeightHint,
+                      suffixText: 'g',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: TextField(
+                    controller: _making,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: l10n.billingOnDemandMaking,
+                      hintText: l10n.billingOnDemandOptionalHint,
+                      prefixText: '₹',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              l10n.billingOnDemandPriceNote,
+              style: TextStyle(
+                fontSize: 11.5,
+                height: 1.35,
+                color: AppColors.text3(context),
+              ),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                _error!,
+                style: const TextStyle(fontSize: 12, color: AppColors.error),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.md),
+            GoldButton(
+              label: l10n.billingOnDemandAdd,
+              icon: Icons.add_rounded,
+              onPressed: _submit,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Searchable saved-customer picker (Existing Customer mode).
 class _CustomerPickerSheet extends StatefulWidget {
   const _CustomerPickerSheet({required this.customers});
@@ -1867,11 +2324,11 @@ class _BillBreakdown extends StatelessWidget {
               l10n.billingStoneValue,
               billingMoneyGrouped(p.totalStoneValue),
             ),
-          if (p.discountAmount > 0)
+          if (p.oldGoldValue > 0)
             _totalRow(
               context,
-              l10n.billingDiscount,
-              '− ${billingMoneyGrouped(p.discountAmount)}',
+              l10n.billingOldGoldTitle,
+              '− ${billingMoneyGrouped(p.oldGoldValue)}',
             ),
           _totalRow(
             context,
