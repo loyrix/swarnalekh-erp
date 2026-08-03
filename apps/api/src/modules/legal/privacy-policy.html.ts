@@ -162,7 +162,7 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
 
   <h2>10. Contact</h2>
   <p>Questions, requests or complaints about this policy or your data:
-  <a href="mailto:jsatyam4@gmail.com">jsatyam4@gmail.com</a></p>
+  <a href="mailto:support@swarnalekh.com">support@swarnalekh.com</a></p>
 
   <footer>
     SwarnaLekh &middot; Jewellery shop management software &middot; India
