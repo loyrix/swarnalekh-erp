@@ -1,0 +1,33 @@
+# Cloudflare Pages header rules. Flutter copies web/ verbatim into build/web/,
+# which is where Pages expects this file to land.
+#
+# Flutter's web entrypoints are not content-hashed, so anything that names a
+# build must revalidate — otherwise a returning user stays pinned to the
+# previous deploy until their cache expires. Hashed/versioned payloads under
+# assets/ and canvaskit/ are safe to cache hard.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/flutter_bootstrap.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/flutter_service_worker.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/main.dart.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+/canvaskit/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=604800

@@ -21,6 +21,7 @@
     "mobile:env:sync": "node scripts/sync_mobile_env.mjs",
     "mobile:build": "bash scripts/flutter_with_env.sh build web",
     "mobile:web": "bash scripts/flutter_with_env.sh build web --release",
+    "web:build:cloudflare": "bash scripts/cloudflare-build.sh",
     "mobile:apk": "bash scripts/flutter_with_env.sh build apk --release",
     "mobile:aab": "bash scripts/flutter_with_env.sh build appbundle --release",
     "mobile:play": "bash scripts/mobile/build-android-play-release.sh",

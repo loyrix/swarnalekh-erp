@@ -1,0 +1,5 @@
+# Pages serves any real file first and only falls through to this rule, so it
+# acts purely as the SPA fallback. go_router currently runs on the default hash
+# strategy (/#/route), which needs no rewrite at all — this is here so deep
+# links keep working if the app ever switches to usePathUrlStrategy.
+/*  /index.html  200
