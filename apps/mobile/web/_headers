@@ -1,5 +1,5 @@
-# Cloudflare Pages header rules. Flutter copies web/ verbatim into build/web/,
-# which is where Pages expects this file to land.
+# Cloudflare header rules. Flutter copies web/ verbatim into build/web/, which
+# is the asset directory wrangler.jsonc uploads.
 #
 # Flutter's web entrypoints are not content-hashed, so anything that names a
 # build must revalidate — otherwise a returning user stays pinned to the

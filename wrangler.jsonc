@@ -1,0 +1,15 @@
+{
+  // Cloudflare Workers static-assets config for the Flutter web PWA.
+  // Read by `npx wrangler deploy` after scripts/cloudflare-build.sh produces
+  // the bundle. There is no `main` entry: this is an assets-only Worker, so
+  // Cloudflare serves the files directly with no Worker script in the path.
+  "name": "swarnalekh",
+  "compatibility_date": "2026-08-14",
+  "assets": {
+    "directory": "./apps/mobile/build/web",
+    // go_router runs on the hash strategy (/#/route), so every request already
+    // lands on index.html and this changes nothing today. It is here so deep
+    // links keep working if the app later adopts usePathUrlStrategy.
+    "not_found_handling": "single-page-application",
+  },
+}
